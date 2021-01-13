@@ -1,9 +1,9 @@
 class Pon extends Piece {
-    constructor(color, pos) {
-        super(color, pos);
-    }
+  constructor(color, pos) {
+    super(color, pos);
+  }
 
-    show() {
-        super.show()
-    }
+  show() {
+    super.show();
+  }
 }

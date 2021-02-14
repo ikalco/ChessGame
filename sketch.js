@@ -1,74 +1,41 @@
-let chessBoardPieces = [];
+let backBoard = [];
+let Board;
 let WIDTH = 800;
 let HEIGHT = 800;
 let PiecePxSize = WIDTH / 8;
 let chessPiecesImg;
+let backColor;
+
+let startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 function preload() {
-  chessPiecesImg = loadImage("./Images/ChessPiecesImages.webp");
+  chessPiecesImg = loadImage("./Sprites/pieces.png");
 }
 
 function setup() {
   createCanvas(WIDTH, HEIGHT);
-  setupBoardPieces();
+  setupBackBoard();
+  Board = new BoardC();
+  Board.loadPosFromFen(startFen);
 }
 
 function draw() {
-  background(220);
-  for (let i = 0; i < chessBoardPieces.length; i++) {
-    for (let j = 0; j < chessBoardPieces[i].length; j++) {
-      let a = chessBoardPieces[i][j];
-      a.show();
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      backBoard[i][j].update();
     }
   }
+  Board.draw();
 }
 
-function setupBoardPieces() {
-  chessBoardPieces = [
-    [
-      new Rook(0, [0, 0]),
-      new Knight(0, [0, 1]),
-      new Bishop(0, [0, 2]),
-      new Queen(0, [0, 3]),
-      new King(0, [0, 4]),
-      new Bishop(0, [0, 5]),
-      new Knight(0, [0, 6]),
-      new Rook(0, [0, 7]),
-    ],
-  ];
+function setupBackBoard() {
+  for (let file = 0; file < 8; file++) {
+    backBoard.push([]);
+    for (let rank = 0; rank < 8; rank++) {
+      let isLightSquare = (file + rank) % 2 != 0;
 
-  //Adding Pons
-  let temp = [];
-  for (let i = 0; i < 8; i++) {
-    temp.push(new Pon(0, [1, i]));
-  }
-  chessBoardPieces.push(temp);
-
-  //Adding empty spaces
-  for (let i = chessBoardPieces.length; i < 6; i++) {
-    temp = [];
-    for (let j = 0; j < 8; j++) {
-      temp.push(new Piece("", [i, j]));
+      squareColor = isLightSquare ? color(169, 122, 101) : color(241, 217, 192);
+      backBoard[file].push(new ChessSquare([file, rank], squareColor));
     }
-    chessBoardPieces.push(temp);
   }
-
-  temp = [];
-  for (let i = 0; i < 8; i++) {
-    temp.push(new Pon(1, [chessBoardPieces.length, i]));
-  }
-  chessBoardPieces.push(temp);
-
-  chessBoardPieces.push([
-    new Rook(1, [chessBoardPieces.length, 0]),
-    new Knight(1, [chessBoardPieces.length, 1]),
-    new Bishop(1, [chessBoardPieces.length, 2]),
-    new Queen(1, [chessBoardPieces.length, 3]),
-    new King(1, [chessBoardPieces.length, 4]),
-    new Bishop(1, [chessBoardPieces.length, 5]),
-    new Knight(1, [chessBoardPieces.length, 6]),
-    new Rook(1, [chessBoardPieces.length, 7]),
-  ]);
-
-  console.table(chessBoardPieces);
 }

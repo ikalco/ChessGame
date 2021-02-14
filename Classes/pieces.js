@@ -72,8 +72,7 @@ class Pon extends Piece {
   }
   show() {
     super.show();
-    if (this.color == 0)
-      this.image = chessPiecesImg.get(1665, 333.5, 333.33334, 333.5);
+    if (this.color == 0) this.image = chessPiecesImg.get(1665, 333.5, 333.33334, 333.5);
   }
 }
 
@@ -85,8 +84,7 @@ class Bishop extends Piece {
 
   show() {
     super.show();
-    if (this.color == 0)
-      this.image = chessPiecesImg.get(666, 333.5, 333.33334, 333.5);
+    if (this.color == 0) this.image = chessPiecesImg.get(666, 333.5, 333.33334, 333.5);
   }
 }
 
@@ -98,8 +96,7 @@ class King extends Piece {
 
   show() {
     super.show();
-    if (this.color == 0)
-      this.image = chessPiecesImg.get(0, 333.5, 333.33334, 333.5);
+    if (this.color == 0) this.image = chessPiecesImg.get(0, 333.5, 333.33334, 333.5);
   }
 }
 
@@ -111,8 +108,7 @@ class Knight extends Piece {
 
   show() {
     super.show();
-    if (this.color == 0)
-      this.image = chessPiecesImg.get(999, 333.5, 333.33334, 333.5);
+    if (this.color == 0) this.image = chessPiecesImg.get(999, 333.5, 333.33334, 333.5);
   }
 }
 
@@ -124,8 +120,7 @@ class Queen extends Piece {
 
   show() {
     super.show();
-    if (this.color == 0)
-      this.image = chessPiecesImg.get(333, 333.5, 333.33334, 333.5);
+    if (this.color == 0) this.image = chessPiecesImg.get(333, 333.5, 333.33334, 333.5);
   }
 }
 
@@ -137,8 +132,7 @@ class Rook extends Piece {
 
   show() {
     super.show();
-    if (this.color == 0)
-      this.image = chessPiecesImg.get(1332, 333.5, 333.33334, 333.5);
+    if (this.color == 0) this.image = chessPiecesImg.get(1332, 333.5, 333.33334, 333.5);
   }
 }
 

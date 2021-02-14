@@ -6,10 +6,10 @@ let PiecePxSize = WIDTH / 8;
 let chessPiecesImg;
 let backColor;
 
-let startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let startFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function preload() {
-  chessPiecesImg = loadImage("./Sprites/pieces.png");
+  chessPiecesImg = loadImage('./Sprites/pieces.png');
 }
 
 function setup() {
@@ -25,7 +25,7 @@ function draw() {
       backBoard[i][j].update();
     }
   }
-  Board.draw();
+  Board.update();
 }
 
 function setupBackBoard() {

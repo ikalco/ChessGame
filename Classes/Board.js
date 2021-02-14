@@ -4,20 +4,51 @@ class BoardC {
   }
 
   draw() {
+    let isMove = false;
+    let [dx, dy] = [0, 0];
     for (let p in this.Squares) {
-      let tmp =
-        this.Squares[p].toString(2).length < 5
-          ? "0" + this.Squares[p].toString(2)
-          : this.Squares[p].toString(2);
+      const s = this.Squares[p];
+      let tmp = s.type.toString(2).length < 5 ? '0' + s.type.toString(2) : s.type.toString(2);
       let img = this.decPieceBin(tmp);
       if (img == undefined) {
         continue;
       }
-      let row = p % 8 > 0 ? (p - (p % 8)) / 8 : p / 8;
-      let x = row * PiecePxSize; //Row
-      let y = (p - row * 8) * PiecePxSize; //Col
-      image(img, y, x, PiecePxSize, PiecePxSize);
+      let row = s.row;
+      let col = s.col;
+      let y = s.y; //Row
+      let x = s.x; //Col
+
+      //Checking for clicks
+      if (mouseIsPressed && mouseButton === LEFT) {
+        if (mouseX > s.x && mouseX < s.x + PiecePxSize) {
+          if (mouseY > s.y && mouseY < s.y + PiecePxSize) {
+            // Show what moves you can do with a green dot.
+            isMove = true;
+            dx = mouseX - s.x;
+            dy = mouseY - s.y;
+            //print(p);
+          }
+        }
+      }
+
+      window.onmouseup = function () {
+        if (mouseButton === LEFT) {
+          isMove = false;
+        }
+      };
+
+      if (isMove) {
+        s.x += dx - PiecePxSize / 2;
+        s.y += dy - PiecePxSize / 2;
+      }
+
+      //Drawing Piece
+      image(img, s.x, s.y, PiecePxSize, PiecePxSize);
     }
+  }
+
+  update() {
+    this.draw();
   }
 
   loadPosFromFen(fen) {
@@ -29,23 +60,23 @@ class BoardC {
       r: Piece.Rook,
       q: Piece.Queen,
     };
-    let fenBoard = fen.split(" ")[0];
+    let fenBoard = fen.split(' ')[0];
     let file = 0;
     let rank = 0;
 
     for (let i = 0; i < fenBoard.length; i++) {
       const symbol = fenBoard[i];
-      if (symbol == "/") {
+      if (symbol == '/') {
         file = 0;
         rank++;
       } else {
         if (/^-?\d+$/.test(symbol)) {
           file += parseInt(symbol);
         } else {
-          let pieceColor =
-            symbol == symbol.toUpperCase() ? Piece.White : Piece.Black;
+          let pieceColor = symbol == symbol.toUpperCase() ? Piece.White : Piece.Black;
           let pieceType = lookUp[symbol.toLowerCase()];
-          this.Squares[rank * 8 + file] = pieceColor | pieceType;
+          let piece = pieceColor | pieceType;
+          this.Squares[rank * 8 + file] = new Piece(piece, rank * 8 + file);
           file++;
         }
       }
@@ -54,9 +85,9 @@ class BoardC {
   }
 
   decPieceBin(tmp) {
-    let p = eval("0b" + tmp[2] + tmp[3] + tmp[4]);
+    let p = eval('0b' + tmp[2] + tmp[3] + tmp[4]);
     let img;
-    if (eval("0b" + tmp[0] + tmp[1]) == 1) {
+    if (eval('0b' + tmp[0] + tmp[1]) == 1) {
       switch (p) {
         //White
         case 0:

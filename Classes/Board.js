@@ -5,7 +5,7 @@ class BoardC {
 
   draw() {
     let isMove = false;
-    let [dx, dy] = [0, 0];
+    let [dx, dy, n] = [0, 0, 0];
     for (let p in this.Squares) {
       const s = this.Squares[p];
       let tmp = s.type.toString(2).length < 5 ? '0' + s.type.toString(2) : s.type.toString(2);
@@ -20,9 +20,13 @@ class BoardC {
 
       //Checking for clicks
       if (mouseIsPressed && mouseButton === LEFT) {
-        if (mouseX > s.x && mouseX < s.x + PiecePxSize) {
-          if (mouseY > s.y && mouseY < s.y + PiecePxSize) {
+        if (mouseX >= s.x && mouseX <= s.x + PiecePxSize) {
+          if (mouseY >= s.y && mouseY <= s.y + PiecePxSize) {
             // Show what moves you can do with a green dot.
+            if (isMove == false) {
+              n = p;
+            }
+
             isMove = true;
             dx = mouseX - s.x;
             dy = mouseY - s.y;
@@ -32,12 +36,22 @@ class BoardC {
       }
 
       window.onmouseup = function () {
+        //Mouse Released
         if (mouseButton === LEFT) {
           isMove = false;
+          let col = floor((Board.Squares[n].x + PiecePxSize / 2) / PiecePxSize);
+          let row = floor((Board.Squares[n].y + PiecePxSize / 2) / PiecePxSize);
+          Board.Squares[n].x = PiecePxSize * col;
+          Board.Squares[n].y = PiecePxSize * row;
+          Board.Squares[n].col = col;
+          Board.Squares[n].row = row;
+          print(Board.Squares);
+          Board.Squares[col * 8 + row] = Board.Squares[n];
+          Board.Squares[n] = new Piece(Piece.Empty, n);
         }
       };
 
-      if (isMove) {
+      if (isMove && p == n) {
         s.x += dx - PiecePxSize / 2;
         s.y += dy - PiecePxSize / 2;
       }
@@ -85,7 +99,10 @@ class BoardC {
   }
 
   decPieceBin(tmp) {
-    let p = eval('0b' + tmp[2] + tmp[3] + tmp[4]);
+    let p;
+    if (tmp != 0) {
+      p = eval('0b' + tmp[2] + tmp[3] + tmp[4]);
+    }
     let img;
     if (eval('0b' + tmp[0] + tmp[1]) == 1) {
       switch (p) {

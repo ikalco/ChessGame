@@ -17,6 +17,7 @@ function setup() {
   setupBackBoard();
   Board = new BoardC();
   Board.loadPosFromFen(startFen);
+  print(Board.Squares);
 }
 
 function draw() {

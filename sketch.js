@@ -5,8 +5,14 @@ let HEIGHT = 800;
 let PiecePxSize = WIDTH / 8;
 let chessPiecesImg;
 let backColor;
+let moves = [];
+let playedMoves = [];
 
-let startFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+let startFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // default starting board
+//let startFen = 'rbq5/8/8/8/8/8/8/5QBR'; // Sliding Pieces test
+//let startFen = '8/4K3/8/8/8/8/4k3/8'; // King Test
+//let startFen = '8/8/8/2N2n2/8/8/8/8'; // Knight Test
+//let startFen = 'rnb1kbkr/pppp1pppp/8/4p3/4P2q/PQ4PP/8/RNB1KBNR'; //Check test
 
 function preload() {
   chessPiecesImg = loadImage('./Sprites/pieces.png');
@@ -17,15 +23,11 @@ function setup() {
   setupBackBoard();
   Board = new BoardC();
   Board.loadPosFromFen(startFen);
-  print(Board.Squares);
+  preCalculateMoveData();
+  generateMoves();
 }
 
 function draw() {
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 8; j++) {
-      backBoard[i][j].update();
-    }
-  }
   Board.update();
 }
 

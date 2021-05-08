@@ -4,6 +4,7 @@ let blackPieces = [];
 let blackKingSquare = 4;
 let whiteKingSquare = 60;
 let prevBoardSquares = [];
+let turns = true;
 
 function mouseReleased() {
   //Mouse Released
@@ -17,6 +18,38 @@ class BoardC {
   constructor() {
     this.Squares = new Array(64);
     this.ColorToMove = 1;
+  }
+
+  makeMove(move) {
+    playedMoves.push(move);
+    this.Squares[move.startSquare].moved = true;
+    move.startPiece.col = move.targetCol;
+    move.startPiece.row = move.targetRow;
+
+    //Runs everytime a move is played
+    this.Squares[move.targetSquare] = this.Squares[move.startSquare];
+    if (move.targetSquare != move.takeSquare) this.Squares[move.takeSquare] = new Piece(Piece.Empty, n);
+    this.Squares[move.startSquare] = new Piece(Piece.Empty, n);
+
+    //Keeping Track of the kings
+    if (move.startPiece.type == Piece.White + Piece.King) whiteKingSquare = move.targetSquare;
+    if (move.startPiece.type == Piece.Black + Piece.King) blackKingSquare = move.targetSquare;
+
+    // Castling
+    if (move.extraMove != undefined) {
+      Board.Squares[move.extraMove[1]] = Board.Squares[move.extraMove[0]];
+      Board.Squares[move.extraMove[1]].update(move.extraMove[1]);
+      Board.Squares[move.extraMove[0]] = new Piece(Piece.Empty, move.extraMove[0]);
+    }
+
+    //Promotion
+    if (Piece.getPiece(Board.Squares[move.targetSquare]) == Piece.Pawn && (move.targetRow == 0 || move.targetRow == 7)) {
+      Promotion(move.targetSquare);
+    }
+
+    this.movePlayed();
+    generateMoves();
+    Board.update();
   }
 
   checkForMovementRules(row, col) {
@@ -62,16 +95,18 @@ class BoardC {
     //Centering piece after releasing mouse
     let col = floor((this.Squares[n].x + PiecePxSize / 2) / PiecePxSize);
     let row = floor((this.Squares[n].y + PiecePxSize / 2) / PiecePxSize);
+    // Center the piece
     this.Squares[n].x = col * PiecePxSize;
     this.Squares[n].y = row * PiecePxSize;
 
+    // if the piece didnt move return
     if (this.Squares[n].col == col && this.Squares[n].row == row) {
       return;
     }
 
     let dropSquare = row * 8 + col;
 
-    //[]Checking For Empty Square and if you can take a piece
+    //[]Checking For Empty Square or if you can take the target piece
     if (this.Squares[dropSquare].type == 0 || Piece.getColor(this.Squares[n]) != Piece.getColor(this.Squares[dropSquare])) {
       if (this.checkForMovementRules(row, col)) {
         this.movePlayed();
@@ -90,7 +125,7 @@ class BoardC {
     if (mouseIsPressed && mouseButton === LEFT) {
       for (let i = 0; i < this.Squares.length; i++) {
         if (this.Squares[i] == undefined) continue;
-        if (Piece.IsColor(this.Squares[i], Board.ColorToMove)) {
+        if (Piece.IsColor(this.Squares[i], Board.ColorToMove) && turns == true) {
           if (mouseX >= this.Squares[i].x && mouseX <= this.Squares[i].x + PiecePxSize) {
             if (mouseY >= this.Squares[i].y && mouseY <= this.Squares[i].y + PiecePxSize) {
               if (isMove == false) {
@@ -103,6 +138,7 @@ class BoardC {
       }
     }
 
+    //This is where the moves are being drawn
     if (isMove == true) {
       this.Squares[n].x = mouseX - PiecePxSize / 2;
       this.Squares[n].y = mouseY - PiecePxSize / 2;
@@ -132,6 +168,12 @@ class BoardC {
   }
 
   update() {
+    if (moves.every((move) => Piece.getColor(move.startPiece) == 1)) {
+      print('Black in Checkmate.');
+    }
+    if (moves.every((move) => Piece.getColor(move.startPiece) == 2)) {
+      print('White in Checkmate.');
+    }
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
         backBoard[i][j].update();
@@ -139,6 +181,23 @@ class BoardC {
     }
     this.dragDrop();
     this.draw();
+  }
+
+  getPosFromFen() {
+    let lookUp = {
+      0b00001: k,
+      0b00010: p,
+      0b00011: n,
+      0b00100: b,
+      0b00101: r,
+      0b00110: q,
+    };
+    for (let i = 0; i < this.Squares.length; i++) {
+      let piece = this.Squares[i];
+      let fenPiece = lookUp[Piece.getPiece(piece)];
+      if (Piece.IsColor(piece, 1)) fenPiece.toUpperCase();
+      if (Piece.IsColor(piece, 2)) fenPiece.toLowerCase();
+    }
   }
 
   loadPosFromFen(fen) {
@@ -175,6 +234,16 @@ class BoardC {
       }
     }
     print(fen);
+
+    for (let i = 0; i < Board.Squares.length; i++) {
+      if (Piece.IsPiece(Board.Squares[i], Piece.King)) {
+        if (Piece.IsColor(Board.Squares[i], 1)) {
+          whiteKingSquare = i;
+        } else {
+          blackKingSquare = i;
+        }
+      }
+    }
   }
 
   decPieceBin(piece) {

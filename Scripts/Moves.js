@@ -1,6 +1,10 @@
 let directionOffsets = [8, -8, -1, 1, 7, -7, 9, -9];
 let numSquaresToEdge = [];
-let whiteKingAttacks = [];
+let whiteAttacks = [];
+let blackAttacks = [];
+let whiteAttacksExtra = [];
+let blackAttacksExtra = [];
+let pinnedPieces = [];
 
 function preCalculateMoveData() {
   for (let file = 0; file < 8; file++) {
@@ -20,7 +24,7 @@ function preCalculateMoveData() {
         min(numNorth, numWest),
         min(numSouth, numEast),
         min(numNorth, numEast),
-        min(numSouth, numWest),
+        min(numSouth, numWest)
       ];
     }
   }
@@ -32,9 +36,9 @@ class Move {
     this.targetSquare = targetSquare;
     this.takeSquare = takeSquare;
     this.extraMove;
-    this.targetRow = targetSquare % 8 > 0 ? (targetSquare - (targetSquare % 8)) / 8 : targetSquare / 8;
+    this.targetRow = targetSquare % 8 > 0 ? (targetSquare - targetSquare % 8) / 8 : targetSquare / 8;
     this.targetCol = targetSquare - this.targetRow * 8;
-    this.startRow = startSquare % 8 > 0 ? (startSquare - (startSquare % 8)) / 8 : startSquare / 8;
+    this.startRow = startSquare % 8 > 0 ? (startSquare - startSquare % 8) / 8 : startSquare / 8;
     this.startCol = startSquare - this.startRow * 8;
     this.startPiece = Board.Squares[startSquare];
     this.targetPiece = Board.Squares[targetSquare];
@@ -48,85 +52,113 @@ class Move {
   }
 }
 
-function generateLegalMoves() {
-  console.time('Execution Time');
-  let pseudoLegalMoves = GeneratePseudoLegalMoves();
-  let legalMoves = [];
-  let myKingSquare = Board.ColorToMove == 1 ? whiteKingSquare : blackKingSquare;
+function generateAttacks(pseudoLegalMoves) {
+  //Calculating all attackMoves
+  whiteAttacks = [];
+  blackAttacks = [];
 
-  for (let i = 0; i < pseudoLegalMoves.length; i++) {
-    let moveToVerify = pseudoLegalMoves[i];
-    Board.MakeMove(moveToVerify);
-    let opponentResponses = GeneratePseudoLegalMoves();
-
-    if (opponentResponses.some((response) => response.targetSquare == myKingSquare)) {
-      //last move was illegal, king is captured
-    } else {
-      legalMoves.push(moveToVerify);
+  for (let j = 0; j < pseudoLegalMoves.length; j++) {
+    let piece = pseudoLegalMoves[j].startPiece;
+    if (!Piece.IsPiece(piece, Piece.Pawn)) {
+      if (whiteAttacks.every(move => move.takeSquare != pseudoLegalMoves[j].takeSquare) && Piece.IsColor(piece, 1)) whiteAttacks.push(pseudoLegalMoves[j]);
+      if (blackAttacks.every(move => move.takeSquare != pseudoLegalMoves[j].takeSquare) && Piece.IsColor(piece, 2)) blackAttacks.push(pseudoLegalMoves[j]);
     }
-
-    Board.UnmakeMove();
   }
 
-  console.timeEnd('Execution Time');
-  return legalMoves;
+  for (let i = 0; i < whiteAttacksExtra.length; i++) {
+    if (whiteAttacks.every(move => move.takeSquare != whiteAttacksExtra[i].takeSquare)) whiteAttacks.push(whiteAttacksExtra[i]);
+  }
+  //Adding all extra moves
+  for (let i = 0; i < blackAttacksExtra.length; i++) {
+    if (blackAttacks.every(move => move.takeSquare != blackAttacksExtra[i].takeSquare)) blackAttacks.push(blackAttacksExtra[i]);
+  }
+
+  whiteAttacksExtra = [];
+  blackAttacksExtra = [];
 }
 
+function generatePinnedPieces() {}
+
 function generateMoves() {
-  console.time('Execution Time');
+  console.time("Time to Generate Moves");
 
   let pseudoLegalMoves = GeneratePseudoLegalMoves();
   let legalMoves = [];
   let inCheck = false;
+  let mvAtkWhiteKing;
+  let mvAtkBlackKing;
 
-  let whiteAttacks = [];
-  let blackAttacks = [];
-  for (let j = 0; j < pseudoLegalMoves.length; j++) {
-    let piece = pseudoLegalMoves[j].startPiece;
-    if (!whiteAttacks.includes(pseudoLegalMoves[j]) && Piece.IsColor(piece, 1)) whiteAttacks.push(pseudoLegalMoves[j]);
-    if (!blackAttacks.includes(pseudoLegalMoves[j]) && Piece.IsColor(piece, 2)) blackAttacks.push(pseudoLegalMoves[j]);
-  }
+  generateAttacks(pseudoLegalMoves);
+  generatePinnedPieces();
 
   for (let i = 0; i < blackAttacks.length; i++) {
-    if (blackAttacks[i].targetSquare == whiteKingSquare) {
-      print('white in check');
+    if (blackAttacks[i].takeSquare == whiteKingSquare) {
+      print("white in check");
+      mvAtkWhiteKing = blackAttacks[i];
       inCheck = true;
-      for (let j = 0; j < pseudoLegalMoves.length; j++) {
-        let pMove = pseudoLegalMoves[j];
-        //adding all the legal moves for when in check
-        //moves where king isn't attacked anymore
-        if (pMove.targetSquare == blackAttacks[i].startSquare) legalMoves.push(pMove);
-        if (Piece.getPiece(pMove.startPiece) == Piece.King) {
-          //check that the pMove.targetSquare is not in blackAttacks
-          if (blackAttacks.every((attack) => attack.targetSquare != pMove.targetSquare)) legalMoves.push(pMove);
-        }
-
-        moves = legalMoves;
-      }
     }
   }
 
   for (let i = 0; i < whiteAttacks.length; i++) {
-    if (whiteAttacks[i].targetSquare == blackKingSquare) {
-      print('black in check');
+    if (whiteAttacks[i].takeSquare == blackKingSquare) {
+      print("black in check");
+      mvAtkBlackKing = whiteAttacks[i];
       inCheck = true;
-      for (let j = 0; j < pseudoLegalMoves.length; j++) {
-        let pMove = pseudoLegalMoves[j];
-        //adding all the legal moves for when in check
-        //moves where king isn't attacked anymore
-        if (pMove.targetSquare == whiteAttacks[i].startSquare) legalMoves.push(pMove);
-        if (Piece.getPiece(pMove.startPiece) == Piece.King) {
-          //check that the pMove.targetSquare is not in blackAttacks
-          if (whiteAttacks.every((attack) => attack.targetSquare != pMove.targetSquare)) legalMoves.push(pMove);
-        }
+    }
+  }
 
-        moves = legalMoves;
+  for (let i = 0; i < pseudoLegalMoves.length; i++) {
+    let Move = pseudoLegalMoves[i];
+
+    //Adds all moves for king that dont put him in danger
+    if (Piece.IsPiece(Move.startPiece, Piece.King)) {
+      let n = 0;
+      for (let j = 0; j < blackAttacks.length; j++) {
+        if (blackAttacks[j].takeSquare != Move.targetSquare) {
+          n++;
+        }
+      }
+
+      if (n == blackAttacks.length) {
+        // Adds all moves to king that dont put him in danger;
+        legalMoves.push(Move);
+      }
+
+      n = 0;
+      for (let j = 0; j < whiteAttacks.length; j++) {
+        if (whiteAttacks[j].takeSquare != Move.targetSquare) {
+          n++;
+        }
+      }
+
+      if (n == whiteAttacks.length) {
+        // Adds all moves to king that dont put him in danger;
+        legalMoves.push(Move);
+      }
+    }
+
+    if (inCheck == true && !Piece.IsPiece(Move.startPiece, Piece.King)) {
+      //Add all moves that get king out of danger
+
+      if (mvAtkBlackKing != undefined && Move.takeSquare == mvAtkBlackKing.startSquare) {
+        legalMoves.push(Move);
+      }
+
+      if (mvAtkWhiteKing != undefined && Move.takeSquare == mvAtkWhiteKing.startSquare) {
+        legalMoves.push(Move);
       }
     }
   }
 
-  if (inCheck == false) moves = pseudoLegalMoves;
-  console.timeEnd('Execution Time');
+  if (inCheck == false) {
+    for (let i = 0; i < pseudoLegalMoves.length; i++) {
+      if (!Piece.IsPiece(pseudoLegalMoves[i].startPiece, Piece.King) && !pinnedPieces.includes(Move.startPiece)) legalMoves.push(pseudoLegalMoves[i]);
+    }
+  }
+
+  moves = legalMoves;
+
+  console.timeEnd("Time to Generate Moves");
 }
 
 function GeneratePseudoLegalMoves() {
@@ -134,7 +166,6 @@ function GeneratePseudoLegalMoves() {
 
   for (let startSquare = 0; startSquare < 64; startSquare++) {
     let piece = Board.Squares[startSquare];
-    //if (Piece.IsColor(piece, Board.ColorToMove)) {
     if (Piece.IsSlidingPiece(piece)) {
       let tmp = GenerateSlidingMoves(startSquare, piece);
       for (let i = 0; i < tmp.length; i++) {
@@ -153,33 +184,6 @@ function GeneratePseudoLegalMoves() {
         pseudoLegalMoves.push(tmp[i]);
       }
     }
-    //}
-  }
-
-  return pseudoLegalMoves;
-}
-
-function GeneratePseudoLegalMove(startSquare) {
-  pseudoLegalMoves = [];
-
-  let piece = Board.Squares[startSquare];
-  if (Piece.IsSlidingPiece(piece)) {
-    let tmp = GenerateSlidingMoves(startSquare, piece);
-    for (let i = 0; i < tmp.length; i++) {
-      pseudoLegalMoves.push(tmp[i]);
-    }
-  }
-  if (Piece.getPiece(piece) == Piece.Pawn || Piece.getPiece(piece) == Piece.King) {
-    let tmp = GeneratePawnKingMoves(startSquare, piece);
-    for (let i = 0; i < tmp.length; i++) {
-      pseudoLegalMoves.push(tmp[i]);
-    }
-  }
-  if (Piece.getPiece(piece) == Piece.Knight) {
-    let tmp = GenerateKnightMoves(startSquare);
-    for (let i = 0; i < tmp.length; i++) {
-      pseudoLegalMoves.push(tmp[i]);
-    }
   }
 
   return pseudoLegalMoves;
@@ -196,6 +200,12 @@ function GenerateKnightMoves(startSquare) {
     if (targetPiece == undefined) continue;
 
     let friendlyColor = Piece.getColor(Board.Squares[startSquare]);
+
+    if (friendlyColor == 1) {
+      whiteAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
+    } else if (friendlyColor == 2) {
+      blackAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
+    }
 
     if (Piece.IsColor(targetPiece, friendlyColor)) continue;
 
@@ -225,13 +235,29 @@ function GeneratePawnKingMoves(startSquare, piece) {
     if (Piece.IsColor(targetPiece, friendlyColor)) continue;
 
     if (Piece.getPiece(piece) == Piece.Pawn) {
+      //TODO: add diagonals to attack arrays (whiteAttacks, blackAttacks)
+
+      if (directionOffsets[directionIndex] == -7 || directionOffsets[directionIndex] == -9) {
+        whiteAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
+      }
+
+      if (directionOffsets[directionIndex] == 7 || directionOffsets[directionIndex] == 9) {
+        blackAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
+      }
+
+      //White Pawn Movement
       if (directionOffsets[directionIndex] == -8 && Piece.getPiece(targetPiece) != Piece.Empty) continue;
-      if (directionOffsets[directionIndex] == 8 && Piece.getPiece(targetPiece) != Piece.Empty) continue;
       if (directionOffsets[directionIndex] == -7 && Piece.getPiece(targetPiece) == Piece.Empty) continue;
+
       if (directionOffsets[directionIndex] == -9 && Piece.getPiece(targetPiece) == Piece.Empty) continue;
+
+      //Black Pawn Movement
+      if (directionOffsets[directionIndex] == 8 && Piece.getPiece(targetPiece) != Piece.Empty) continue;
       if (directionOffsets[directionIndex] == 7 && Piece.getPiece(targetPiece) == Piece.Empty) continue;
+
       if (directionOffsets[directionIndex] == 9 && Piece.getPiece(targetPiece) == Piece.Empty) continue;
 
+      //Move up two spaces on first move logic
       if (Board.Squares[startSquare].moved == true && (directionOffsets[directionIndex] == 16 || directionOffsets[directionIndex] == -16)) continue;
       if (Piece.IsColor(piece, 2) && Board.Squares[startSquare + 16] != undefined)
         if (Board.Squares[startSquare + 16].type != Piece.Empty && directionOffsets[directionIndex] == 16) continue;
@@ -271,10 +297,9 @@ function GeneratePawnKingMoves(startSquare, piece) {
       if (directionOffsets[directionIndex] == 16 || directionOffsets[directionIndex] == -16) continue;
     }
 
-    //when the king gets a move it breaks and 134
-
     if (Piece.getPiece(piece) == Piece.King) {
       //Castling Logic Start
+
       if ((piece.row == 0 || piece.row == 7) && piece.col == 4) {
         // Chekcs if king has moved
 
@@ -326,6 +351,12 @@ function GenerateSlidingMoves(startSquare, piece) {
       if (targetPiece == undefined) continue;
 
       let friendlyColor = Piece.getColor(Board.Squares[startSquare]);
+
+      if (friendlyColor == 1) {
+        whiteAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
+      } else if (friendlyColor == 2) {
+        blackAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
+      }
 
       if (Piece.IsColor(targetPiece, friendlyColor)) break;
 

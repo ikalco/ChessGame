@@ -40,6 +40,7 @@ function draw() {
     Board.update();
   } else if (gotBackground == false) {
     img = createImage(WIDTH, HEIGHT);
+    filter(BLUR, 3);
     gotBackground = true;
   }
   drawCheckmate();
@@ -58,7 +59,15 @@ function drawCheckmate() {
     if (fade < 250) fade += fadeAmount;
   }
   if (moves.every((move) => Piece.getColor(move.startPiece) == 2)) {
-    print('White in Checkmate.');
+    checkmate = true;
+    if (img != undefined) background(img);
+    textSize(76);
+    textAlign(CENTER);
+    fill(0, 0, 0, fade);
+    strokeWeight(2);
+    stroke(255, fade);
+    if (fade < 250) text('White is in Checkmate.', WIDTH / 2, HEIGHT / 2);
+    if (fade < 250) fade += fadeAmount;
   }
 }
 

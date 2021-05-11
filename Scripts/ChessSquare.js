@@ -7,7 +7,6 @@ class ChessSquare {
   }
 
   show() {
-    strokeWeight(0);
     push();
     fill(this.backColor);
     rect(this.x, this.y, PiecePxSize, PiecePxSize);

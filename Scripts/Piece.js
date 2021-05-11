@@ -6,6 +6,8 @@ class Piece {
     this.y = this.row * PiecePxSize; //Row
     this.x = this.col * PiecePxSize; //Col
     this.moved = false;
+    this.promoted = false;
+    this.prevMoved = false;
   }
 
   update(p) {

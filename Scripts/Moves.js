@@ -5,6 +5,9 @@ let blackAttacks = [];
 let whiteAttacksExtra = [];
 let blackAttacksExtra = [];
 let pinnedPieces = [];
+let skipKingMoves = [[], []];
+let whiteMoves = [];
+let blackMoves = [];
 
 function preCalculateMoveData() {
   for (let file = 0; file < 8; file++) {
@@ -24,7 +27,7 @@ function preCalculateMoveData() {
         min(numNorth, numWest),
         min(numSouth, numEast),
         min(numNorth, numEast),
-        min(numSouth, numWest)
+        min(numSouth, numWest),
       ];
     }
   }
@@ -36,12 +39,13 @@ class Move {
     this.targetSquare = targetSquare;
     this.takeSquare = takeSquare;
     this.extraMove;
-    this.targetRow = targetSquare % 8 > 0 ? (targetSquare - targetSquare % 8) / 8 : targetSquare / 8;
+    this.targetRow = targetSquare % 8 > 0 ? (targetSquare - (targetSquare % 8)) / 8 : targetSquare / 8;
     this.targetCol = targetSquare - this.targetRow * 8;
-    this.startRow = startSquare % 8 > 0 ? (startSquare - startSquare % 8) / 8 : startSquare / 8;
+    this.startRow = startSquare % 8 > 0 ? (startSquare - (startSquare % 8)) / 8 : startSquare / 8;
     this.startCol = startSquare - this.startRow * 8;
     this.startPiece = Board.Squares[startSquare];
     this.targetPiece = Board.Squares[targetSquare];
+    this.takePiece = Board.Squares[takeSquare];
   }
 
   draw() {
@@ -60,105 +64,216 @@ function generateAttacks(pseudoLegalMoves) {
   for (let j = 0; j < pseudoLegalMoves.length; j++) {
     let piece = pseudoLegalMoves[j].startPiece;
     if (!Piece.IsPiece(piece, Piece.Pawn)) {
-      if (whiteAttacks.every(move => move.takeSquare != pseudoLegalMoves[j].takeSquare) && Piece.IsColor(piece, 1)) whiteAttacks.push(pseudoLegalMoves[j]);
-      if (blackAttacks.every(move => move.takeSquare != pseudoLegalMoves[j].takeSquare) && Piece.IsColor(piece, 2)) blackAttacks.push(pseudoLegalMoves[j]);
+      if (whiteAttacks.every((move) => move.takeSquare != pseudoLegalMoves[j].takeSquare) && Piece.IsColor(piece, 1))
+        whiteAttacks.push(pseudoLegalMoves[j]);
+      if (blackAttacks.every((move) => move.takeSquare != pseudoLegalMoves[j].takeSquare) && Piece.IsColor(piece, 2))
+        blackAttacks.push(pseudoLegalMoves[j]);
     }
   }
 
   for (let i = 0; i < whiteAttacksExtra.length; i++) {
-    if (whiteAttacks.every(move => move.takeSquare != whiteAttacksExtra[i].takeSquare)) whiteAttacks.push(whiteAttacksExtra[i]);
+    if (whiteAttacks.every((move) => move.takeSquare != whiteAttacksExtra[i].takeSquare)) whiteAttacks.push(whiteAttacksExtra[i]);
   }
   //Adding all extra moves
   for (let i = 0; i < blackAttacksExtra.length; i++) {
-    if (blackAttacks.every(move => move.takeSquare != blackAttacksExtra[i].takeSquare)) blackAttacks.push(blackAttacksExtra[i]);
+    if (blackAttacks.every((move) => move.takeSquare != blackAttacksExtra[i].takeSquare)) blackAttacks.push(blackAttacksExtra[i]);
   }
 
   whiteAttacksExtra = [];
   blackAttacksExtra = [];
 }
 
-function generatePinnedPieces() {}
+function generatePinnedPieces() {
+  //cast a ray like a queen from the king and if it hits a friendly piece and an attacked enemy in the
+  //same line of sight then the first hit piece is pinned;
+  preCalculateMoveData();
+  let startSquares = [whiteKingSquare, blackKingSquare];
+  directionOffsets = [8, -8, -1, 1, 7, -7, 9, -9];
+  let startDirIndex = 0;
+  let endDirIndex = 8;
+  let pcsInDir = [[], [], [], [], [], [], [], []];
+  pinnedPieces = [[], []];
+
+  for (let j = 0; j < startSquares.length; j++) {
+    for (let directionIndex = startDirIndex; directionIndex < endDirIndex; directionIndex++) {
+      for (let n = 0; n < numSquaresToEdge[startSquares[j]][directionIndex]; n++) {
+        let targetSquare = startSquares[j] + directionOffsets[directionIndex] * (n + 1);
+        let targetPiece = Board.Squares[targetSquare];
+
+        if (targetPiece == undefined || Piece.IsPiece(targetPiece, Piece.Empty)) continue;
+        pcsInDir[directionIndex].push(targetPiece);
+      }
+    }
+
+    //pinned pieces start
+    for (let i = 0; i < pcsInDir.length; i++) {
+      if (pcsInDir[i].length < 2) continue;
+
+      let pinnedPiece = pcsInDir[i][0];
+      let pinningPiece = pcsInDir[i][1];
+
+      if (
+        (startSquares[j] == whiteKingSquare && Piece.IsColor(pinnedPiece, 1) && Piece.IsColor(pinningPiece, 2)) ||
+        (startSquares[j] == blackKingSquare && Piece.IsColor(pinnedPiece, 2) && Piece.IsColor(pinningPiece, 1))
+      ) {
+        if (Piece.IsPiece(pinningPiece, Piece.Queen)) {
+          pinnedPieces[0].push(directionOffsets[i]);
+          pinnedPieces[1].push(pinnedPiece);
+        }
+        if ((abs(directionOffsets[i]) == 1 || abs(directionOffsets[i]) == 8) && Piece.IsPiece(pinningPiece, Piece.Rook)) {
+          pinnedPieces[0].push(directionOffsets[i]);
+          pinnedPieces[1].push(pinnedPiece);
+        }
+        if ((abs(directionOffsets[i]) == 7 || abs(directionOffsets[i]) == 9) && Piece.IsPiece(pinningPiece, Piece.Bishop)) {
+          pinnedPieces[0].push(directionOffsets[i]);
+          pinnedPieces[1].push(pinnedPiece);
+        }
+      }
+    }
+    //pinned pieces end
+
+    for (let i = 0; i < pcsInDir.length; i++) {
+      if (pcsInDir[i].length < 1) continue;
+      let q;
+
+      if (startSquares[j] == whiteKingSquare) q = 0;
+      if (startSquares[j] == blackKingSquare) q = 1;
+
+      if (Piece.IsPiece(pcsInDir[i][0], Piece.Queen)) skipKingMoves[q].push([directionOffsets[i], pcsInDir[i][0]]);
+
+      if (Piece.IsPiece(pcsInDir[i][0], Piece.Bishop) && [7, 9].indexOf(abs(directionOffsets[i])) > -1)
+        skipKingMoves[q].push([directionOffsets[i], pcsInDir[i][0]]);
+
+      if (Piece.IsPiece(pcsInDir[i][0], Piece.Rook) && [8, 1].indexOf(abs(directionOffsets[i])) > -1)
+        skipKingMoves[q].push([directionOffsets[i], pcsInDir[i][0]]);
+    }
+  }
+
+  return pcsInDir;
+}
 
 function generateMoves() {
-  console.time("Time to Generate Moves");
+  //console.time('Time to Generate Moves');
 
   let pseudoLegalMoves = GeneratePseudoLegalMoves();
   let legalMoves = [];
-  let inCheck = false;
+  let inCheck = 0;
   let mvAtkWhiteKing;
   let mvAtkBlackKing;
+  let atkWhiteKingPath = [];
+  let atkBlackKingPath = [];
 
   generateAttacks(pseudoLegalMoves);
-  generatePinnedPieces();
+  let pcsInDir = generatePinnedPieces();
 
+  //checking if in check
   for (let i = 0; i < blackAttacks.length; i++) {
     if (blackAttacks[i].takeSquare == whiteKingSquare) {
-      print("white in check");
+      console.log('white in check');
       mvAtkWhiteKing = blackAttacks[i];
-      inCheck = true;
+      inCheck = 1;
     }
   }
 
   for (let i = 0; i < whiteAttacks.length; i++) {
     if (whiteAttacks[i].takeSquare == blackKingSquare) {
-      print("black in check");
+      console.log('black in check');
       mvAtkBlackKing = whiteAttacks[i];
-      inCheck = true;
+      inCheck = 2;
     }
   }
+
+  // getting paths of the sliding pieces attaking the king
+  for (let i = 0; i < pcsInDir.length; i++) {
+    if (pcsInDir[i].length < 2) continue; // if there is nothing in that direction skip it
+    let piece = pcsInDir[i][0];
+
+    if (mvAtkWhiteKing != undefined && Piece.IsColor(piece, 2) && piece.row * 8 + piece.col == mvAtkWhiteKing.startSquare) {
+      for (let n = mvAtkWhiteKing.startSquare; n != whiteKingSquare; n += directionOffsets[i] * -1) {
+        atkWhiteKingPath.push(n);
+      }
+    }
+
+    if (mvAtkBlackKing != undefined && Piece.IsColor(piece, 1) && piece.row * 8 + piece.col == mvAtkBlackKing.startSquare) {
+      for (let n = mvAtkBlackKing.startSquare; n != blackKingSquare; n += directionOffsets[i] * -1) {
+        atkBlackKingPath.push(n);
+      }
+    }
+  }
+
+  //TODO: fix king moves
 
   for (let i = 0; i < pseudoLegalMoves.length; i++) {
-    let Move = pseudoLegalMoves[i];
+    let move = pseudoLegalMoves[i];
+    /*
+    //let skip = false;
+    
+    //skipKingMoves first array is for white second is for black
+    //next level is an array where first value is direction and second is the attacking piece
+    
+    //if (abs(skipKingMoves[1][j][0]) == 8 && move.targetCol == move.startCol) skip = true;
+    //if (abs(skipKingMoves[1][j][0]) == 1 && move.targetRow == move.startRow) skip = true;
+    //if (abs(skipKingMoves[1][j][0]) == 7 && (move.targetSquare - move.startCol - move.startRow * 8) % 7 == 0) skip = true;
+    //if (abs(skipKingMoves[1][j][0]) == 9 && (move.targetSquare - move.startCol - move.startRow * 8) % 9 == 0) skip = true;
+    
+
+    //if (skip == true) continue;
+    */
 
     //Adds all moves for king that dont put him in danger
-    if (Piece.IsPiece(Move.startPiece, Piece.King)) {
-      let n = 0;
-      for (let j = 0; j < blackAttacks.length; j++) {
-        if (blackAttacks[j].takeSquare != Move.targetSquare) {
-          n++;
+    if (Piece.IsPiece(move.startPiece, Piece.King)) {
+      let arrk = [whiteAttacks, blackAttacks];
+      for (let k = 0; k < arrk.length; k++) {
+        let n = 0;
+        for (let j = 0; j < arrk[k].length; j++) {
+          if (arrk[k][j].takeSquare != move.targetSquare) {
+            n++;
+          }
+        }
+
+        if (n == arrk[k].length) {
+          // Adds all moves to king that dont put him in danger;
+          legalMoves.push(move);
         }
       }
-
-      if (n == blackAttacks.length) {
-        // Adds all moves to king that dont put him in danger;
-        legalMoves.push(Move);
-      }
-
-      n = 0;
-      for (let j = 0; j < whiteAttacks.length; j++) {
-        if (whiteAttacks[j].takeSquare != Move.targetSquare) {
-          n++;
-        }
-      }
-
-      if (n == whiteAttacks.length) {
-        // Adds all moves to king that dont put him in danger;
-        legalMoves.push(Move);
-      }
-    }
-
-    if (inCheck == true && !Piece.IsPiece(Move.startPiece, Piece.King)) {
-      //Add all moves that get king out of danger
-
-      if (mvAtkBlackKing != undefined && Move.takeSquare == mvAtkBlackKing.startSquare) {
-        legalMoves.push(Move);
-      }
-
-      if (mvAtkWhiteKing != undefined && Move.takeSquare == mvAtkWhiteKing.startSquare) {
-        legalMoves.push(Move);
-      }
+    } else if (inCheck >= 1) {
+      if (pinnedPieces[1].length > 0 && pinnedPieces[1].includes(move.startPiece)) continue;
+      if (atkBlackKingPath.includes(move.takeSquare) && Piece.IsColor(move.startPiece, 2)) legalMoves.push(move);
+      if (atkWhiteKingPath.includes(move.takeSquare) && Piece.IsColor(move.startPiece, 1)) legalMoves.push(move);
     }
   }
 
-  if (inCheck == false) {
-    for (let i = 0; i < pseudoLegalMoves.length; i++) {
-      if (!Piece.IsPiece(pseudoLegalMoves[i].startPiece, Piece.King) && !pinnedPieces.includes(Move.startPiece)) legalMoves.push(pseudoLegalMoves[i]);
+  // [8, -8, -1, 1, 7, -7, 9, -9]
+
+  for (let i = 0; i < pseudoLegalMoves.length; i++) {
+    let move = pseudoLegalMoves[i];
+    if (inCheck == 1 && Piece.IsColor(move.startPiece, 1)) continue;
+    if (inCheck == 2 && Piece.IsColor(move.startPiece, 2)) continue;
+    if (Piece.IsPiece(move.startPiece, Piece.King)) continue;
+
+    for (let j = 0; j < pinnedPieces.length; j++) {
+      // if the piece is in the pinned pieces array
+      if (move.startPiece == pinnedPieces[1][j] && Piece.IsSlidingPiece(move.startPiece)) {
+        if (abs(pinnedPieces[0][j]) == 8 && move.targetCol == move.startCol) legalMoves.push(move);
+        if (abs(pinnedPieces[0][j]) == 1 && move.targetRow == move.startRow) legalMoves.push(move);
+        if (abs(pinnedPieces[0][j]) == 9 && (move.targetSquare - move.startCol - move.startRow * 8) % 9 == 0) legalMoves.push(move);
+        if (abs(pinnedPieces[0][j]) == 7 && (move.targetSquare - move.startCol - move.startRow * 8) % 7 == 0) legalMoves.push(move);
+      }
     }
+
+    if (pinnedPieces[1].length > 0 && pinnedPieces[1].includes(move.startPiece)) continue;
+    legalMoves.push(move);
   }
 
-  moves = legalMoves;
+  whiteMoves = [];
+  blackMoves = [];
 
-  console.timeEnd("Time to Generate Moves");
+  for (let i = 0; i < legalMoves.length; i++) {
+    if (Piece.IsColor(legalMoves[i].startPiece, 1)) whiteMoves.push(legalMoves[i]);
+    if (Piece.IsColor(legalMoves[i].startPiece, 2)) blackMoves.push(legalMoves[i]);
+  }
+  //console.timeEnd('Time to Generate Moves');
+  return legalMoves;
 }
 
 function GeneratePseudoLegalMoves() {
@@ -235,8 +350,6 @@ function GeneratePawnKingMoves(startSquare, piece) {
     if (Piece.IsColor(targetPiece, friendlyColor)) continue;
 
     if (Piece.getPiece(piece) == Piece.Pawn) {
-      //TODO: add diagonals to attack arrays (whiteAttacks, blackAttacks)
-
       if (directionOffsets[directionIndex] == -7 || directionOffsets[directionIndex] == -9) {
         whiteAttacksExtra.push(new Move(startSquare, targetSquare, targetSquare));
       }

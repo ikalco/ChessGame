@@ -18,77 +18,109 @@ class BoardC {
   constructor() {
     this.Squares = new Array(64);
     this.ColorToMove = 1;
+    this.imgLookup = {
+      0b00000: chessPiecesImg.get(-1000, 0.5, 333.33334, 333.5),
+      0b01001: chessPiecesImg.get(0, 0.5, 333.33334, 333.5),
+      0b01010: chessPiecesImg.get(1665, 0.5, 333.33334, 333.5),
+      0b01011: chessPiecesImg.get(999, 0.5, 333.33334, 333.5),
+      0b01100: chessPiecesImg.get(666, 0.5, 333.33334, 333.5),
+      0b01101: chessPiecesImg.get(1332, 0.5, 333.33334, 333.5),
+      0b01110: chessPiecesImg.get(333, 0.5, 333.33334, 333.5),
+      0b10001: chessPiecesImg.get(0, 333.5, 333.33334, 333.5),
+      0b10010: chessPiecesImg.get(1665, 333.5, 333.33334, 333.5),
+      0b10011: chessPiecesImg.get(999, 333.5, 333.33334, 333.5),
+      0b10100: chessPiecesImg.get(666, 333.5, 333.33334, 333.5),
+      0b10101: chessPiecesImg.get(1332, 333.5, 333.33334, 333.5),
+      0b10110: chessPiecesImg.get(333, 333.5, 333.33334, 333.5),
+    };
   }
 
   makeMove(move) {
-    playedMoves.push(move);
-    this.Squares[move.startSquare].moved = true;
-    move.startPiece.col = move.targetCol;
-    move.startPiece.row = move.targetRow;
+    if (move == undefined) return;
+    if (Piece.IsColor(move.startPiece, this.ColorToMove)) {
+      if (this.Squares[move.startSquare].type == move.startPiece.type && this.Squares[move.targetSquare].type == move.targetPiece.type) {
+        playedMoves.push(move);
+        this.Squares[move.startSquare].prevMoved = this.Squares[move.startSquare].moved;
+        this.Squares[move.startSquare].moved = true;
 
-    //Runs everytime a move is played
-    this.Squares[move.targetSquare] = this.Squares[move.startSquare];
-    if (move.targetSquare != move.takeSquare) this.Squares[move.takeSquare] = new Piece(Piece.Empty, n);
-    this.Squares[move.startSquare] = new Piece(Piece.Empty, n);
+        move.startPiece.col = move.targetCol;
+        move.startPiece.row = move.targetRow;
 
-    //Keeping Track of the kings
-    if (move.startPiece.type == Piece.White + Piece.King) whiteKingSquare = move.targetSquare;
-    if (move.startPiece.type == Piece.Black + Piece.King) blackKingSquare = move.targetSquare;
+        move.startPiece.x = move.targetCol * PiecePxSize;
+        move.startPiece.y = move.targetRow * PiecePxSize;
 
-    // Castling
-    if (move.extraMove != undefined) {
-      Board.Squares[move.extraMove[1]] = Board.Squares[move.extraMove[0]];
-      Board.Squares[move.extraMove[1]].update(move.extraMove[1]);
-      Board.Squares[move.extraMove[0]] = new Piece(Piece.Empty, move.extraMove[0]);
-    }
-
-    //Promotion
-    if (Piece.getPiece(Board.Squares[move.targetSquare]) == Piece.Pawn && (move.targetRow == 0 || move.targetRow == 7)) {
-      Promotion(move.targetSquare);
-    }
-
-    this.movePlayed();
-    generateMoves();
-    Board.update();
-  }
-
-  checkForMovementRules(row, col) {
-    let clickPiece = this.Squares[n];
-    let dropPiece = this.Squares[row * 8 + col];
-
-    for (let i = 0; i < moves.length; i++) {
-      let move = moves[i];
-      if (move.startSquare == clickPiece.row * 8 + clickPiece.col && move.targetSquare == dropPiece.row * 8 + dropPiece.col) {
-        playedMoves.push(moves[i]);
-        Board.Squares[move.startSquare].moved = true;
-        this.Squares[n].col = col;
-        this.Squares[n].row = row;
-
-        //Runs everytime a move is played
+        // Setting the square we let go on to the piece we clicked on | also does some handling for enpassant
         this.Squares[move.targetSquare] = this.Squares[move.startSquare];
-        if (move.targetSquare != move.takeSquare) this.Squares[move.takeSquare] = new Piece(Piece.Empty, n);
-        this.Squares[move.startSquare] = new Piece(Piece.Empty, n);
+        if (move.targetSquare != move.takeSquare) this.Squares[move.takeSquare] = new Piece(Piece.Empty, move.startSquare);
+        this.Squares[move.startSquare] = new Piece(Piece.Empty, move.startSquare);
 
-        //Keeping Track of the kings
+        // Keeping track of the kings
         if (move.startPiece.type == Piece.White + Piece.King) whiteKingSquare = move.targetSquare;
         if (move.startPiece.type == Piece.Black + Piece.King) blackKingSquare = move.targetSquare;
 
         // Castling
         if (move.extraMove != undefined) {
-          Board.Squares[move.extraMove[1]] = Board.Squares[move.extraMove[0]];
-          Board.Squares[move.extraMove[1]].update(move.extraMove[1]);
-          Board.Squares[move.extraMove[0]] = new Piece(Piece.Empty, move.extraMove[0]);
+          //move.extraMove[1] = the square rook moves to when castling | targetSquare
+          //move.extraMove[0] = the square rook is on before the castle | startSquare
+          this.Squares[move.extraMove[1]] = this.Squares[move.extraMove[0]]; // setting targetSquare to startSquare Piece
+          this.Squares[move.extraMove[1]].update(move.extraMove[1]); // updating col,row,x, and y of rook
+          this.Squares[move.extraMove[0]] = new Piece(Piece.Empty, move.extraMove[0]); // setting startSquare to empty
         }
 
-        //Promotion
-        if (Piece.getPiece(Board.Squares[move.targetSquare]) == Piece.Pawn && (move.targetRow == 0 || move.targetRow == 7)) {
-          Promotion(move.targetSquare);
+        if (Piece.getPiece(this.Squares[move.targetSquare]) == Piece.Pawn && (move.targetRow == 0 || move.targetRow == 7)) {
+          this.Squares[move.targetSquare].type += 4; // promotes piece
+          this.Squares[move.targetSquare].promoted = true;
         }
 
+        moves = generateMoves();
+        this.movePlayed();
         return true;
+      } else {
+        console.log("Couldn't make move because the board isn't the same");
+        console.log(move);
+        console.log(this.Squares);
+        return false;
       }
+    } else {
+      console.log("Couldn't make move because its not its turn.");
+      console.log(move);
+      console.log(this.Squares);
+      return false;
     }
-    return false;
+  }
+
+  unmakeMove(move) {
+    if (move == undefined) return;
+    if (Piece.IsPiece(this.Squares[move.startSquare], Piece.Empty) && this.Squares[move.targetSquare] == move.startPiece) {
+      playedMoves.pop();
+      move.startPiece.moved = move.startPiece.prevMoved;
+
+      move.startPiece.col = move.startCol;
+      move.startPiece.row = move.startRow;
+
+      move.startPiece.x = move.startCol * PiecePxSize;
+      move.startPiece.y = move.startRow * PiecePxSize;
+
+      this.Squares[move.startSquare] = move.startPiece;
+      if (move.targetSquare != move.takeSquare) this.Squares[move.takeSquare] = move.takePiece;
+      this.Squares[move.targetSquare] = new Piece(Piece.Empty, move.targetSquare);
+
+      if (move.startPiece.type == Piece.White + Piece.King) whiteKingSquare = move.startSquare;
+      if (move.startPiece.type == Piece.Black + Piece.King) blackKingSquare = move.startSquare;
+
+      if (move.extraMove != undefined) {
+        this.Squares[move.extraMove[0]] = this.Squares[move.extraMove[1]];
+        this.Squares[move.extraMove[0]].update(move.extraMove[0]);
+        this.Squares[move.extraMove[1]] = new Piece(Piece.Empty, move.extraMove[1]);
+      }
+
+      if (this.Squares[move.startSquare].promoted) {
+        this.Squares[move.startSquare].type -= 4;
+        this.Squares[move.startSquare].promoted = false;
+      }
+
+      return true;
+    }
   }
 
   checkForRules() {
@@ -110,7 +142,7 @@ class BoardC {
     if (this.Squares[dropSquare].type == 0 || Piece.getColor(this.Squares[n]) != Piece.getColor(this.Squares[dropSquare])) {
       if (this.checkForMovementRules(row, col)) {
         this.movePlayed();
-        generateMoves();
+        moves = generateMoves();
         return;
       }
     }
@@ -121,11 +153,50 @@ class BoardC {
     return;
   }
 
+  checkForMovementRules(row, col) {
+    let clickPiece = this.Squares[n];
+    let dropPiece = this.Squares[row * 8 + col];
+
+    for (let i = 0; i < moves.length; i++) {
+      let move = moves[i];
+      if (move.startSquare == clickPiece.row * 8 + clickPiece.col && move.targetSquare == dropPiece.row * 8 + dropPiece.col) {
+        playedMoves.push(moves[i]);
+        this.Squares[move.startSquare].moved = true;
+        this.Squares[n].col = col;
+        this.Squares[n].row = row;
+
+        //Runs everytime a move is played
+        this.Squares[move.targetSquare] = this.Squares[move.startSquare];
+        if (move.targetSquare != move.takeSquare) this.Squares[move.takeSquare] = new Piece(Piece.Empty, n);
+        this.Squares[move.startSquare] = new Piece(Piece.Empty, n);
+
+        //Keeping Track of the kings
+        if (move.startPiece.type == Piece.White + Piece.King) whiteKingSquare = move.targetSquare;
+        if (move.startPiece.type == Piece.Black + Piece.King) blackKingSquare = move.targetSquare;
+
+        // Castling
+        if (move.extraMove != undefined) {
+          this.Squares[move.extraMove[1]] = this.Squares[move.extraMove[0]];
+          this.Squares[move.extraMove[1]].update(move.extraMove[1]);
+          this.Squares[move.extraMove[0]] = new Piece(Piece.Empty, move.extraMove[0]);
+        }
+
+        //Promotion
+        if (Piece.getPiece(this.Squares[move.targetSquare]) == Piece.Pawn && (move.targetRow == 0 || move.targetRow == 7)) {
+          Promotion(move.targetSquare);
+        }
+
+        return true;
+      }
+    }
+    return false;
+  }
+
   dragDrop() {
     if (mouseIsPressed && mouseButton === LEFT) {
       for (let i = 0; i < this.Squares.length; i++) {
         if (this.Squares[i] == undefined) continue;
-        if (Piece.IsColor(this.Squares[i], Board.ColorToMove) && turns == true) {
+        if (Piece.IsColor(this.Squares[i], this.ColorToMove) && turns == true) {
           if (mouseX >= this.Squares[i].x && mouseX <= this.Squares[i].x + PiecePxSize) {
             if (mouseY >= this.Squares[i].y && mouseY <= this.Squares[i].y + PiecePxSize) {
               if (isMove == false) {
@@ -157,22 +228,17 @@ class BoardC {
     //Drawing each piece
 
     for (let p in this.Squares) {
-      let img = this.decPieceBin(this.Squares[p]);
-      if (img == undefined) {
-        continue;
-      }
-
       //Drawing Piece
-      image(img, this.Squares[p].x, this.Squares[p].y, PiecePxSize, PiecePxSize);
+      image(this.imgLookup[this.Squares[p].type], this.Squares[p].x, this.Squares[p].y, PiecePxSize, PiecePxSize);
     }
   }
 
   update() {
     if (moves.every((move) => Piece.getColor(move.startPiece) == 1)) {
-      print('Black in Checkmate.');
+      console.log('Black in Checkmate.');
     }
     if (moves.every((move) => Piece.getColor(move.startPiece) == 2)) {
-      print('White in Checkmate.');
+      console.log('White in Checkmate.');
     }
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
@@ -233,87 +299,17 @@ class BoardC {
         }
       }
     }
-    print(fen);
+    console.log(fen);
 
-    for (let i = 0; i < Board.Squares.length; i++) {
-      if (Piece.IsPiece(Board.Squares[i], Piece.King)) {
-        if (Piece.IsColor(Board.Squares[i], 1)) {
+    for (let i = 0; i < this.Squares.length; i++) {
+      if (Piece.IsPiece(this.Squares[i], Piece.King)) {
+        if (Piece.IsColor(this.Squares[i], 1)) {
           whiteKingSquare = i;
         } else {
           blackKingSquare = i;
         }
       }
     }
-  }
-
-  decPieceBin(piece) {
-    let p = Piece.getPiece(piece);
-    let img;
-    if (Piece.getColor(piece) == 1) {
-      switch (p) {
-        //White
-        case Piece.Empty:
-          //Empty
-          break;
-        case Piece.King:
-          //King
-          img = chessPiecesImg.get(0, 0.5, 333.33334, 333.5);
-          break;
-        case Piece.Pawn:
-          //Pawn
-          img = chessPiecesImg.get(1665, 0.5, 333.33334, 333.5);
-          break;
-        case Piece.Knight:
-          //Knight
-          img = chessPiecesImg.get(999, 0.5, 333.33334, 333.5);
-          break;
-        case Piece.Bishop:
-          //Bishop
-          img = chessPiecesImg.get(666, 0.5, 333.33334, 333.5);
-          break;
-        case Piece.Rook:
-          //Rook
-          img = chessPiecesImg.get(1332, 0.5, 333.33334, 333.5);
-          break;
-        case Piece.Queen:
-          //Queen
-          img = chessPiecesImg.get(333, 0.5, 333.33334, 333.5);
-          break;
-      }
-    } else {
-      //Black
-      switch (p) {
-        //White
-        case Piece.Empty:
-          //Empty
-          break;
-        case Piece.King:
-          //King
-          img = chessPiecesImg.get(0, 333.5, 333.33334, 333.5);
-          break;
-        case Piece.Pawn:
-          //Pawn
-          img = chessPiecesImg.get(1665, 333.5, 333.33334, 333.5);
-          break;
-        case Piece.Knight:
-          //Knight
-          img = chessPiecesImg.get(999, 333.5, 333.33334, 333.5);
-          break;
-        case Piece.Bishop:
-          //Bishop
-          img = chessPiecesImg.get(666, 333.5, 333.33334, 333.5);
-          break;
-        case Piece.Rook:
-          //Rook
-          img = chessPiecesImg.get(1332, 333.5, 333.33334, 333.5);
-          break;
-        case Piece.Queen:
-          //Queen
-          img = chessPiecesImg.get(333, 333.5, 333.33334, 333.5);
-          break;
-      }
-    }
-    return img;
   }
 
   movePlayed() {

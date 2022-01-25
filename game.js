@@ -41,7 +41,10 @@ class Game {
         } else {
           const color = row[j].toLocaleLowerCase() == row[j] ? 1 : 0;
           this.board[i][off] = (new (lookup[row[j].toLocaleLowerCase()])(i, off, color));
-          if (this.board[i][off] instanceof King) {
+          if (this.board[i][off] instanceof Pawn) {
+            if (color == 0 && i != 6) this.board[i][off].moveCount++;
+            if (color == 1 && i != 1) this.board[i][off].moveCount++;
+          } else if (this.board[i][off] instanceof King) {
             if (color == 0) this.whiteKing = this.board[i][off];
             else this.blackKing = this.board[i][off];
           }
@@ -75,6 +78,42 @@ class Game {
     this.fullmoveCount = parseInt(fields.shift());
   }
 
+  getPosFromFen() {
+    let fen = "";
+    let count = 0;
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[0].length; j++) {
+        const piece = this.board[i][j];
+        if (piece instanceof Array) {
+          count++;
+        } else {
+          if (count != 0) fen += count.toString();
+          count = 0;
+        }
+
+        if (piece instanceof King) {
+          fen += piece.color ? 'k' : 'K';
+        } else if (piece instanceof Pawn) {
+          fen += piece.color ? 'p' : 'P';
+        } else if (piece instanceof Knight) {
+          fen += piece.color ? 'n' : 'N';
+        } else if (piece instanceof Bishop) {
+          fen += piece.color ? 'b' : 'B';
+        } else if (piece instanceof Rook) {
+          fen += piece.color ? 'r' : 'R';
+        } else if (piece instanceof Queen) {
+          fen += piece.color ? 'q' : 'Q';
+        }
+      }
+      if (count != 0) fen += count.toString();
+      count = 0;
+      fen += '/'
+    }
+
+    fen = `${fen.slice(0, fen.length - 1)} ${this.playerToMove ? 'b' : 'w'} KQkq - ${this.halfmoveCount} ${this.fullmoveCount}`;
+    console.log(fen);
+  }
+
   update() {
     if (mouseIsPressed && mouseButton === LEFT) {
       if (this.selected === null) {
@@ -88,7 +127,7 @@ class Game {
         this.selected.highlightMoves();
       }
     } else if (this.selected) {
-      this.move(this.selected, Math.floor(mouseX / Game.SquareSize), Math.floor(mouseY / Game.SquareSize));
+      this.move(this.selected, Math.floor(mouseY / Game.SquareSize), Math.floor(mouseX / Game.SquareSize));
       this.selected = null;
     }
   }
@@ -105,16 +144,27 @@ class Game {
   calculateMoves() {
     console.time("Calculate Moves");
 
+    // reset board attacks and moves
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[0].length; j++) {
+        let piece = this.board[i][j];
+        if (piece instanceof Piece) {
+          piece.moves = [];
+          piece.attacks = [];
+        } else {
+          piece = [];
+        }
+      }
+    }
+
+    /*
     for (let i = 0; i < this.enemyPieces.length; i++) {
       this.enemyPieces[i].generateAttacks();
     }
+    */
 
+    // returns pinned pieces and their moves are already generated
     const pinnedPieces = this.currentKing.getPinnedPieces();
-    //  send a queen ray from king
-    //  if you hit a pinned piece
-    //      then keep going in that direction till you hit another piece
-    //      if it is friendly and it is the right piece (if dir is diagonal then the correct piece would be a bishop)
-    //      then the pinned piece gets any move that doesnt block that line of sight of other piece
 
     if (this.currentKing.inCheck()) {
       // add moves that MOVE king to a square that isn't being attacked (move king out of check)
@@ -183,10 +233,10 @@ class Game {
     //           king can NOT end up in a square under attack
 
     // [EN PASSANT]: an enemy pawn can capture a pawn that just moved up two spaces if it is adjacent to it after the move because it is a lost capture???
-    //             enemy pawn must have just moved 2 squares forward (first move of enemy)
-    //             only allowed on first move after enemy pawn has moved forward two squares
-    //             pawns are adjacent on same row
-    //             pawn takes enemy pawn and moves to one square behind enemy pawn
+    //    enemy pawn must have just moved 2 squares forward (first move of enemy)
+    //    only allowed on first move after enemy pawn has moved forward two squares
+    //    pawns are adjacent on same row
+    //    pawn takes enemy pawn and moves to one square behind enemy pawn
 
     // [PROMOTION]: a pawn can become any piece except a king when getting to the other side of the board
     //            pawn advances to opposite side of the board (last row)
@@ -195,23 +245,26 @@ class Game {
     console.timeEnd("Calculate Moves");
   }
 
-  move(startCol, startRow, targetCol, targetRow) {
-    if (this.board[startRow] === undefined) return;
-    if (this.board[startRow][startCol] instanceof Array) return;
+  move(startPiece, targetRow, targetCol) {
+    if (startPiece instanceof Array) return;
 
-    let piece = this.board[startRow][startCol];
-    if (piece.canMove(targetCol, targetRow)) {
-      this.board[targetRow][targetCol] = piece;
-      this.board[startRow][startCol] = [];
-      piece = this.board[targetRow][targetCol];
-      piece.col = targetCol;
-      piece.row = targetRow;
-      piece.moved++;
+    const move = startPiece.canMove(targetRow, targetCol);
+
+    if (move !== null) {
+      move.move(startPiece, targetRow, targetCol);
       this.playerToMove = !this.playerToMove;
+      this.currentPieces = this.playerToMove ? this.blackPieces : this.whitePieces;
+      this.enemyPieces = !this.playerToMove ? this.blackPieces : this.whitePieces;
+      this.currentKing = this.playerToMove ? this.blackKing : this.whiteKing;
+      this.enemyKing = !this.playerToMove ? this.blackKing : this.whiteKing;
       this.calculateMoves();
+
+      this.halfmoveCount++;
+      if (this.playerToMove == 0) this.fullmoveCount++;
     }
-    piece.drawX = piece.col * Game.SquareSize;
-    piece.drawY = piece.row * Game.SquareSize;
+
+    startPiece.drawX = startPiece.col * Game.SquareSize;
+    startPiece.drawY = startPiece.row * Game.SquareSize;
   }
 
   static resizeBackground(size) {

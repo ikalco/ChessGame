@@ -4,13 +4,18 @@ class Move {
     this.targetCol = targetCol;
   }
 
-  move() {
-
-  }
-
   highlight() {
     fill(125, 0, 0, 160);
     rect(this.targetCol * Game.SquareSize, this.targetRow * Game.SquareSize, Game.SquareSize);
+  }
+
+  move(startPiece) {
+    Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
+    Game.instance.board[startPiece.row][startPiece.col] = [];
+    const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
+    targetPiece.col = this.targetCol;
+    targetPiece.row = this.targetRow;
+    targetPiece.moveCount++;
   }
 }
 
@@ -21,10 +26,6 @@ class DoubleMove extends Move {
     this.otherStartRow = otherStartRow;
     this.otherTargetCol = otherTargetCol;
     this.otherTargetRow = otherTargetRow;
-  }
-
-  move() {
-
   }
 
   highlight() {

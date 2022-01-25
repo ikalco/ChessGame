@@ -10,6 +10,7 @@ class Piece {
     // For move generation
     this.moves = [];
     this.attacks = [];
+    this.moveCount = 0;
   }
 
   highlightMoves() {
@@ -23,11 +24,11 @@ class Piece {
     pop();
   }
 
-  canMove(targetCol, targetRow) {
+  canMove(targetRow, targetCol) {
     for (let i = 0; i < this.moves.length; i++) {
-      if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow) return true;
+      if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow) return this.moves[i];
     }
-    return false;
+    return null;
   }
 }
 
@@ -37,6 +38,7 @@ class Pawn extends Piece {
 
   constructor(row, col, color) {
     super(row, col, color);
+    this.enpassant = null;
   }
 
   draw() {
@@ -44,7 +46,97 @@ class Pawn extends Piece {
   }
 
   generateMoves() {
+    if (this.moves.length != 0) return;
 
+    const dir = this.color ? 1 : -1;
+
+    if (!Game.instance.board[this.row + dir]) return;
+
+    if (Game.instance.board[this.row + dir][this.col] instanceof Array) {
+      // move 1 forward if empty
+      this.moves.push(new Move(this.row + dir, this.col));
+      // move 2 forwards if both empty
+      if (this.moveCount == 0 && Game.instance.board[this.row + dir * 2] && Game.instance.board[this.row + dir * 2][this.col] instanceof Array) {
+        let move = new Move(this.row + dir * 2, this.col);
+        move.move = function (startPiece) {
+          Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
+          Game.instance.board[startPiece.row][startPiece.col] = [];
+          const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
+          targetPiece.col = this.targetCol;
+          targetPiece.row = this.targetRow;
+          targetPiece.moveCount++;
+
+          if (Game.instance.board[this.targetRow][this.targetCol + 1] instanceof Piece && Game.instance.board[this.targetRow][this.targetCol + 1].color != Game.instance.playerToMove) {
+            const move2 = new Move(this.targetRow - dir, this.targetCol);
+            move2.move = function (startPiece) {
+              Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
+              Game.instance.board[startPiece.row][startPiece.col] = [];
+              const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
+              targetPiece.col = this.targetCol;
+              targetPiece.row = this.targetRow;
+              targetPiece.moveCount++;
+
+              Game.instance.board[this.targetRow + dir][this.targetCol] = null;
+            }
+            Game.instance.board[this.targetRow][this.targetCol + 1].enpassant = move2;
+          } else if (Game.instance.board[this.targetRow][this.targetCol - 1] instanceof Piece && Game.instance.board[this.targetRow][this.targetCol - 1].color != Game.instance.playerToMove) {
+            const move2 = new Move(this.targetRow - dir, this.targetCol);
+            move2.move = function (startPiece) {
+              Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
+              Game.instance.board[startPiece.row][startPiece.col] = [];
+              const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
+              targetPiece.col = this.targetCol;
+              targetPiece.row = this.targetRow;
+              targetPiece.moveCount++;
+
+              Game.instance.board[this.targetRow + dir][this.targetCol] = null;
+            }
+            Game.instance.board[this.targetRow][this.targetCol - 1].enpassant = move2;
+            console.log(move2, Game.instance.board[this.targetRow][this.targetCol - 1]);
+          }
+        }
+        this.moves.push(move);
+      }
+    }
+
+    // diagonals in front of pawn is an enemy piece then you can move there
+    if (Game.instance.board[this.row + dir][this.col + 1] instanceof Piece && Game.instance.board[this.row + dir][this.col + 1].color != this.color)
+      this.moves.push(new Move(this.row + dir, this.col + 1));
+
+    if (Game.instance.board[this.row + dir][this.col - 1] instanceof Piece && Game.instance.board[this.row + dir][this.col - 1].color != this.color)
+      this.moves.push(new Move(this.row + dir, this.col - 1));
+  }
+
+  generateAttacks() {
+    const dir = this.color ? -1 : 1;
+
+    if (Game.instance.board[this.row + dir]) return;
+
+    if (Game.instance.board[this.row + dir][this.col + 1] instanceof Piece && Game.instance.board[this.row + dir][this.col + 1].color != this.color)
+      this.moves.push(new Move(this.row + dir, this.col + 1));
+
+    if (Game.instance.board[this.row + dir][this.col - 1] instanceof Piece && Game.instance.board[this.row + dir][this.col - 1].color != this.color)
+      this.moves.push(new Move(this.row + dir, this.col - 1));
+  }
+
+  highlightMoves() {
+    push();
+    noStroke();
+    fill(205, 78, 0, 160);
+    rect(this.col * Game.SquareSize, this.row * Game.SquareSize, Game.SquareSize);
+    for (let i = 0; i < this.moves.length; i++) {
+      if (this.enpassant) this.enpassant.highlight();
+      this.moves[i].highlight();
+    }
+    pop();
+  }
+
+  canMove(targetRow, targetCol) {
+    if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
+    for (let i = 0; i < this.moves.length; i++) {
+      if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow) return this.moves[i];
+    }
+    return null;
   }
 }
 
@@ -66,7 +158,7 @@ class Rook extends Piece {
     const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
     for (let dir = 0; dir < dirs.length; dir++) {
-      for (let i = 1; i < 7; i++) {
+      for (let i = 1; i < 8; i++) {
         const targetRow = this.row + dirs[dir][0] * i;
         const targetCol = this.col + dirs[dir][1] * i;
 
@@ -102,7 +194,42 @@ class Knight extends Piece {
   }
 
   generateMoves() {
+    if (this.moves.length != 0) return;
 
+    const dirs = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
+
+    for (let dir = 0; dir < dirs.length; dir++) {
+      const targetRow = this.row + dirs[dir][0];
+      const targetCol = this.col + dirs[dir][1];
+
+      if (Game.instance.board[targetRow] === undefined) continue;
+
+      const piece = Game.instance.board[targetRow][targetCol];
+      if (piece === undefined) continue;
+
+      // if encounter piece of same color then change direction
+      if (piece instanceof Piece && piece.color == this.color) continue;
+
+      this.moves.push(new Move(targetRow, targetCol));
+    }
+  }
+
+  generateAttacks() {
+    const dirs = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
+
+    for (let dir = 0; dir < dirs.length; dir++) {
+      const targetRow = this.row + dirs[dir][0] * i;
+      const targetCol = this.col + dirs[dir][1] * i;
+
+      if (Game.instance.board[targetRow] === undefined) continue;
+
+      const piece = Game.instance.board[targetRow][targetCol];
+      if (piece === undefined) continue;
+
+      // adding attack
+      if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
+      else piece.push([this.row, this.col]);
+    }
   }
 }
 
@@ -119,7 +246,31 @@ class Bishop extends Piece {
   }
 
   generateMoves() {
+    if (this.moves.length != 0) return;
 
+    const dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+    for (let dir = 0; dir < dirs.length; dir++) {
+      for (let i = 1; i < 8; i++) {
+        const targetRow = this.row + dirs[dir][0] * i;
+        const targetCol = this.col + dirs[dir][1] * i;
+
+        if (Game.instance.board[targetRow] === undefined) continue;
+
+        const piece = Game.instance.board[targetRow][targetCol];
+        if (piece === undefined) continue;
+
+        const isPiece = piece instanceof Piece;
+
+        // if encounter piece of same color then change direction
+        if (isPiece && piece.color == this.color) break;
+
+        this.moves.push(new Move(targetRow, targetCol));
+
+        // if encounter piece of different color then add move(to take the piece) and change direction
+        if (isPiece && piece.color != this.color) break;
+      }
+    }
   }
 }
 
@@ -135,8 +286,39 @@ class King extends Piece {
     image(this.color ? King.imageB : King.imageW, this.drawX, this.drawY, Game.SquareSize, Game.SquareSize);
   }
 
+  inCheck() {
+    return this.attacks.length != 0;
+  }
+
   generateMoves() {
+    if (this.moves.length != 0) return;
+
     // all 8 directions
+    const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+    for (let dir = 0; dir < dirs.length; dir++) {
+      const targetRow = this.row + dirs[dir][0];
+      const targetCol = this.col + dirs[dir][1];
+
+      if (Game.instance.board[targetRow] === undefined) continue;
+
+      const piece = Game.instance.board[targetRow][targetCol];
+      if (piece === undefined) continue;
+
+      // if piece is of same color then change direction
+      if (piece instanceof Piece && piece.color == this.color) continue;
+
+      // piece not attacked
+      if (piece instanceof Piece && piece.attacks.length != 0) continue;
+
+      // adding move
+      this.moves.push(new Move(targetRow, targetCol));
+    }
+
+    // add castling
+  }
+
+  generateAttacks() {
     const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
 
     for (let dir = 0; dir < dirs.length; dir++) {
@@ -151,11 +333,10 @@ class King extends Piece {
       // piece not attacked
       if (piece instanceof Piece && piece.attacks.length != 0) continue;
 
-      // adding move
-      this.moves.push(new Move(targetRow, targetCol));
+      // adding attack
+      if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
+      else piece.push([this.row, this.col]);
     }
-
-    // add castling
   }
 
   getPinnedPieces() {
@@ -218,18 +399,23 @@ class King extends Piece {
               } else {
                 // diagonals
                 if (piece instanceof Bishop) {
-                  // add move that captures pinner
-                  pinnedPieces.push(pinnedPiece);
-                  const possibleMoves = [];
-                  pinnedPiece.generateMoves();
-                  for (let k = 0; k < pinnedPiece.moves.length; i++) {
-                    // if pinnedPiece move captures pinner then add it
-                    if (pinnedPiece.moves[k].targetRow == piece.row && pinnedPiece.moves[k].targetCol == piece.col) {
-                      possibleMoves.push(pinnedPiece.moves[k]);
-                    }
-                  }
-                  pinnedPiece.moves = possibleMoves;
+
                 }
+              }
+
+              if ((piece instanceof Queen) || (piece instanceof Rook && dir <= 3) || (piece instanceof Bishop && dir > 3)) {
+                // add move that captures pinner
+                pinnedPieces.push(pinnedPiece);
+                const possibleMoves = [];
+                pinnedPiece.generateMoves();
+                pinnedPiece.generatedMoves = pinnedPiece.moves;
+                for (let k = 0; k < pinnedPiece.moves.length; i++) {
+                  // if pinnedPiece move captures pinner then add it
+                  if (pinnedPiece.moves[k].targetRow == piece.row && pinnedPiece.moves[k].targetCol == piece.col) {
+                    possibleMoves.push(pinnedPiece.moves[k]);
+                  }
+                }
+                pinnedPiece.moves = possibleMoves;
               }
 
               break;
@@ -279,13 +465,30 @@ class King extends Piece {
             // encountered potential discovery attacker
             // if in right direction for piece (if piece is a bishop then right direction is diagonals)
             // then add moves that move it out of the line of sight of piece
-            // could potentially add duplicate moves as Double Check
+            // could potentially add duplicate moves because of Double Check
+
+            if ((piece instanceof Queen) || (piece instanceof Rook && dir <= 3) || (piece instanceof Bishop && dir > 3)) {
+              const disallowedMoves = [];
+              for (let l = 1; l < i; l++) {
+                disallowedMoves.push(new Move(Game.instance.enemyKing.row + dirs[dir][0] * l, Game.instance.enemyKing.col + dirs[dir][1] * l))
+              }
+              const saveMoves = pinnedPiece.moves;
+              pinnedPiece.moves = pinnedPiece.generatedMoves;
+              for (let l = 0; l < disallowedMoves.length; l++) {
+                if (pinnedPiece.canMove(disallowedMoves[l].col, disallowedMoves[l].row) !== null) {
+                  saveMoves.push(disallowedMoves[l]);
+                }
+              }
+              pinnedPiece.moves = saveMoves;
+            }
           } else {
             break;
           }
         }
       }
     }
+
+    return pinnedPieces;
   }
 }
 
@@ -302,6 +505,34 @@ class Queen extends Piece {
   }
 
   generateMoves() {
+    if (this.moves.length != 0) return;
+
+    const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+    for (let dir = 0; dir < dirs.length; dir++) {
+      for (let i = 1; i < 8; i++) {
+        const targetRow = this.row + dirs[dir][0] * i;
+        const targetCol = this.col + dirs[dir][1] * i;
+
+        if (Game.instance.board[targetRow] === undefined) continue;
+
+        const piece = Game.instance.board[targetRow][targetCol];
+        if (piece === undefined) continue;
+
+        const isPiece = piece instanceof Piece;
+
+        // if encounter piece of same color then change direction
+        if (isPiece && piece.color == this.color) break;
+
+        this.moves.push(new Move(targetRow, targetCol));
+
+        // if encounter piece of different color then add move(to take the piece) and change direction
+        if (isPiece && piece.color != this.color) break;
+      }
+    }
+  }
+
+  generateAttacks() {
 
   }
 }

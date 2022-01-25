@@ -1,7 +1,7 @@
 class Move {
-  constructor(targetCol, targetRow) {
-    this.targetCol = targetCol;
+  constructor(targetRow, targetCol) {
     this.targetRow = targetRow;
+    this.targetCol = targetCol;
   }
 
   move() {
@@ -15,7 +15,7 @@ class Move {
 }
 
 class DoubleMove extends Move {
-  constructor(targetCol, targetRow, otherStartCol, otherStartRow, otherTargetCol, otherTargetRow) {
+  constructor(targetRow, targetCol, otherStartCol, otherStartRow, otherTargetCol, otherTargetRow) {
     super(targetCol, targetRow);
     this.otherStartCol = otherStartCol;
     this.otherStartRow = otherStartRow;

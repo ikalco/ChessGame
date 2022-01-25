@@ -110,6 +110,11 @@ class Game {
     }
 
     const pinnedPieces = this.currentKing.getPinnedPieces();
+    //  send a queen ray from king
+    //  if you hit a pinned piece
+    //      then keep going in that direction till you hit another piece
+    //      if it is friendly and it is the right piece (if dir is diagonal then the correct piece would be a bishop)
+    //      then the pinned piece gets any move that doesnt block that line of sight of other piece
 
     if (this.currentKing.inCheck()) {
       // add moves that MOVE king to a square that isn't being attacked (move king out of check)
@@ -117,12 +122,6 @@ class Game {
       // add moves that BLOCK the check 
       // add moves for pinned pieces that deliver a check (not necessarily by pinned piece; can be revealed)
     } else {
-      // add moves for pinned pieces that deliver a check (not necessarily by pinned piece; can be revealed)
-      for (let i = 0; i < pinnedPieces.length; i++) {
-        pinnedPieces[i].generateMoves(true);
-      }
-
-      // generate normal moves except for pinned pieces
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[0].length; j++) {
           if (this.board[i][j] instanceof Piece) this.board[i][j].generateMoves();
@@ -158,11 +157,10 @@ class Game {
     //      CAPTURE the piece that is delivering check (not pinned pieces unless they put opponenet in check)
     //      BLOCK the check by placing a piece in the way of the piece delivering check to where there is no check
 
-    // KING: can move to any square around it that isnt being potentially attacked
+    // KING: can move to any square around it that isnt being attacked
     //       [CASTLING]
 
     // ROOK: can move to any amount of squares vertically or horizontally
-    //       [CASTLING]
 
     // BISHOP: can move to any amount of squares diagonally
 

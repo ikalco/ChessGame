@@ -1,7 +1,5 @@
-// default starting board
-// let defaultFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
-let defaultFen = '8/8/8/8/8/8/8/R3K3 w KQkq - 0 1';
+let defaultBoardFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+let castlingTestFen = '8/8/8/8/8/8/8/R3K3 w KQkq - 0 1';
 
 function setup() {
   const size = Math.min(windowWidth, windowHeight);
@@ -10,7 +8,7 @@ function setup() {
   Game.background = createGraphics(size, size);
   Game.resizeBackground(size);
 
-  Game.instance = new Game(defaultFen);
+  Game.instance = new Game(defaultBoardFen);
   Game.instance.calculateMoves();
 }
 

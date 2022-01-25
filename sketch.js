@@ -14,7 +14,8 @@
 //let fen = '8/K7/8/8/8/4q3/8/7k w KQkq - 0 1';
 //let fen = 'r3k3/1p3p2/p2q2p1/bn3P2/1N2PQP1/PB6/3K1R1r/3R4 w KQkq - 0 1'; //test board
 //let fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 1';
-let fen = "rnbqkbnr/pppp1ppp/8/4pP2/8/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1" // en passant test
+//let fen = "rnbqkbnr/pppppp1p/8/8/6p1/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // en passant test
+let fen = "rnbqkbnr/pppppppp/8/5P2/8/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1" // en passant test
 
 
 function setup() {

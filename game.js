@@ -157,11 +157,9 @@ class Game {
       }
     }
 
-    /*
     for (let i = 0; i < this.enemyPieces.length; i++) {
       this.enemyPieces[i].generateAttacks();
     }
-    */
 
     // returns pinned pieces and their moves are already generated
     const pinnedPieces = this.currentKing.getPinnedPieces();

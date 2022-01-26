@@ -580,9 +580,6 @@ class King extends Piece {
   getAllowedMovesCheck() {
     let allowedMoves = new Array(8).fill(false).map((_) => new Array(8).fill(false));
 
-    // add moves that cross check (check opponent while being checked)
-    const positions = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
-
     // CAPTURE and BLOCK only possible if only one piece giving check
     if (this.attacks.length != 1) return allowedMoves;
 
@@ -597,19 +594,19 @@ class King extends Piece {
 
     const piece = Game.instance.board[this.attacks[0][0]][this.attacks[0][1]];
 
-    if (!(piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen)) continue;
+    if (piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen) {
+      for (let j = 1; j < 8; j++) {
+        const targetRow = this.row + rowOff * j;
+        const targetCol = this.col + colOff * j;
 
-    for (let j = 1; j < 8; j++) {
-      const targetRow = this.row + rowOff * j;
-      const targetCol = this.col + colOff * j;
+        if (targetRow == this.attacks[0][0] || targetCol == this.attacks[0][1]) break;
 
-      if (targetRow == this.attacks[0][0] || targetCol == this.attacks[0][1]) break;
+        if (Game.instance.board[targetRow] === undefined) continue;
 
-      if (Game.instance.board[targetRow] === undefined) continue;
+        if (Game.instance.board[targetRow][targetCol] === undefined) continue;
 
-      if (Game.instance.board[targetRow][targetCol] === undefined) continue;
-
-      allowedMoves[targetRow][targetCol] = true;
+        allowedMoves[targetRow][targetCol] = true;
+      }
     }
 
     return allowedMoves;

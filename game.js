@@ -119,7 +119,7 @@ class Game {
       if (this.selected === null) {
         this.selected = this.board[Math.floor(mouseY / Game.SquareSize)][Math.floor(mouseX / Game.SquareSize)];
         if (this.selected === undefined || this.selected instanceof Array) this.selected = null;
-        if (this.selected && this.selected.color != this.playerToMove) this.selected = null;
+        if (this.selected instanceof Piece && this.selected.color != this.playerToMove) this.selected = null;
       } else {
         // piece is selected
         this.selected.drawX = mouseX - Game.SquareSize / 2;
@@ -163,8 +163,7 @@ class Game {
     }
 
     // returns pinned pieces and their moves are already generated
-    const pinnedPieces = this.currentKing.getPinnedPieces();
-    console.log(pinnedPieces);
+    this.currentKing.getPinnedPieces();
 
     if (this.currentKing.inCheck()) {
       // add moves that MOVE king out of check
@@ -172,18 +171,113 @@ class Game {
 
       // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
       // add moves that CAPTURE the piece that is delivering check
-      let allowedMoves = this.currentKing.getAllowedMovesCheck();
+      const allowedMoves = this.currentKing.getAllowedMovesCheck();
 
-      for (let i = 0; i < this.board.length; i++) {
-        for (let j = 0; j < this.board[0].length; j++) {
-          if (this.board[i][j] instanceof Piece) this.board[i][j].generateMoves(allowedMoves);
+      let pawnMoves = JSON.parse(JSON.stringify(allowedMoves));
+      const dir = this.color ? -1 : 1
+      let positions = [[dir, 1], [dir, -1]];
+      for (let i = 0; i < positions.length; i++) {
+        const row = this.enemyKing.row + positions[i][0];
+        const col = this.enemyKing.col + positions[i][1];
+
+        if (pawnMoves[row] === undefined) continue;
+        if (pawnMoves[row][col] === undefined) continue;
+
+        pawnMoves[row][col] = true;
+      }
+
+      let rookMoves = JSON.parse(JSON.stringify(allowedMoves));
+      let dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+      for (let dir = 0; dir < dirs.length; dir++) {
+        for (let i = 1; i < 8; i++) {
+          const row = this.enemyKing.row + dirs[dir][0] * i;
+          const col = this.enemyKing.col + dirs[dir][1] * i;
+
+          if (this.board[row] === undefined) continue;
+
+          const piece = this.board[row][col];
+          if (piece === undefined) continue;
+
+          const isPiece = piece instanceof Piece;
+
+          if (isPiece && piece.color == this.currentKing.color) break;
+
+          rookMoves[row][col] = true;
+
+          if (isPiece && piece.color != this.currentKing.color) break;
         }
       }
-    } else {
-      for (let i = 0; i < this.board.length; i++) {
-        for (let j = 0; j < this.board[0].length; j++) {
-          if (this.board[i][j] instanceof Piece) this.board[i][j].generateMoves();
+
+      let knightMoves = JSON.parse(JSON.stringify(allowedMoves));
+      positions = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
+      for (let i = 0; i < positions.length; i++) {
+        const row = this.enemyKing.row + positions[i][0];
+        const col = this.enemyKing.col + positions[i][1];
+
+        if (knightMoves[row] === undefined) continue;
+        if (knightMoves[row][col] === undefined) continue;
+
+        knightMoves[row][col] = true;
+      }
+
+      let bishopMoves = JSON.parse(JSON.stringify(allowedMoves));
+      dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+      for (let dir = 0; dir < dirs.length; dir++) {
+        for (let i = 1; i < 8; i++) {
+          const row = this.enemyKing.row + dirs[dir][0] * i;
+          const col = this.enemyKing.col + dirs[dir][1] * i;
+
+          if (this.board[row] === undefined) continue;
+
+          const piece = this.board[row][col];
+          if (piece === undefined) continue;
+
+          const isPiece = piece instanceof Piece;
+
+          if (isPiece && piece.color == this.currentKing.color) break;
+
+          bishopMoves[row][col] = true;
+
+          if (isPiece && piece.color != this.currentKing.color) break;
         }
+      }
+
+      let queenMoves = JSON.parse(JSON.stringify(allowedMoves));
+      dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+      for (let dir = 0; dir < dirs.length; dir++) {
+        for (let i = 1; i < 8; i++) {
+          const row = this.enemyKing.row + dirs[dir][0] * i;
+          const col = this.enemyKing.col + dirs[dir][1] * i;
+
+          if (this.board[row] === undefined) continue;
+
+          const piece = this.board[row][col];
+          if (piece === undefined) continue;
+
+          const isPiece = piece instanceof Piece;
+
+          if (isPiece && piece.color == this.currentKing.color) break;
+
+          queenMoves[row][col] = true;
+
+          if (isPiece && piece.color != this.currentKing.color) break;
+        }
+      }
+
+      for (let i = 0; i < this.currentPieces.length; i++) {
+        const piece = this.currentPieces[i];
+
+        if (piece instanceof Pawn) piece.generateMoves(pawnMoves);
+        else if (piece instanceof Rook) piece.generateMoves(rookMoves);
+        else if (piece instanceof Knight) piece.generateMoves(knightMoves);
+        else if (piece instanceof Bishop) piece.generateMoves(bishopMoves);
+        else if (piece instanceof Queen) piece.generateMoves(queenMoves);
+
+        //piece.generateMoves(allowedMoves);
+      }
+    } else {
+      for (let i = 0; i < this.currentPieces.length; i++) {
+        this.currentPieces[i].generateMoves();
       }
     }
 
@@ -282,7 +376,6 @@ class Game {
     } else {
       this.blackPieces.splice(this.blackPieces.indexOf(piece), 1);
     }
-    this.enemyPieces.splice(this.enemyPieces.indexOf(piece), 1);
   }
 
   static resizeBackground(size) {

@@ -148,19 +148,9 @@ class Pawn extends Piece {
       // only allowed on first move after enemy pawn has moved forward two squares
       if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
         // pawn takes enemy pawn and moves to one square behind enemy pawn
-        const move = new Move(enemyPiece.row + dir, enemyPiece.col);
-        move.move = function (startPiece) {
-          Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
-          Game.instance.board[startPiece.row][startPiece.col] = [];
-          Game.instance.board[this.targetRow - dir][this.targetCol] = [];
-          const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
-          targetPiece.col = this.targetCol;
-          targetPiece.row = this.targetRow;
-          targetPiece.moveCount++;
-
-          targetPiece.enpassant = null;
-        }
-        this.enpassant = move;
+        const piece = Game.instance.board[enemyPiece.row + dir][enemyPiece.col];
+        if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
+        else piece.push([this.row, this.col]);
       }
     }
   }
@@ -227,7 +217,34 @@ class Rook extends Piece {
   }
 
   generateAttacks() {
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
+    for (let dir = 0; dir < dirs.length; dir++) {
+      for (let i = 1; i < 8; i++) {
+        const targetRow = this.row + dirs[dir][0] * i;
+        const targetCol = this.col + dirs[dir][1] * i;
+
+        if (Game.instance.board[targetRow] === undefined) continue;
+
+        const piece = Game.instance.board[targetRow][targetCol];
+        if (piece === undefined) continue;
+
+        const isPiece = piece instanceof Piece;
+
+        // if encounter piece of same color then change direction
+        if (isPiece && piece.color == this.color) break;
+
+        // adding attack
+        if (isPiece) piece.attacks.push([this.row, this.col]);
+        else piece.push([this.row, this.col]);
+
+        // if encounter piece of different color then add move(to take the piece) and change direction
+        if (isPiece && piece.color != this.color) {
+          if (piece instanceof King) continue;
+          else break;
+        }
+      }
+    }
   }
 }
 
@@ -324,7 +341,34 @@ class Bishop extends Piece {
   }
 
   generateAttacks() {
+    const dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
 
+    for (let dir = 0; dir < dirs.length; dir++) {
+      for (let i = 1; i < 8; i++) {
+        const targetRow = this.row + dirs[dir][0] * i;
+        const targetCol = this.col + dirs[dir][1] * i;
+
+        if (Game.instance.board[targetRow] === undefined) continue;
+
+        const piece = Game.instance.board[targetRow][targetCol];
+        if (piece === undefined) continue;
+
+        const isPiece = piece instanceof Piece;
+
+        // if encounter piece of same color then change direction
+        if (isPiece && piece.color == this.color) break;
+
+        // adding attack
+        if (isPiece) piece.attacks.push([this.row, this.col]);
+        else piece.push([this.row, this.col]);
+
+        // if encounter piece of different color then add move(to take the piece) and change direction
+        if (isPiece && piece.color != this.color) {
+          if (piece instanceof King) continue;
+          else break;
+        }
+      }
+    }
   }
 }
 
@@ -359,17 +403,39 @@ class King extends Piece {
       const piece = Game.instance.board[targetRow][targetCol];
       if (piece === undefined) continue;
 
-      // if piece is of same color then change direction
-      if (piece instanceof Piece && piece.color == this.color) continue;
-
-      // piece not attacked
-      if (piece instanceof Piece && piece.attacks.length != 0) continue;
+      if (piece instanceof Piece) {
+        // if piece is of same color then change direction
+        if (piece.color == this.color) continue;
+        // piece not attacked
+        if (piece.attacks.length != 0) continue;
+      } else {
+        if (piece.length != 0) continue;
+      }
 
       // adding move
       this.moves.push(new Move(targetRow, targetCol));
     }
 
-    // add castling
+    if (!Game.instance.board[this.row]) return;
+
+    const castleRook = Game.instance.board[this.row][this.col - 4];
+
+    if (!(castleRook instanceof Rook && castleRook.color == this.color)) return;
+
+    // king can NOT be in check
+    if (this.attacks.length != 0) return;
+    // king and rook must NOT have moved
+    if (this.moveCount != 0 || castleRook.moveCount != 0) return;
+    // no pieces between king and rook
+    for (let i = 1; i < 4; i++) {
+      if (Game.instance.board[this.row][this.col - i] instanceof Piece) return;
+    }
+    // king can NOT pass through a square under attack
+    if (Game.instance.board[this.row][this.col - 1].length != 0) return;
+    // king can NOT end up in a square under attack
+    if (Game.instance.board[this.row][this.col - 2].length != 0) return;
+
+    this.moves.push(new DoubleMove(this.row, this.col - 2, this.row, this.col - 4, this.row, this.col - 1));
   }
 
   generateAttacks() {
@@ -384,8 +450,14 @@ class King extends Piece {
       const piece = Game.instance.board[targetRow][targetCol];
       if (piece === undefined) continue;
 
-      // piece not attacked
-      if (piece instanceof Piece && piece.attacks.length != 0) continue;
+      if (piece instanceof Piece) {
+        // if piece is of same color then change direction
+        if (piece.color == this.color) continue;
+        // piece not attacked
+        if (piece.attacks.length != 0) continue;
+      } else {
+        if (piece.length != 0) continue;
+      }
 
       // adding attack
       if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
@@ -419,7 +491,7 @@ class King extends Piece {
 
         if (piece.color != this.color) {
           // if first encounter an enemy piece then no piece to be pinned
-          if (!pinnedPiece) break;
+          if (pinnedPiece === null) break;
 
           // encountered potential pinner
           if ((piece instanceof Queen) || (piece instanceof Rook && dir <= 3) || (piece instanceof Bishop && dir > 3)) {
@@ -439,11 +511,10 @@ class King extends Piece {
 
           break;
         } else {
-          if (pinnedPiece) break;
+          if (pinnedPiece !== null) break;
 
           // if first encounter is friendly piece then it could be pinned
           pinnedPiece = piece;
-          continue;
         }
       }
     }
@@ -562,10 +633,15 @@ class Queen extends Piece {
         // if encounter piece of same color then change direction
         if (isPiece && piece.color == this.color) break;
 
-        this.moves.push(new Move(targetRow, targetCol));
+        // adding attack
+        if (isPiece) piece.attacks.push([this.row, this.col]);
+        else piece.push([this.row, this.col]);
 
         // if encounter piece of different color then add move(to take the piece) and change direction
-        if (isPiece && piece.color != this.color) break;
+        if (isPiece && piece.color != this.color) {
+          if (piece instanceof King) continue;
+          else break;
+        }
       }
     }
   }

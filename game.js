@@ -152,7 +152,7 @@ class Game {
           piece.moves = [];
           piece.attacks = [];
         } else {
-          piece = [];
+          this.board[i][j] = [];
         }
       }
     }
@@ -163,6 +163,7 @@ class Game {
 
     // returns pinned pieces and their moves are already generated
     const pinnedPieces = this.currentKing.getPinnedPieces();
+    console.log(pinnedPieces);
 
     if (this.currentKing.inCheck()) {
       // add moves that MOVE king to a square that isn't being attacked (move king out of check)

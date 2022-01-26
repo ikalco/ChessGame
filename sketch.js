@@ -1,4 +1,5 @@
 //let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // default
+//let fen = "rnbqkbnr/pppppp1p/8/8/6p1/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // en passant test
 //let fen = '8/8/8/8/8/8/8/R3K3 w KQkq - 0 1'; // castling test
 //let fen = 'rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq - 0 1'; // no pawns board
 //let fen = 'rbqk4/8/8/8/8/8/8/4QBRK w KQkq - 0 1'; // Sliding Pieces test
@@ -14,9 +15,10 @@
 //let fen = '8/K7/8/8/8/4q3/8/7k w KQkq - 0 1';
 //let fen = 'r3k3/1p3p2/p2q2p1/bn3P2/1N2PQP1/PB6/3K1R1r/3R4 w KQkq - 0 1'; //test board
 //let fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 1';
-//let fen = "rnbqkbnr/pppppp1p/8/8/6p1/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // en passant test
-let fen = "rnbqkbnr/pppppppp/8/5P2/8/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1" // en passant test
+//let fen = "rnbqkbnr/pppppppp/8/5P2/8/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1" // en passant test
+//let fen = "r3k2r/ppp2ppp/8/8/8/8/PPP2PPP/R3K2R b KQkq - 0 1" // castling test
 
+let fen = "rnb1kbnr/8/8/8/8/8/4K1Bq/RNBQ2NR w KQkq - 4 3" // pinning test
 
 function setup() {
   const size = Math.min(windowWidth, windowHeight);

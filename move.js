@@ -10,12 +10,14 @@ class Move {
   }
 
   move(startPiece) {
+    Game.instance.remove(Game.instance.board[this.targetRow][this.targetCol]);
     Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
     Game.instance.board[startPiece.row][startPiece.col] = [];
     const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
     targetPiece.col = this.targetCol;
     targetPiece.row = this.targetRow;
     targetPiece.moveCount++;
+
   }
 }
 
@@ -45,6 +47,7 @@ class DoubleMove {
   }
 
   move(startPiece) {
+    Game.instance.remove(Game.instance.board[this.targetRow][this.targetCol]);
     Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
     Game.instance.board[startPiece.row][startPiece.col] = [];
     let targetPiece = Game.instance.board[this.targetRow][this.targetCol];
@@ -52,6 +55,7 @@ class DoubleMove {
     targetPiece.row = this.targetRow;
     targetPiece.moveCount++;
 
+    Game.instance.remove(Game.instance.board[this.taotherTargetRowrgetRow][this.otherTargetCol]);
     Game.instance.board[this.otherTargetRow][this.otherTargetCol] = Game.instance.board[this.otherStartRow][this.otherStartCol];
     Game.instance.board[this.otherStartRow][this.otherStartCol] = [];
     targetPiece = Game.instance.board[this.otherTargetRow][this.otherTargetCol];

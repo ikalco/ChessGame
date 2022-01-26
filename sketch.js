@@ -1,14 +1,14 @@
 //let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // default
-//let fen = "rnbqkbnr/pppppp1p/8/8/6p1/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // en passant test
-//let fen = '8/8/8/8/8/8/8/R3K3 w KQkq - 0 1'; // castling test
 //let fen = 'rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq - 0 1'; // no pawns board
+//let fen = '8/8/8/8/8/8/8/R3K3 w KQkq - 0 1'; // castling test
+//let fen = "rnbqkbnr/pppppp1p/8/8/6p1/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // en passant test
 //let fen = 'rbqk4/8/8/8/8/8/8/4QBRK w KQkq - 0 1'; // Sliding Pieces test
 //let fen = '8/4K3/8/8/8/8/4k3/8 w KQkq - 0 1'; // King Test
 //let fen = '8/8/8/2N2n2/8/8/8/k2K4 w KQkq - 0 1'; // Knight Test
 //let fen = 'rnb1kbkr/pppp1pppp/8/4p3/4P2q/PQ4PP/8/RNB1KBNR w KQkq - 0 1'; //Check test
 //let fen = 'rnbqkbnr/1ppp1ppp/8/p3p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1'; //Check&Checkmate check
 //let fen = '8/8/8/KQ5r/8/8/8/7k w KQkq - 0 1'; //pinned pieces horiztonal | 7k/8/8/r5QK/8/8/8/8 | 8/8/8/KQ5r/8/8/8/7k
-//let fen = '8/2P6/8/kp5R/8/8/8/7K w KQkq - 0 1'; // Pinned pieces test (en passant)
+//let fen = '8/2P6/8/kp5R/8/8/8/7K b KQkq - 0 1'; // Pinned pieces test (en passant)
 //let fen = 'K7/8/8/P7/8/8/8/r6k w KQkq - 0 1'; // pinned vertical test
 //let fen = 'q7/1K6/8/8/8/8/8/7k w KQkq - 0 1';
 //let fen = '7K/6Q1/8/8/8/8/8/q6k w KQkq - 0 1';
@@ -17,8 +17,11 @@
 //let fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 1';
 //let fen = "rnbqkbnr/pppppppp/8/5P2/8/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1" // en passant test
 //let fen = "r3k2r/ppp2ppp/8/8/8/8/PPP2PPP/R3K2R b KQkq - 0 1" // castling test
-
-let fen = "rnb1kbnr/8/8/8/8/8/4K1Bq/RNBQ2NR w KQkq - 4 3" // pinning test
+//let fen = "rnb1kbnr/8/8/8/8/8/4K1Bq/RNBQ2NR w KQkq - 4 3" // pinning test
+//let fen = "8/4k3/1K1N1q2/8/8/8/8/8 w KQkq - 0 1" // pinned piece can discovery check
+//let fen = "r3kb1r/3n1pp1/p6p/2pPp2q/Pp2N3/3B2PP/1PQ2P2/R3K2R w KQkq - bm d6";
+//let fen = "rnbq1bnr/1ppp3p/6k1/p4P2/3p4/8/PPP2PPP/RNB1K1NR b KQkq - 11 6";
+let fen = "rnb1k1nr/ppp2ppp/8/3P3Q/4p3/8/PPPK1PPP/RNB3NR w KQkq - 12 7";
 
 function setup() {
   const size = Math.min(windowWidth, windowHeight);

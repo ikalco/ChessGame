@@ -151,6 +151,7 @@ class Game {
         if (piece instanceof Piece) {
           piece.moves = [];
           piece.attacks = [];
+          piece.generatedMoves = [];
         } else {
           this.board[i][j] = [];
         }
@@ -166,10 +167,18 @@ class Game {
     console.log(pinnedPieces);
 
     if (this.currentKing.inCheck()) {
-      // add moves that MOVE king to a square that isn't being attacked (move king out of check)
-      // add moves that CAPTURE the piece that is delivering check (not pinned pieces unless they deliver check)
-      // add moves that BLOCK the check 
-      // add moves for pinned pieces that deliver a check (not necessarily by pinned piece; can be revealed)
+      // add moves that MOVE king out of check
+      this.currentKing.generateMoves();
+
+      // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
+      // add moves that CAPTURE the piece that is delivering check
+      let allowedMoves = this.currentKing.getAllowedMovesCheck();
+
+      for (let i = 0; i < this.board.length; i++) {
+        for (let j = 0; j < this.board[0].length; j++) {
+          if (this.board[i][j] instanceof Piece) this.board[i][j].generateMoves(allowedMoves);
+        }
+      }
     } else {
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[0].length; j++) {
@@ -264,6 +273,16 @@ class Game {
 
     startPiece.drawX = startPiece.col * Game.SquareSize;
     startPiece.drawY = startPiece.row * Game.SquareSize;
+  }
+
+  remove(piece) {
+    if (piece instanceof Array) return;
+    if (piece.color == 0) {
+      this.whitePieces.splice(this.whitePieces.indexOf(piece), 1);
+    } else {
+      this.blackPieces.splice(this.blackPieces.indexOf(piece), 1);
+    }
+    this.enemyPieces.splice(this.enemyPieces.indexOf(piece), 1);
   }
 
   static resizeBackground(size) {

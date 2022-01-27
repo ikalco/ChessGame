@@ -79,7 +79,7 @@ class Pawn extends Piece {
       // only allowed on first move after enemy pawn has moved forward two squares
       if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
         // pawn takes enemy pawn and moves to one square behind enemy pawn
-        const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col);
+        const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col, dir);
         if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.enpassant = move;
       }
     }
@@ -88,7 +88,6 @@ class Pawn extends Piece {
     // enemy pawn just moved 2 squares forward (first move of enemy)
     if (enemyPiece instanceof Piece && enemyPiece.color != this.color && enemyPiece.row == (this.color ? 4 : 3) && enemyPiece.moveCount == 1) {
       // only allowed on first move after enemy pawn has moved forward two squares
-      console.log(enemyPiece.canEnpassant, Game.instance.halfmoveCount);
       if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
         // pawn takes enemy pawn and moves to one square behind enemy pawn
         const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col, dir);
@@ -354,7 +353,7 @@ class King extends Piece {
     if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
 
     // all 8 directions
-    const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+    let dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
 
     for (let dir = 0; dir < dirs.length; dir++) {
       const targetRow = this.row + dirs[dir][0];
@@ -380,26 +379,34 @@ class King extends Piece {
 
     if (!Game.instance.board[this.row]) return;
 
-    const castleRook = Game.instance.board[this.row][this.col - 4];
-
     this.generatedMoves = this.moves;
-
-    if (!(castleRook instanceof Rook && castleRook.color == this.color)) return;
 
     // king can NOT be in check
     if (this.inCheck()) return;
-    // king and rook must NOT have moved
-    if (this.moveCount != 0 || castleRook.moveCount != 0) return;
-    // no pieces between king and rook
-    for (let i = 1; i < 4; i++) {
-      if (Game.instance.board[this.row][this.col - i] instanceof Piece) return;
-    }
-    // king can NOT pass through a square under attack
-    if (Game.instance.board[this.row][this.col - 1].length != 0) return;
-    // king can NOT end up in a square under attack
-    if (Game.instance.board[this.row][this.col - 2].length != 0) return;
+    if (this.moveCount != 0) return;
 
-    this.moves.push(new CastleMove(this, this.row, this.col - 2, Game.instance.board[this.row][this.col - 4], this.row, this.col - 1));
+    dirs = [-4, 3];
+
+    for (let dir = 0; dir < dirs.length; dir++) {
+
+      const castleRook = Game.instance.board[this.row][this.col + dirs[dir]];
+      const dirr = dirs[dir] / Math.abs(dirs[dir]);
+
+      if (!(castleRook instanceof Rook && castleRook.color == this.color)) continue;
+
+      // king and rook must NOT have moved
+      if (castleRook.moveCount != 0) continue;
+      // no pieces between king and rook
+      for (let i = 1; i < dirs[dir]; i++) {
+        if (Game.instance.board[this.row][this.col - i] instanceof Piece) continue;
+      }
+      // king can NOT pass through a square under attack
+      if (Game.instance.board[this.row][this.col + 1 * dirr].length != 0) continue;
+      // king can NOT end up in a square under attack
+      if (Game.instance.board[this.row][this.col + 2 * dirr].length != 0) continue;
+
+      this.moves.push(new CastleMove(this, this.row, this.col + 2 * dirr, castleRook, this.row, this.col + 1 * dirr));
+    }
 
     this.generatedMoves = this.moves;
   }

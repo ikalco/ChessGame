@@ -11,6 +11,9 @@ class Game {
     this.selected = null;
     this.running = true;
     this.history = [];
+
+    this.captures = 0;
+    this.checks = 0;
   }
 
   loadPosFromFen(fen) {
@@ -146,7 +149,7 @@ class Game {
   }
 
   calculateMoves() {
-    console.time("Calculate Moves");
+    //console.time("Calculate Moves");
 
     // reset board attacks and moves
     this.moves = [];
@@ -171,6 +174,8 @@ class Game {
     this.currentKing.getPinnedPieces();
 
     if (this.currentKing.inCheck()) {
+      this.checks++;
+
       // add moves that MOVE king out of check
       this.currentKing.generateMoves();
 
@@ -285,7 +290,7 @@ class Game {
 
       this.moves = possibleMoves;
 
-      if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
+      //if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
       let possibleMoves = [];
 
@@ -296,7 +301,7 @@ class Game {
 
       this.moves = possibleMoves;
 
-      if (possibleMoves.length == 0) this.stop("Draw!");
+      //if (possibleMoves.length == 0) this.stop("Draw!");
     }
 
     // HOW
@@ -362,7 +367,7 @@ class Game {
     //            pawn advances to opposite side of the board (last row)
     //            player can choose to turn pawn into a queen, rook, bishop, or knight of the same color
 
-    console.timeEnd("Calculate Moves");
+    //console.timeEnd("Calculate Moves");
   }
 
   move(startPiece, targetRow, targetCol) {
@@ -382,11 +387,13 @@ class Game {
         this.calculateMoves();
 
         this.history.push(move);
+        if (move.targetPiece instanceof Piece && move.startPiece.color != move.targetPiece.color) this.captures++;
       }
     }
 
     startPiece.drawX = startPiece.col * Game.SquareSize;
     startPiece.drawY = startPiece.row * Game.SquareSize;
+
   }
 
   unmove() {
@@ -438,6 +445,23 @@ class Game {
     strokeWeight(2);
     fill(255);
     text(endScreenString, width / 2, (height / 2) + (textAscent() / 6));
+  }
+
+  perft(depth = 3) {
+    if (depth == 0) {
+      return 1;
+    }
+
+    this.calculateMoves();
+    let numOfPositions = 0;
+
+    for (let i = 0; i < this.moves.length; i++) {
+      this.move(this.moves[i].startPiece, this.moves[i].targetRow, this.moves[i].targetCol);
+      numOfPositions += this.perft(depth - 1);
+      this.unmove();
+    }
+
+    return numOfPositions;
   }
 
   static resizeBackground(size) {

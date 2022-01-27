@@ -10,6 +10,7 @@ class Game {
 
     this.selected = null;
     this.running = true;
+    this.history = [];
   }
 
   loadPosFromFen(fen) {
@@ -148,6 +149,7 @@ class Game {
     console.time("Calculate Moves");
 
     // reset board attacks and moves
+    this.moves = [];
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[0].length; j++) {
         let piece = this.board[i][j];
@@ -281,6 +283,8 @@ class Game {
         possibleMoves = possibleMoves.concat(piece.moves);
       }
 
+      this.moves = possibleMoves;
+
       if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
       let possibleMoves = [];
@@ -289,6 +293,8 @@ class Game {
         this.currentPieces[i].generateMoves();
         possibleMoves = possibleMoves.concat(this.currentPieces[i].moves);
       }
+
+      this.moves = possibleMoves;
 
       if (possibleMoves.length == 0) this.stop("Draw!");
     }
@@ -360,25 +366,43 @@ class Game {
   }
 
   move(startPiece, targetRow, targetCol) {
-    if (startPiece instanceof Array) return;
+    if (startPiece instanceof Piece) {
+      const move = startPiece.canMove(targetRow, targetCol);
 
-    const move = startPiece.canMove(targetRow, targetCol);
+      if (move !== null) {
+        move.move();
+        this.playerToMove = !this.playerToMove;
+        this.currentPieces = this.playerToMove ? this.blackPieces : this.whitePieces;
+        this.enemyPieces = !this.playerToMove ? this.blackPieces : this.whitePieces;
+        this.currentKing = this.playerToMove ? this.blackKing : this.whiteKing;
+        this.enemyKing = !this.playerToMove ? this.blackKing : this.whiteKing;
 
-    if (move !== null) {
-      move.move(startPiece, targetRow, targetCol);
-      this.playerToMove = !this.playerToMove;
-      this.currentPieces = this.playerToMove ? this.blackPieces : this.whitePieces;
-      this.enemyPieces = !this.playerToMove ? this.blackPieces : this.whitePieces;
-      this.currentKing = this.playerToMove ? this.blackKing : this.whiteKing;
-      this.enemyKing = !this.playerToMove ? this.blackKing : this.whiteKing;
-      this.calculateMoves();
+        this.halfmoveCount++;
+        if (this.playerToMove == 0) this.fullmoveCount++;
+        this.calculateMoves();
 
-      this.halfmoveCount++;
-      if (this.playerToMove == 0) this.fullmoveCount++;
+        this.history.push(move);
+      }
     }
 
     startPiece.drawX = startPiece.col * Game.SquareSize;
     startPiece.drawY = startPiece.row * Game.SquareSize;
+  }
+
+  unmove() {
+    if (this.history.length == 0) return;
+    const move = this.history.pop();
+
+    this.halfmoveCount--;
+    if (this.playerToMove == 0) this.fullmoveCount--;
+
+    move.unmove();
+    this.playerToMove = !this.playerToMove;
+    this.currentPieces = this.playerToMove ? this.blackPieces : this.whitePieces;
+    this.enemyPieces = !this.playerToMove ? this.blackPieces : this.whitePieces;
+    this.currentKing = this.playerToMove ? this.blackKing : this.whiteKing;
+    this.enemyKing = !this.playerToMove ? this.blackKing : this.whiteKing;
+    this.calculateMoves();
   }
 
   remove(piece) {
@@ -390,20 +414,30 @@ class Game {
     }
   }
 
+  unremove(piece) {
+    if (piece instanceof Piece) {
+      if (piece.color == 0) {
+        Game.instance.whitePieces.push(piece);
+      } else {
+        Game.instance.blackPieces.push(piece);
+      }
+    }
+  }
+
   stop(endScreenString) {
     this.update();
     this.drawPieces();
     this.running = false;
 
-    Game.#background.tint(100, 100, 100);
-    Game.#background.image(get(), 0, 0);
+    tint(100, 100, 100);
+    image(get(), 0, 0);
 
-    Game.#background.noTint();
-    Game.#background.textSize(width / endScreenString.length * 2);
-    Game.#background.textAlign(CENTER);
-    Game.#background.strokeWeight(2);
-    Game.#background.fill(255);
-    Game.#background.text(endScreenString, width / 2, height / 2);
+    noTint();
+    textSize(width / endScreenString.length * 2);
+    textAlign(CENTER);
+    strokeWeight(2);
+    fill(255);
+    text(endScreenString, width / 2, (height / 2) + (textAscent() / 6));
   }
 
   static resizeBackground(size) {
@@ -423,7 +457,7 @@ class Game {
   }
 
   static drawBackground() {
-    image(this.#background, 0, 0);
+    if (this.instance.running) image(this.#background, 0, 0);
   }
 
   static set background(bg) {

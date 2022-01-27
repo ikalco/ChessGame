@@ -56,20 +56,20 @@ class Pawn extends Piece {
 
     if (Game.instance.board[this.row + dir][this.col] instanceof Array) {
       // move 1 forward if empty
-      if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.moves.push(new Move(this.row + dir, this.col));
+      if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.moves.push(new Move(this, this.row + dir, this.col));
       // move 2 forwards if both empty
       if (this.moveCount == 0 && Game.instance.board[this.row + dir * 2] && Game.instance.board[this.row + dir * 2][this.col] instanceof Array) {
-        this.canEnpassant = Game.instance.halfmoveCount + (this.color ? 0 : 1);
-        if (allowedMoves == null || allowedMoves[this.row + dir * 2][this.col]) this.moves.push(new Move(this.row + dir * 2, this.col));
+        this.canEnpassant = Game.instance.halfmoveCount + 1;
+        if (allowedMoves == null || allowedMoves[this.row + dir * 2][this.col]) this.moves.push(new Move(this, this.row + dir * 2, this.col));
       }
     }
 
     // diagonals in front of pawn is an enemy piece then you can move there
     if (Game.instance.board[this.row + dir][this.col + 1] instanceof Piece && Game.instance.board[this.row + dir][this.col + 1].color != this.color)
-      if (allowedMoves == null || allowedMoves[this.row + dir][this.col + 1]) this.moves.push(new Move(this.row + dir, this.col + 1));
+      if (allowedMoves == null || allowedMoves[this.row + dir][this.col + 1]) this.moves.push(new Move(this, this.row + dir, this.col + 1));
 
     if (Game.instance.board[this.row + dir][this.col - 1] instanceof Piece && Game.instance.board[this.row + dir][this.col - 1].color != this.color)
-      if (allowedMoves == null || allowedMoves[this.row + dir][this.col - 1]) this.moves.push(new Move(this.row + dir, this.col - 1));
+      if (allowedMoves == null || allowedMoves[this.row + dir][this.col - 1]) this.moves.push(new Move(this, this.row + dir, this.col - 1));
 
     // en passant
 
@@ -79,19 +79,7 @@ class Pawn extends Piece {
       // only allowed on first move after enemy pawn has moved forward two squares
       if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
         // pawn takes enemy pawn and moves to one square behind enemy pawn
-        const move = new Move(enemyPiece.row + dir, enemyPiece.col);
-        move.move = function (startPiece) {
-          Game.instance.remove(Game.instance.board[this.targetRow][this.targetCol]);
-          Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
-          Game.instance.board[startPiece.row][startPiece.col] = [];
-          Game.instance.board[this.targetRow - dir][this.targetCol] = [];
-          const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
-          targetPiece.col = this.targetCol;
-          targetPiece.row = this.targetRow;
-          targetPiece.moveCount++;
-
-          targetPiece.enpassant = null;
-        }
+        const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col);
         if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.enpassant = move;
       }
     }
@@ -100,21 +88,10 @@ class Pawn extends Piece {
     // enemy pawn just moved 2 squares forward (first move of enemy)
     if (enemyPiece instanceof Piece && enemyPiece.color != this.color && enemyPiece.row == (this.color ? 4 : 3) && enemyPiece.moveCount == 1) {
       // only allowed on first move after enemy pawn has moved forward two squares
+      console.log(enemyPiece.canEnpassant, Game.instance.halfmoveCount);
       if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
         // pawn takes enemy pawn and moves to one square behind enemy pawn
-        const move = new Move(enemyPiece.row + dir, enemyPiece.col);
-        move.move = function (startPiece) {
-          Game.instance.remove(Game.instance.board[this.targetRow][this.targetCol]);
-          Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[startPiece.row][startPiece.col];
-          Game.instance.board[startPiece.row][startPiece.col] = [];
-          Game.instance.board[this.targetRow - dir][this.targetCol] = [];
-          const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
-          targetPiece.col = this.targetCol;
-          targetPiece.row = this.targetRow;
-          targetPiece.moveCount++;
-
-          targetPiece.enpassant = null;
-        }
+        const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col, dir);
         if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.enpassant = move;
       }
     }
@@ -193,7 +170,7 @@ class Rook extends Piece {
         // if encounter piece of same color then change direction
         if (isPiece && piece.color == this.color) break;
 
-        if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(targetRow, targetCol));
+        if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(this, targetRow, targetCol));
 
         // if encounter piece of different color then add move(to take the piece) and change direction
         if (isPiece && piece.color != this.color) break;
@@ -261,7 +238,7 @@ class Knight extends Piece {
       // if encounter piece of same color then change direction
       if (piece instanceof Piece && piece.color == this.color) continue;
 
-      if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(targetRow, targetCol));
+      if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(this, targetRow, targetCol));
     }
 
     this.generatedMoves = this.moves;
@@ -318,7 +295,7 @@ class Bishop extends Piece {
         // if encounter piece of same color then change direction
         if (isPiece && piece.color == this.color) break;
 
-        if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(targetRow, targetCol));
+        if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(this, targetRow, targetCol));
 
         // if encounter piece of different color then add move(to take the piece) and change direction
         if (isPiece && piece.color != this.color) break;
@@ -398,7 +375,7 @@ class King extends Piece {
       }
 
       // adding move
-      if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(targetRow, targetCol));
+      if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(this, targetRow, targetCol));
     }
 
     if (!Game.instance.board[this.row]) return;
@@ -410,7 +387,7 @@ class King extends Piece {
     if (!(castleRook instanceof Rook && castleRook.color == this.color)) return;
 
     // king can NOT be in check
-    if (!this.inCheck()) return;
+    if (this.inCheck()) return;
     // king and rook must NOT have moved
     if (this.moveCount != 0 || castleRook.moveCount != 0) return;
     // no pieces between king and rook
@@ -422,7 +399,7 @@ class King extends Piece {
     // king can NOT end up in a square under attack
     if (Game.instance.board[this.row][this.col - 2].length != 0) return;
 
-    this.moves.push(new DoubleMove(this.row, this.col - 2, this.row, this.col - 4, this.row, this.col - 1));
+    this.moves.push(new CastleMove(this, this.row, this.col - 2, Game.instance.board[this.row][this.col - 4], this.row, this.col - 1));
 
     this.generatedMoves = this.moves;
   }
@@ -440,13 +417,8 @@ class King extends Piece {
       if (piece === undefined) continue;
 
       if (piece instanceof Piece) {
-        // if piece is of same color then change direction
-        if (piece.color == this.color) continue;
-        // piece not attacked
         if (piece.attacks.length != 0) continue;
-      } else {
-        if (piece.length != 0) continue;
-      }
+      } else if (piece.length != 0) continue;
 
       // adding attack
       if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
@@ -639,7 +611,7 @@ class Queen extends Piece {
         // if encounter piece of same color then change direction
         if (isPiece && piece.color == this.color) break;
 
-        if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(targetRow, targetCol));
+        if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(this, targetRow, targetCol));
 
         // if encounter piece of different color then add move(to take the piece) and change direction
         if (isPiece && piece.color != this.color) break;

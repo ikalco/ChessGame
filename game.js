@@ -9,6 +9,7 @@ class Game {
     this.loadPosFromFen(fenString);
 
     this.selected = null;
+    this.running = true;
   }
 
   loadPosFromFen(fen) {
@@ -115,6 +116,7 @@ class Game {
   }
 
   update() {
+    if (!this.running) return;
     if (mouseIsPressed && mouseButton === LEFT) {
       if (this.selected === null) {
         this.selected = this.board[Math.floor(mouseY / Game.SquareSize)][Math.floor(mouseX / Game.SquareSize)];
@@ -133,6 +135,7 @@ class Game {
   }
 
   drawPieces() {
+    if (!this.running) return;
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[0].length; j++) {
         const piece = this.board[i][j];
@@ -264,6 +267,8 @@ class Game {
         }
       }
 
+      let possibleMoves = [];
+
       for (let i = 0; i < this.currentPieces.length; i++) {
         const piece = this.currentPieces[i];
 
@@ -273,12 +278,19 @@ class Game {
         else if (piece instanceof Bishop) piece.generateMoves(bishopMoves);
         else if (piece instanceof Queen) piece.generateMoves(queenMoves);
 
-        //piece.generateMoves(allowedMoves);
+        possibleMoves = possibleMoves.concat(piece.moves);
       }
+
+      if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
+      let possibleMoves = [];
+
       for (let i = 0; i < this.currentPieces.length; i++) {
         this.currentPieces[i].generateMoves();
+        possibleMoves = possibleMoves.concat(this.currentPieces[i].moves);
       }
+
+      if (possibleMoves.length == 0) this.stop("Draw!");
     }
 
     // HOW
@@ -376,6 +388,22 @@ class Game {
     } else {
       this.blackPieces.splice(this.blackPieces.indexOf(piece), 1);
     }
+  }
+
+  stop(endScreenString) {
+    this.update();
+    this.drawPieces();
+    this.running = false;
+
+    Game.#background.tint(100, 100, 100);
+    Game.#background.image(get(), 0, 0);
+
+    Game.#background.noTint();
+    Game.#background.textSize(width / endScreenString.length * 2);
+    Game.#background.textAlign(CENTER);
+    Game.#background.strokeWeight(2);
+    Game.#background.fill(255);
+    Game.#background.text(endScreenString, width / 2, height / 2);
   }
 
   static resizeBackground(size) {

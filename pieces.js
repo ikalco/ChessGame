@@ -218,16 +218,13 @@ class Rook extends Piece {
 
         const isPiece = piece instanceof Piece;
 
-        // if encounter piece of same color then change direction
-        if (isPiece && piece.color == this.color) break;
-
         // adding attack
         if (isPiece) piece.attacks.push([this.row, this.col]);
         else piece.push([this.row, this.col]);
 
         // if encounter piece of different color then add move(to take the piece) and change direction
-        if (isPiece && piece.color != this.color) {
-          if (piece instanceof King) continue;
+        if (isPiece) {
+          if (piece instanceof King && piece.color != this.color) continue;
           else break;
         }
       }
@@ -346,16 +343,13 @@ class Bishop extends Piece {
 
         const isPiece = piece instanceof Piece;
 
-        // if encounter piece of same color then change direction
-        if (isPiece && piece.color == this.color) break;
-
         // adding attack
         if (isPiece) piece.attacks.push([this.row, this.col]);
         else piece.push([this.row, this.col]);
 
         // if encounter piece of different color then add move(to take the piece) and change direction
-        if (isPiece && piece.color != this.color) {
-          if (piece instanceof King) continue;
+        if (isPiece) {
+          if (piece instanceof King && piece.color != this.color) continue;
           else break;
         }
       }
@@ -670,16 +664,13 @@ class Queen extends Piece {
 
         const isPiece = piece instanceof Piece;
 
-        // if encounter piece of same color then change direction
-        if (isPiece && piece.color == this.color) break;
-
         // adding attack
         if (isPiece) piece.attacks.push([this.row, this.col]);
         else piece.push([this.row, this.col]);
 
         // if encounter piece of different color then add move(to take the piece) and change direction
-        if (isPiece && piece.color != this.color) {
-          if (piece instanceof King) continue;
+        if (isPiece) {
+          if (piece instanceof King && piece.color != this.color) continue;
           else break;
         }
       }
@@ -687,8 +678,10 @@ class Queen extends Piece {
   }
 }
 
+let chessPiecesImg;
+
 function preload() {
-  const chessPiecesImg = loadImage('./assets/pieces.png', () => {
+  chessPiecesImg = loadImage('./assets/pieces.png', () => {
     Pawn.imageW = chessPiecesImg.get(1665, 0.5, 333.33334, 333.5);
     Rook.imageW = chessPiecesImg.get(1332, 0.5, 333.33334, 333.5);
     Knight.imageW = chessPiecesImg.get(999, 0.5, 333.33334, 333.5);

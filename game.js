@@ -1,7 +1,8 @@
 class Game {
-  static instance;
   static SquareSize = Math.min(window.innerWidth, window.innerHeight) / 8;
+  static debug = false;
   static #background;
+  static instance;
 
   constructor(fenString) {
     if (Game.instance) throw Error("You can only have one game!");
@@ -14,6 +15,56 @@ class Game {
 
     this.captures = 0;
     this.checks = 0;
+    this.lastDoubleMove = '-';
+
+    this.expectedResults = {
+      a2a3: 46833,
+      b2b3: 46497,
+      c2c3: 49406,
+      g2g3: 44509,
+      h2h3: 46762,
+      a2a4: 48882,
+      b2b4: 46696,
+      g2g4: 45506,
+      h2h4: 47811,
+      d7c8q: 44226,
+      d7c8r: 38077,
+      d7c8b: 65053,
+      d7c8n: 62009,
+      b1d2: 40560,
+      b1a3: 44378,
+      b1c3: 50303,
+      e2g1: 48844,
+      e2c3: 54792,
+      e2g3: 51892,
+      e2d4: 52109,
+      e2f4: 51127,
+      c1d2: 46881,
+      c1e3: 53637,
+      c1f4: 52350,
+      c1g5: 45601,
+      c1h6: 40913,
+      c4b3: 43453,
+      c4d3: 43565,
+      c4b5: 45559,
+      c4d5: 48002,
+      c4a6: 41884,
+      c4e6: 49872,
+      c4f7: 43289,
+      h1f1: 46101,
+      h1g1: 44668,
+      d1d2: 48843,
+      d1d3: 57153,
+      d1d4: 57744,
+      d1d5: 56899,
+      d1d6: 43766,
+      e1f1: 49775,
+      e1d2: 33423,
+      e1f2: 36783,
+      e1g1: 47054,
+    };
+
+    this.timesToCalculateMoves = [[], [], [], [], [], []];
   }
 
   loadPosFromFen(fen) {
@@ -71,16 +122,24 @@ class Game {
     fields.shift();
 
     const enPassantPiece = fields.shift();
-    if (enPassantPiece != '-') {
-      if (enPassantPiece[1] == '3') {
-        // add this position to list of black pawn attack moves
-      } else if (enPassantPiece[1] == '6') {
-        // add this position to list of white pawn attack moves
-      }
-    }
 
     this.halfmoveCount = parseInt(fields.shift());
     this.fullmoveCount = parseInt(fields.shift());
+
+    if (enPassantPiece != '-') {
+      if (enPassantPiece[1] == '3') {
+        // add this position to list of white pawn attack moves
+        let [row, col] = Game.fromAlgNot(enPassantPiece);
+        row -= 1;
+        console.log(this.halfmoveCount, this.board[row][col]);
+        this.board[row][col].canEnpassant = this.halfmoveCount;
+      } else if (enPassantPiece[1] == '6') {
+        // add this position to list of black pawn attack moves
+        let [row, col] = Game.fromAlgNot(enPassantPiece);
+        row += 1;
+        this.board[row][col].canEnpassant = this.halfmoveCount;
+      }
+    }
   }
 
   getPosFromFen() {
@@ -115,7 +174,7 @@ class Game {
       fen += '/'
     }
 
-    fen = `${fen.slice(0, fen.length - 1)} ${this.playerToMove ? 'b' : 'w'} KQkq - ${this.halfmoveCount} ${this.fullmoveCount}`;
+    fen = `${fen.slice(0, fen.length - 1)} ${this.playerToMove ? 'b' : 'w'} KQkq ${this.lastDoubleMove} ${this.halfmoveCount} ${this.fullmoveCount}`;
     console.log(fen);
   }
 
@@ -157,7 +216,7 @@ class Game {
   }
 
   calculateMoves() {
-    //console.time("Calculate Moves");
+    let startTimeOverall = millis();
 
     // reset board attacks and moves
     this.moves = [];
@@ -167,6 +226,7 @@ class Game {
         if (piece instanceof Piece) {
           piece.moves = [];
           piece.attacks = [];
+          piece.enpassant = null;
           piece.generatedMoves = [];
         } else {
           this.board[i][j] = [];
@@ -174,12 +234,16 @@ class Game {
       }
     }
 
+    let startTime = millis();
     for (let i = 0; i < this.enemyPieces.length; i++) {
       this.enemyPieces[i].generateAttacks();
     }
+    this.timesToCalculateMoves[0].push(millis() - startTime);
 
     // returns pinned pieces and their moves are already generated
+    startTime = millis();
     this.currentKing.getPinnedPieces();
+    this.timesToCalculateMoves[1].push(millis() - startTime);
 
     if (this.currentKing.inCheck()) {
       this.checks++;
@@ -187,9 +251,12 @@ class Game {
       // add moves that MOVE king out of check
       this.currentKing.generateMoves();
 
+      startTime = millis();
       // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
       // add moves that CAPTURE the piece that is delivering check
       const allowedMoves = this.currentKing.getAllowedMovesCheck();
+
+      this.timesToCalculateMoves[2].push(millis() - startTime);
 
       // Was for cross check but wasnt legal
       /*
@@ -288,6 +355,7 @@ class Game {
 
       let possibleMoves = [];
 
+      startTime = millis();
       for (let i = 0; i < this.currentPieces.length; i++) {
         const piece = this.currentPieces[i];
 
@@ -303,24 +371,31 @@ class Game {
         piece.generateMoves(allowedMoves);
 
         possibleMoves = possibleMoves.concat(piece.moves);
+        if (piece instanceof Pawn && piece.enpassant != null) possibleMoves.push(piece.enpassant);
       }
 
       this.moves = possibleMoves;
+      this.timesToCalculateMoves[3].push(millis() - startTime);
 
       //if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
+      startTime = millis();
       let possibleMoves = [];
 
       for (let i = 0; i < this.currentPieces.length; i++) {
-        this.currentPieces[i].generateMoves();
-        possibleMoves = possibleMoves.concat(this.currentPieces[i].moves);
+        const piece = this.currentPieces[i];
+        piece.generateMoves();
+        possibleMoves = possibleMoves.concat(piece.moves);
+        if (piece instanceof Pawn && piece.enpassant != null) possibleMoves.push(piece.enpassant);
       }
 
       this.moves = possibleMoves;
 
+      this.timesToCalculateMoves[4].push((millis() - startTime));
       //if (possibleMoves.length == 0) this.stop("Draw!");
     }
 
+    this.timesToCalculateMoves[5].push((millis() - startTimeOverall));
     // HOW
 
     // get current attacks of enemy player
@@ -383,8 +458,6 @@ class Game {
     // [PROMOTION]: a pawn can become any piece except a king when getting to the other side of the board
     //            pawn advances to opposite side of the board (last row)
     //            player can choose to turn pawn into a queen, rook, bishop, or knight of the same color
-
-    //console.timeEnd("Calculate Moves");
   }
 
   move(move) {
@@ -399,6 +472,23 @@ class Game {
       move.startPiece.update();
 
       this.history.push(move);
+    } else if (typeof move == "string") {
+      const typelookup = {
+        'q': 'Queen',
+        'b': 'Bishop',
+        'r': 'Rook',
+        'n': 'Knight'
+      }
+
+      const [startRow, startCol] = Game.fromAlgNot(move[0] + move[1]);
+      const [targetRow, targetCol] = Game.fromAlgNot(move[2] + move[3]);
+      let type = null;
+      if (move.length == 5) type = typelookup[move[4]];
+
+      const translatedMove = this.board[startRow][startCol].canMove(targetRow, targetCol, type);
+      if (move !== null) {
+        this.move(translatedMove);
+      }
     }
   }
 
@@ -476,6 +566,8 @@ class Game {
   }
 
   perftBulk(depth) {
+    if (depth == 0) return 1;
+
     this.calculateMoves();
     const moves = [...this.moves];
 
@@ -501,21 +593,43 @@ class Game {
 
     const moves = [...this.moves];
 
+    const results = {};
+
     for (let i = 0; i < moves.length; i++) {
       this.move(moves[i]);
-      const algNot = Game.toAlgNotation(moves[i].startRow, moves[i].startCol) + Game.toAlgNotation(moves[i].targetRow, moves[i].targetCol);
+      const algNot = Game.toAlgNot(moves[i]);
       const perftResult = this.perftBulk(depth - 1);
       console.log(algNot, perftResult);
+      results[algNot] = perftResult;
+      if (Game.debug) {
+        if (this.expectedResults[algNot] != perftResult) {
+          console.log(moves[i]);
+          break;
+        }
+      }
       numOfPositions += perftResult;
       this.unmove();
     }
 
+    // En passant isn't being removed after first move after
+
+    console.log(results);
+
     console.log("=================================");
     console.log("Total amount of moves: ", numOfPositions);
     console.timeEnd("Amount of time to preform Preft Divide");
+
+    if (Game.debug) {
+      console.log("======== Fails ========");
+
+      console.log("Move  Got    | Expected");
+      for (let [algnot, result] of Object.entries(this.expectedResults)) {
+        if (results[algnot] != result) console.log(`${algnot}  ${results[algnot]} | ${result}`);
+      }
+    }
   }
 
-  static toAlgNotation(row, col) {
+  static toAlgNot(...parameters) {
     const lookup = {
       1: 'a',
       2: 'b',
@@ -525,9 +639,41 @@ class Game {
       6: 'f',
       7: 'g',
       8: 'h',
+    };
+
+    if (parameters.length == 2) {
+      const row = parameters[0];
+      const col = parameters[1];
+      return `${lookup[(col + 1)]}${(8 - row)}`;
+    } else if (parameters.length == 1) {
+      const typelookup = {
+        'Queen': 'q',
+        'Bishop': 'b',
+        'Rook': 'r',
+        'Knight': 'n'
+      }
+      const move = parameters[0];
+      if (move instanceof PromotionMove) {
+        return this.toAlgNot(move.startRow, move.startCol) + this.toAlgNot(move.targetRow, move.targetCol) + typelookup[move.type.name];
+      } else if (move instanceof Move) {
+        return this.toAlgNot(move.startRow, move.startCol) + this.toAlgNot(move.targetRow, move.targetCol);
+      }
+    }
+  }
+
+  static fromAlgNot(str) {
+    const lookup = {
+      'a': 1,
+      'b': 2,
+      'c': 3,
+      'd': 4,
+      'e': 5,
+      'f': 6,
+      'g': 7,
+      'h': 8,
     }
 
-    return `${lookup[(8 - col)]}${(8 - row)}`;
+    return [8 - str[1], lookup[str[0]] - 1];
   }
 
   static resizeBackground(size) {

@@ -64,8 +64,9 @@ class Pawn extends Piece {
       if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.addMove(this.row + dir, this.col);
       // move 2 forwards if both empty
       if (this.moveCount == 0 && Game.instance.board[this.row + dir * 2] && Game.instance.board[this.row + dir * 2][this.col] instanceof Array) {
-        this.canEnpassant = Game.instance.halfmoveCount + 1;
-        if (allowedMoves == null || allowedMoves[this.row + dir * 2][this.col]) this.addMove(this.row + dir * 2, this.col);
+        if (allowedMoves == null || allowedMoves[this.row + dir * 2][this.col]) {
+          this.moves.push(new DoubleMove(this, this.row + dir * 2, this.col, dir));
+        }
       }
     }
 
@@ -137,17 +138,24 @@ class Pawn extends Piece {
     noStroke();
     fill(205, 78, 0, 160);
     rect(this.col * Game.SquareSize, this.row * Game.SquareSize, Game.SquareSize);
+    if (this.enpassant) this.enpassant.highlight();
     for (let i = 0; i < this.moves.length; i++) {
-      if (this.enpassant) this.enpassant.highlight();
       this.moves[i].highlight();
     }
     pop();
   }
 
-  canMove(targetRow, targetCol) {
-    if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
-    for (let i = 0; i < this.moves.length; i++) {
-      if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow) return this.moves[i];
+  canMove(targetRow, targetCol, type = null) {
+    if (type !== null) {
+      if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
+      for (let i = 0; i < this.moves.length; i++) {
+        if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow && this.moves[i].type.name === type) return this.moves[i];
+      }
+    } else {
+      if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
+      for (let i = 0; i < this.moves.length; i++) {
+        if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow) return this.moves[i];
+      }
     }
     return null;
   }
@@ -487,12 +495,34 @@ class King extends Piece {
               const possibleMoves = [];
               pinnedPiece.generateMoves();
               pinnedPiece.generatedMoves = pinnedPiece.moves;
-              for (let k = 0; k < pinnedPiece.moves.length; k++) {
-                // if pinnedPiece move captures pinner then add it
-                if (pinnedPiece.moves[k].targetRow == piece.row && pinnedPiece.moves[k].targetCol == piece.col) {
-                  possibleMoves.push(pinnedPiece.moves[k]);
+
+              let allowedMoves = new Array(8).fill(false).map((_) => new Array(8).fill(false))
+
+              // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
+              if (piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen) {
+                let rowOff = piece.row - pinnedPiece.row;
+                rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
+                let colOff = piece.col - pinnedPiece.col;
+                colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
+
+                for (let j = 1; j < 8; j++) {
+                  const targetRow = this.row + rowOff * j;
+                  const targetCol = this.col + colOff * j;
+
+                  if (Game.instance.board[targetRow] === undefined) continue;
+
+                  if (Game.instance.board[targetRow][targetCol] === undefined) continue;
+
+                  allowedMoves[targetRow][targetCol] = true;
+
+                  if (targetRow == piece.row && targetCol == piece.col) break;
                 }
               }
+
+              for (let j = 0; j < pinnedPiece.moves.length; j++) {
+                if (allowedMoves[pinnedPiece.moves[j].targetRow][pinnedPiece.moves[j].targetCol]) possibleMoves.push(pinnedPiece.moves[j]);
+              }
+
               pinnedPiece.moves = possibleMoves;
             }
           }
@@ -507,7 +537,7 @@ class King extends Piece {
       }
     }
 
-    // add 
+    // add discovery moves
     for (let dir = 0; dir < dirs.length; dir++) {
       let pinnedPiece = null;
 
@@ -576,14 +606,14 @@ class King extends Piece {
     allowedMoves[this.attacks[0][0]][this.attacks[0][1]] = true;
 
     // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
-    let rowOff = this.attacks[0][0] - this.row;
-    rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
-    let colOff = this.attacks[0][1] - this.col;
-    colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
-
     const piece = Game.instance.board[this.attacks[0][0]][this.attacks[0][1]];
 
     if (piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen) {
+      let rowOff = this.attacks[0][0] - this.row;
+      rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
+      let colOff = this.attacks[0][1] - this.col;
+      colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
+
       for (let j = 1; j < 8; j++) {
         const targetRow = this.row + rowOff * j;
         const targetCol = this.col + colOff * j;

@@ -12,6 +12,7 @@ class Piece {
     this.attacks = [];
     this.moveCount = 0;
     this.generatedMoves = [];
+    this.movesGenerated = false;
   }
 
   highlightMoves() {
@@ -53,7 +54,7 @@ class Pawn extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
 
     const dir = this.color ? 1 : -1;
 
@@ -102,6 +103,7 @@ class Pawn extends Piece {
     }
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
   }
 
   addMove(targetRow, targetCol) {
@@ -146,13 +148,12 @@ class Pawn extends Piece {
   }
 
   canMove(targetRow, targetCol, type = null) {
+    if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
     if (type !== null) {
-      if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
       for (let i = 0; i < this.moves.length; i++) {
-        if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow && this.moves[i].type.name === type) return this.moves[i];
+        if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow && this.moves[i].type === type) return this.moves[i];
       }
     } else {
-      if (this.enpassant !== null && this.enpassant.targetRow == targetRow && this.enpassant.targetCol == targetCol) return this.enpassant;
       for (let i = 0; i < this.moves.length; i++) {
         if (this.moves[i].targetCol == targetCol && this.moves[i].targetRow == targetRow) return this.moves[i];
       }
@@ -174,7 +175,7 @@ class Rook extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
 
     const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
@@ -201,6 +202,7 @@ class Rook extends Piece {
     }
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
   }
 
   generateAttacks() {
@@ -245,7 +247,7 @@ class Knight extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
 
     const dirs = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
 
@@ -265,6 +267,7 @@ class Knight extends Piece {
     }
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
   }
 
   generateAttacks() {
@@ -299,7 +302,7 @@ class Bishop extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
 
     const dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
 
@@ -326,6 +329,7 @@ class Bishop extends Piece {
     }
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
   }
 
   generateAttacks() {
@@ -374,7 +378,7 @@ class King extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
 
     // all 8 directions
     let dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -404,6 +408,7 @@ class King extends Piece {
     if (!Game.instance.board[this.row]) return;
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
 
     // king can NOT be in check
     if (this.inCheck()) return;
@@ -433,6 +438,7 @@ class King extends Piece {
     }
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
   }
 
   generateAttacks() {
@@ -498,7 +504,7 @@ class King extends Piece {
 
               let allowedMoves = new Array(8).fill(false).map((_) => new Array(8).fill(false))
 
-              // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
+              // add moves that BLOCK or CAPTURE the checking piece
               if (piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen) {
                 let rowOff = piece.row - pinnedPiece.row;
                 rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
@@ -537,7 +543,9 @@ class King extends Piece {
       }
     }
 
+    // Was for cross check but wasnt legal
     // add discovery moves
+    /*
     for (let dir = 0; dir < dirs.length; dir++) {
       let pinnedPiece = null;
 
@@ -592,6 +600,11 @@ class King extends Piece {
         }
       }
     }
+    */
+
+    for (let i = 0; i < pinnedPieces.length; i++) {
+      pinnedPieces[i].movesGenerated = true;
+    }
 
     return pinnedPieces;
   }
@@ -645,7 +658,7 @@ class Queen extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
 
     const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
 
@@ -672,6 +685,7 @@ class Queen extends Piece {
     }
 
     this.generatedMoves = this.moves;
+    this.movesGenerated = true;
   }
 
   generateAttacks() {

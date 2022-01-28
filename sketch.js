@@ -6,12 +6,14 @@ function setup() {
   const size = Math.min(windowWidth, windowHeight);
   createCanvas(size, size);
 
+  Game.debug = true;
+
   Game.background = createGraphics(size, size);
   Game.resizeBackground(size);
 
   Game.instance = new Game(fen);
+  Game.instance.calculateMoves();
 
-  Game.debug = true;
   console.log(Game.instance.perftDivide(4));
 }
 

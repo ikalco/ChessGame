@@ -1,6 +1,8 @@
 class Move {
+  static debug = false;
+
   constructor(startPiece, targetRow, targetCol) {
-    // if (Game.debug) console.log((new Error).stack.toString().split(/\r\n|\n/)[3].trim());
+    if (Move.debug) console.log((new Error).stack);
     this.startPiece = startPiece;
     this.targetPiece = Game.instance.board[targetRow][targetCol];
     this.startRow = startPiece.row;

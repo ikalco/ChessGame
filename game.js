@@ -228,6 +228,7 @@ class Game {
           piece.attacks = [];
           piece.enpassant = null;
           piece.generatedMoves = [];
+          piece.movesGenerated = false;
         } else {
           this.board[i][j] = [];
         }
@@ -474,10 +475,10 @@ class Game {
       this.history.push(move);
     } else if (typeof move == "string") {
       const typelookup = {
-        'q': 'Queen',
-        'b': 'Bishop',
-        'r': 'Rook',
-        'n': 'Knight'
+        'q': Queen,
+        'b': Bishop,
+        'r': Rook,
+        'n': Knight
       }
 
       const [startRow, startCol] = Game.fromAlgNot(move[0] + move[1]);
@@ -587,6 +588,9 @@ class Game {
   perftDivide(depth) {
     console.time("Amount of time to preform Preft Divide");
 
+    console.log(`Perft Divide (depth = ${depth})`);
+    console.log("========== Moves ==========");
+
     let numOfPositions = 0;
 
     this.calculateMoves();
@@ -603,7 +607,7 @@ class Game {
       results[algNot] = perftResult;
       if (Game.debug) {
         if (this.expectedResults[algNot] != perftResult) {
-          console.log(moves[i]);
+          console.log(`Expected: %c${this.expectedResults[algNot]}`, "color: white; background: black;");
           break;
         }
       }
@@ -611,22 +615,14 @@ class Game {
       this.unmove();
     }
 
-    // En passant isn't being removed after first move after
-
-    console.log(results);
-
     console.log("=================================");
     console.log("Total amount of moves: ", numOfPositions);
     console.timeEnd("Amount of time to preform Preft Divide");
+  }
 
-    if (Game.debug) {
-      console.log("======== Fails ========");
-
-      console.log("Move  Got    | Expected");
-      for (let [algnot, result] of Object.entries(this.expectedResults)) {
-        if (results[algnot] != result) console.log(`${algnot}  ${results[algnot]} | ${result}`);
-      }
-    }
+  SEMFSO(str) {
+    this.expectedResults = {};
+    str.split('\n').forEach((_) => this.expectedResults[_.split(':')[0]] = parseInt(_.split(':')[1].trim()));
   }
 
   static toAlgNot(...parameters) {

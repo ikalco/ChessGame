@@ -31,6 +31,11 @@ class Piece {
     }
     return null;
   }
+
+  update() {
+    this.drawX = this.col * Game.SquareSize;
+    this.drawY = this.row * Game.SquareSize;
+  }
 }
 
 class Pawn extends Piece {

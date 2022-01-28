@@ -133,10 +133,15 @@ class Game {
         this.selected.highlightMoves();
       }
     } else if (this.selected) {
-      this.move(this.selected, Math.floor(mouseY / Game.SquareSize), Math.floor(mouseX / Game.SquareSize));
-      this.calculateMoves();
-      this.selected.drawX = this.selected.col * Game.SquareSize;
-      this.selected.drawY = this.selected.row * Game.SquareSize;
+      if (this.selected instanceof Piece) {
+        const move = this.selected.canMove(Math.floor(mouseY / Game.SquareSize), Math.floor(mouseX / Game.SquareSize));
+        if (move !== null) {
+          this.move(move);
+          this.calculateMoves();
+        }
+      }
+
+      this.selected.update();
       this.selected = null;
     }
   }
@@ -382,24 +387,18 @@ class Game {
     //console.timeEnd("Calculate Moves");
   }
 
-  move(startPiece, targetRow, targetCol) {
-    if (startPiece instanceof Piece) {
-      const move = startPiece.canMove(targetRow, targetCol);
+  move(move) {
+    if (move instanceof Move) {
+      move.move();
+      this.switchPlayer();
 
-      if (move !== null) {
-        move.move();
-        this.playerToMove = !this.playerToMove;
-        this.currentPieces = this.playerToMove ? this.blackPieces : this.whitePieces;
-        this.enemyPieces = !this.playerToMove ? this.blackPieces : this.whitePieces;
-        this.currentKing = this.playerToMove ? this.blackKing : this.whiteKing;
-        this.enemyKing = !this.playerToMove ? this.blackKing : this.whiteKing;
+      this.halfmoveCount++;
+      if (this.playerToMove == 0) this.fullmoveCount++;
+      if (move.targetPiece instanceof Piece && move.startPiece.color != move.targetPiece.color) this.captures++;
 
-        this.halfmoveCount++;
-        if (this.playerToMove == 0) this.fullmoveCount++;
-        if (move.targetPiece instanceof Piece && move.startPiece.color != move.targetPiece.color) this.captures++;
+      move.startPiece.update();
 
-        this.history.push(move);
-      }
+      this.history.push(move);
     }
   }
 
@@ -411,12 +410,15 @@ class Game {
     if (this.playerToMove == 0) this.fullmoveCount--;
 
     move.unmove();
+    this.switchPlayer();
+  }
+
+  switchPlayer() {
     this.playerToMove = !this.playerToMove;
     this.currentPieces = this.playerToMove ? this.blackPieces : this.whitePieces;
     this.enemyPieces = !this.playerToMove ? this.blackPieces : this.whitePieces;
     this.currentKing = this.playerToMove ? this.blackKing : this.whiteKing;
     this.enemyKing = !this.playerToMove ? this.blackKing : this.whiteKing;
-    this.calculateMoves();
   }
 
   remove(piece) {
@@ -460,12 +462,12 @@ class Game {
     }
 
     this.calculateMoves();
-    const moves = this.moves;
+    const moves = [...this.moves];
 
     let numOfPositions = 0;
 
     for (let i = 0; i < moves.length; i++) {
-      this.move(moves[i].startPiece, moves[i].targetRow, moves[i].targetCol);
+      this.move(moves[i]);
       numOfPositions += this.perft(depth - 1);
       this.unmove();
     }
@@ -475,14 +477,14 @@ class Game {
 
   perftBulk(depth) {
     this.calculateMoves();
-    const moves = this.moves;
+    const moves = [...this.moves];
 
     if (depth == 1) return moves.length;
 
     let numOfPositions = 0;
 
     for (let i = 0; i < moves.length; i++) {
-      this.move(moves[i].startPiece, moves[i].targetRow, moves[i].targetCol);
+      this.move(moves[i]);
       numOfPositions += this.perftBulk(depth - 1);
       this.unmove();
     }
@@ -497,18 +499,15 @@ class Game {
 
     this.calculateMoves();
 
-    const moves = this.moves;
+    const moves = [...this.moves];
 
     for (let i = 0; i < moves.length; i++) {
-      this.move(moves[i].startPiece, moves[i].targetRow, moves[i].targetCol);
+      this.move(moves[i]);
       const algNot = Game.toAlgNotation(moves[i].startRow, moves[i].startCol) + Game.toAlgNotation(moves[i].targetRow, moves[i].targetCol);
-      const perftResult = this.perft(depth - 1);
+      const perftResult = this.perftBulk(depth - 1);
       console.log(algNot, perftResult);
       numOfPositions += perftResult;
       this.unmove();
-
-      this.checks = 0;
-      this.captures = 0;
     }
 
     console.log("=================================");

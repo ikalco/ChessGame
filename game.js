@@ -134,6 +134,9 @@ class Game {
       }
     } else if (this.selected) {
       this.move(this.selected, Math.floor(mouseY / Game.SquareSize), Math.floor(mouseX / Game.SquareSize));
+      this.calculateMoves();
+      this.selected.drawX = this.selected.col * Game.SquareSize;
+      this.selected.drawY = this.selected.row * Game.SquareSize;
       this.selected = null;
     }
   }
@@ -183,6 +186,8 @@ class Game {
       // add moves that CAPTURE the piece that is delivering check
       const allowedMoves = this.currentKing.getAllowedMovesCheck();
 
+      // Was for cross check but wasnt legal
+      /*
       let pawnMoves = JSON.parse(JSON.stringify(allowedMoves));
       const dir = this.color ? -1 : 1
       let positions = [[dir, 1], [dir, -1]];
@@ -217,6 +222,7 @@ class Game {
           if (isPiece && piece.color != this.currentKing.color) break;
         }
       }
+      console.log(rookMoves);
 
       let knightMoves = JSON.parse(JSON.stringify(allowedMoves));
       positions = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
@@ -273,17 +279,23 @@ class Game {
           if (isPiece && piece.color != this.currentKing.color) break;
         }
       }
+      */
 
       let possibleMoves = [];
 
       for (let i = 0; i < this.currentPieces.length; i++) {
         const piece = this.currentPieces[i];
 
+        // Was for cross check but wasnt legal
+        /*
         if (piece instanceof Pawn) piece.generateMoves(pawnMoves);
         else if (piece instanceof Rook) piece.generateMoves(rookMoves);
         else if (piece instanceof Knight) piece.generateMoves(knightMoves);
         else if (piece instanceof Bishop) piece.generateMoves(bishopMoves);
         else if (piece instanceof Queen) piece.generateMoves(queenMoves);
+        */
+
+        piece.generateMoves(allowedMoves);
 
         possibleMoves = possibleMoves.concat(piece.moves);
       }
@@ -384,16 +396,11 @@ class Game {
 
         this.halfmoveCount++;
         if (this.playerToMove == 0) this.fullmoveCount++;
-        this.calculateMoves();
+        if (move.targetPiece instanceof Piece && move.startPiece.color != move.targetPiece.color) this.captures++;
 
         this.history.push(move);
-        if (move.targetPiece instanceof Piece && move.startPiece.color != move.targetPiece.color) this.captures++;
       }
     }
-
-    startPiece.drawX = startPiece.col * Game.SquareSize;
-    startPiece.drawY = startPiece.row * Game.SquareSize;
-
   }
 
   unmove() {
@@ -421,7 +428,7 @@ class Game {
     }
   }
 
-  unremove(piece) {
+  add(piece) {
     if (piece instanceof Piece) {
       if (piece.color == 0) {
         Game.instance.whitePieces.push(piece);
@@ -447,21 +454,81 @@ class Game {
     text(endScreenString, width / 2, (height / 2) + (textAscent() / 6));
   }
 
-  perft(depth = 3) {
+  perft(depth) {
     if (depth == 0) {
       return 1;
     }
 
     this.calculateMoves();
+    const moves = this.moves;
+
     let numOfPositions = 0;
 
-    for (let i = 0; i < this.moves.length; i++) {
-      this.move(this.moves[i].startPiece, this.moves[i].targetRow, this.moves[i].targetCol);
+    for (let i = 0; i < moves.length; i++) {
+      this.move(moves[i].startPiece, moves[i].targetRow, moves[i].targetCol);
       numOfPositions += this.perft(depth - 1);
       this.unmove();
     }
 
     return numOfPositions;
+  }
+
+  perftBulk(depth) {
+    this.calculateMoves();
+    const moves = this.moves;
+
+    if (depth == 1) return moves.length;
+
+    let numOfPositions = 0;
+
+    for (let i = 0; i < moves.length; i++) {
+      this.move(moves[i].startPiece, moves[i].targetRow, moves[i].targetCol);
+      numOfPositions += this.perftBulk(depth - 1);
+      this.unmove();
+    }
+
+    return numOfPositions;
+  }
+
+  perftDivide(depth) {
+    console.time("Amount of time to preform Preft Divide");
+
+    let numOfPositions = 0;
+
+    this.calculateMoves();
+
+    const moves = this.moves;
+
+    for (let i = 0; i < moves.length; i++) {
+      this.move(moves[i].startPiece, moves[i].targetRow, moves[i].targetCol);
+      const algNot = Game.toAlgNotation(moves[i].startRow, moves[i].startCol) + Game.toAlgNotation(moves[i].targetRow, moves[i].targetCol);
+      const perftResult = this.perft(depth - 1);
+      console.log(algNot, perftResult);
+      numOfPositions += perftResult;
+      this.unmove();
+
+      this.checks = 0;
+      this.captures = 0;
+    }
+
+    console.log("=================================");
+    console.log("Total amount of moves: ", numOfPositions);
+    console.timeEnd("Amount of time to preform Preft Divide");
+  }
+
+  static toAlgNotation(row, col) {
+    const lookup = {
+      1: 'a',
+      2: 'b',
+      3: 'c',
+      4: 'd',
+      5: 'e',
+      6: 'f',
+      7: 'g',
+      8: 'h',
+    }
+
+    return `${lookup[(8 - col)]}${(8 - row)}`;
   }
 
   static resizeBackground(size) {
@@ -487,4 +554,8 @@ class Game {
   static set background(bg) {
     if (!this.#background) this.#background = bg;
   }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

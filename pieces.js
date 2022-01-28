@@ -56,20 +56,20 @@ class Pawn extends Piece {
 
     if (Game.instance.board[this.row + dir][this.col] instanceof Array) {
       // move 1 forward if empty
-      if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.moves.push(new Move(this, this.row + dir, this.col));
+      if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.addMove(this.row + dir, this.col);
       // move 2 forwards if both empty
       if (this.moveCount == 0 && Game.instance.board[this.row + dir * 2] && Game.instance.board[this.row + dir * 2][this.col] instanceof Array) {
         this.canEnpassant = Game.instance.halfmoveCount + 1;
-        if (allowedMoves == null || allowedMoves[this.row + dir * 2][this.col]) this.moves.push(new Move(this, this.row + dir * 2, this.col));
+        if (allowedMoves == null || allowedMoves[this.row + dir * 2][this.col]) this.addMove(this.row + dir * 2, this.col);
       }
     }
 
     // diagonals in front of pawn is an enemy piece then you can move there
     if (Game.instance.board[this.row + dir][this.col + 1] instanceof Piece && Game.instance.board[this.row + dir][this.col + 1].color != this.color)
-      if (allowedMoves == null || allowedMoves[this.row + dir][this.col + 1]) this.moves.push(new Move(this, this.row + dir, this.col + 1));
+      if (allowedMoves == null || allowedMoves[this.row + dir][this.col + 1]) this.addMove(this.row + dir, this.col + 1);
 
     if (Game.instance.board[this.row + dir][this.col - 1] instanceof Piece && Game.instance.board[this.row + dir][this.col - 1].color != this.color)
-      if (allowedMoves == null || allowedMoves[this.row + dir][this.col - 1]) this.moves.push(new Move(this, this.row + dir, this.col - 1));
+      if (allowedMoves == null || allowedMoves[this.row + dir][this.col - 1]) this.addMove(this.row + dir, this.col - 1);
 
     // en passant
 
@@ -96,6 +96,17 @@ class Pawn extends Piece {
     }
 
     this.generatedMoves = this.moves;
+  }
+
+  addMove(targetRow, targetCol) {
+    if (targetRow == (this.color ? 7 : 0)) {
+      this.moves.push(new PromotionMove(this, targetRow, targetCol, Queen));
+      this.moves.push(new PromotionMove(this, targetRow, targetCol, Rook));
+      this.moves.push(new PromotionMove(this, targetRow, targetCol, Bishop));
+      this.moves.push(new PromotionMove(this, targetRow, targetCol, Knight));
+    } else {
+      this.moves.push(new Move(this, targetRow, targetCol));
+    }
   }
 
   generateAttacks() {
@@ -561,9 +572,9 @@ class King extends Piece {
 
     // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
     let rowOff = this.attacks[0][0] - this.row;
-    rowOff /= Math.abs(rowOff);
+    rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
     let colOff = this.attacks[0][1] - this.col;
-    colOff /= Math.abs(colOff);
+    colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
 
     const piece = Game.instance.board[this.attacks[0][0]][this.attacks[0][1]];
 
@@ -572,7 +583,7 @@ class King extends Piece {
         const targetRow = this.row + rowOff * j;
         const targetCol = this.col + colOff * j;
 
-        if (targetRow == this.attacks[0][0] || targetCol == this.attacks[0][1]) break;
+        if (targetRow == this.attacks[0][0] && targetCol == this.attacks[0][1]) break;
 
         if (Game.instance.board[targetRow] === undefined) continue;
 

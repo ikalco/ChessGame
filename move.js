@@ -1,5 +1,6 @@
 class Move {
   constructor(startPiece, targetRow, targetCol) {
+    // console.log((new Error).stack.toString().split(/\r\n|\n/)[2].trim());
     this.startPiece = startPiece;
     this.targetPiece = Game.instance.board[targetRow][targetCol];
     this.startRow = startPiece.row;
@@ -28,7 +29,7 @@ class Move {
     this.targetPiece.row = this.targetRow;
     this.targetPiece.col = this.targetCol;
 
-    Game.instance.unremove(this.targetPiece);
+    Game.instance.add(this.targetPiece);
 
     this.targetPiece.drawX = this.targetPiece.col * Game.SquareSize;
     this.targetPiece.drawY = this.targetPiece.row * Game.SquareSize;
@@ -47,7 +48,7 @@ class CastleMove extends Move {
   constructor(startPiece, targetRow, targetCol, otherStartPiece, otherTargetRow, otherTargetCol) {
     super(startPiece, targetRow, targetCol);
     this.otherStartPiece = otherStartPiece;
-    this.otherTargetPiece = Game.instance.board[otherTargetRow, otherTargetCol];
+    this.otherTargetPiece = Game.instance.board[otherTargetRow][otherTargetCol];
     this.otherStartRow = otherStartPiece.row;
     this.otherStartCol = otherStartPiece.col;
     this.otherTargetRow = otherTargetRow;
@@ -85,7 +86,7 @@ class CastleMove extends Move {
     this.targetPiece.col = this.targetCol;
     this.targetPiece.moveCount--;
 
-    Game.instance.unremove(this.targetPiece);
+    Game.instance.add(this.targetPiece);
 
     this.targetPiece.drawX = this.targetPiece.col * Game.SquareSize;
     this.targetPiece.drawY = this.targetPiece.row * Game.SquareSize;
@@ -103,7 +104,7 @@ class CastleMove extends Move {
     this.otherTargetPiece.col = this.otherTargetCol;
     this.otherTargetPiece.moveCount--;
 
-    Game.instance.unremove(this.otherTargetPiece);
+    Game.instance.add(this.otherTargetPiece);
 
     this.otherTargetPiece.drawX = this.otherTargetPiece.col * Game.SquareSize;
     this.otherTargetPiece.drawY = this.otherTargetPiece.row * Game.SquareSize;
@@ -158,12 +159,51 @@ class EnpassantMove extends Move {
     this.startPiece.drawX = this.startPiece.col * Game.SquareSize;
     this.startPiece.drawY = this.startPiece.row * Game.SquareSize;
 
-    Game.instance.unremove(this.targetPiece);
+    Game.instance.add(this.targetPiece);
     Game.instance.board[this.targetRow - this.dir][this.targetCol] = this.targetPiece;
 
     this.targetPiece.row = this.targetRow - this.dir;
     this.targetPiece.col = this.targetCol;
     this.targetPiece.drawX = this.targetPiece.col * Game.SquareSize;
     this.targetPiece.drawY = this.targetPiece.row * Game.SquareSize;
+  }
+}
+
+class PromotionMove extends Move {
+  constructor(startPiece, targetRow, targetCol, type) {
+    super(startPiece, targetRow, targetCol);
+    if (type.prototype instanceof Piece) this.type = type;
+    else this.type = Queen;
+  }
+
+  move() {
+    Game.instance.remove(Game.instance.board[this.startRow][this.startCol]);
+    Game.instance.board[this.startRow][this.startCol] = []
+
+    Game.instance.remove(Game.instance.board[this.targetRow][this.targetCol]);
+    Game.instance.board[this.targetRow][this.targetCol] = new (this.type)(this.targetRow, this.targetCol, this.startPiece.color)
+    Game.instance.board[this.targetRow][this.targetCol].moveCount = this.startPiece.moveCount + 1;
+
+    Game.instance.add(Game.instance.board[this.targetRow][this.targetCol]);
+  }
+
+  unmove() {
+    Game.instance.remove(Game.instance.board[this.targetRow][this.targetCol]);
+
+    Game.instance.board[this.targetRow][this.targetCol] = this.targetPiece;
+    this.targetPiece.row = this.targetRow;
+    this.targetPiece.col = this.targetCol;
+
+    this.targetPiece.drawX = this.targetPiece.col * Game.SquareSize;
+    this.targetPiece.drawY = this.targetPiece.row * Game.SquareSize;
+    Game.instance.add(this.targetPiece);
+
+    Game.instance.board[this.startRow][this.startCol] = this.startPiece;
+    this.startPiece.row = this.startRow;
+    this.startPiece.col = this.startCol;
+
+    this.startPiece.drawX = this.startPiece.col * Game.SquareSize;
+    this.startPiece.drawY = this.startPiece.row * Game.SquareSize;
+    Game.instance.add(this.startPiece);
   }
 }

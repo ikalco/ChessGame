@@ -1,6 +1,6 @@
 //let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // default board
 
-let fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+let fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 
 function setup() {
   const size = Math.min(windowWidth, windowHeight);
@@ -12,9 +12,6 @@ function setup() {
   Game.resizeBackground(size);
 
   Game.instance = new Game(fen);
-  Game.instance.calculateMoves();
-
-  console.log(Game.instance.perftDivide(4));
 }
 
 function draw() {

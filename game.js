@@ -18,50 +18,7 @@ class Game {
     this.lastDoubleMove = '-';
 
     this.expectedResults = {
-      a2a3: 46833,
-      b2b3: 46497,
-      c2c3: 49406,
-      g2g3: 44509,
-      h2h3: 46762,
-      a2a4: 48882,
-      b2b4: 46696,
-      g2g4: 45506,
-      h2h4: 47811,
-      d7c8q: 44226,
-      d7c8r: 38077,
-      d7c8b: 65053,
-      d7c8n: 62009,
-      b1d2: 40560,
-      b1a3: 44378,
-      b1c3: 50303,
-      e2g1: 48844,
-      e2c3: 54792,
-      e2g3: 51892,
-      e2d4: 52109,
-      e2f4: 51127,
-      c1d2: 46881,
-      c1e3: 53637,
-      c1f4: 52350,
-      c1g5: 45601,
-      c1h6: 40913,
-      c4b3: 43453,
-      c4d3: 43565,
-      c4b5: 45559,
-      c4d5: 48002,
-      c4a6: 41884,
-      c4e6: 49872,
-      c4f7: 43289,
-      h1f1: 46101,
-      h1g1: 44668,
-      d1d2: 48843,
-      d1d3: 57153,
-      d1d4: 57744,
-      d1d5: 56899,
-      d1d6: 43766,
-      e1f1: 49775,
-      e1d2: 33423,
-      e1f2: 36783,
-      e1g1: 47054,
+
     };
 
     this.timesToCalculateMoves = [[], [], [], [], [], []];
@@ -125,6 +82,9 @@ class Game {
 
     this.halfmoveCount = parseInt(fields.shift());
     this.fullmoveCount = parseInt(fields.shift());
+
+    if (isNaN(this.halfmoveCount)) this.halfmoveCount = 0;
+    if (isNaN(this.fullmoveCount)) this.fullmoveCount = 1;
 
     if (enPassantPiece != '-') {
       if (enPassantPiece[1] == '3') {
@@ -493,6 +453,15 @@ class Game {
     }
   }
 
+  multipleMoves(...moves) {
+    this.calculateMoves();
+
+    for (let i = 0; i < moves.length; i++) {
+      this.move(moves[i]);
+      this.calculateMoves();
+    }
+  }
+
   unmove() {
     if (this.history.length == 0) return;
     const move = this.history.pop();
@@ -586,7 +555,7 @@ class Game {
   }
 
   perftDivide(depth) {
-    console.time("Amount of time to preform Preft Divide");
+    console.time(`Amount of time to preform Preft Divide (depth = ${depth})`);
 
     console.log(`Perft Divide (depth = ${depth})`);
     console.log("========== Moves ==========");
@@ -594,6 +563,7 @@ class Game {
     let numOfPositions = 0;
 
     this.calculateMoves();
+    let done = false;
 
     const moves = [...this.moves];
 
@@ -608,6 +578,7 @@ class Game {
       if (Game.debug) {
         if (this.expectedResults[algNot] != perftResult) {
           console.log(`Expected: %c${this.expectedResults[algNot]}`, "color: white; background: black;");
+          done = true;
           break;
         }
       }
@@ -617,7 +588,15 @@ class Game {
 
     console.log("=================================");
     console.log("Total amount of moves: ", numOfPositions);
-    console.timeEnd("Amount of time to preform Preft Divide");
+    console.timeEnd(`Amount of time to preform Preft Divide (depth = ${depth})`);
+
+    if (!done) {
+      for (let [algNot, result] of Object.entries(this.expectedResults)) {
+        if (results[algNot] != this.expectedResults[algNot]) {
+          console.log(`Expected: ${algNot} %c${this.expectedResults[algNot]}`, "color: white; background: black;");
+        }
+      }
+    }
   }
 
   SEMFSO(str) {

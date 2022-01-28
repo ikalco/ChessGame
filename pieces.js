@@ -425,10 +425,18 @@ class King extends Piece {
 
       // king and rook must NOT have moved
       if (castleRook.moveCount != 0) continue;
+
+      let empty = true;
       // no pieces between king and rook
-      for (let i = 1; i < dirs[dir]; i++) {
-        if (Game.instance.board[this.row][this.col - i] instanceof Piece) continue;
+      for (let i = 1; i < Math.abs(dirs[dir]); i++) {
+        if (Game.instance.board[this.row][this.col + i * dirr] instanceof Piece) {
+          empty = false;
+          break;
+        }
       }
+
+      if (!empty) continue;
+
       // king can NOT pass through a square under attack
       if (Game.instance.board[this.row][this.col + 1 * dirr].length != 0) continue;
       // king can NOT end up in a square under attack

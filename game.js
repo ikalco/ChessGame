@@ -18,7 +18,6 @@ class Game {
     this.lastDoubleMove = '-';
 
     this.expectedResults = {
-
     };
 
     this.timesToCalculateMoves = [[], [], [], [], [], []];

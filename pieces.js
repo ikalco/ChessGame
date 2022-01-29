@@ -534,8 +534,11 @@ class King extends Piece {
               }
 
               for (let j = 0; j < pinnedPiece.moves.length; j++) {
+                if (Game.debug && pinnedPiece.moves[j] instanceof EnpassantMove) console.log(pinnedPiece.moves[j]);
                 if (allowedMoves[pinnedPiece.moves[j].targetRow][pinnedPiece.moves[j].targetCol]) possibleMoves.push(pinnedPiece.moves[j]);
               }
+
+              if (pinnedPiece instanceof Pawn && pinnedPiece.enpassant !== null && !(allowedMoves[pinnedPiece.enpassant.targetRow][pinnedPiece.enpassant.targetCol])) pinnedPiece.enpassant = null;
 
               pinnedPiece.moves = possibleMoves;
             }

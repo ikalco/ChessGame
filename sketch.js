@@ -1,17 +1,16 @@
-//let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // default board
-
-let fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
+let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // default board
 
 function setup() {
   const size = Math.min(windowWidth, windowHeight);
   createCanvas(size, size);
 
-  Game.debug = true;
+  // Game.debug = true;
 
   Game.background = createGraphics(size, size);
   Game.resizeBackground(size);
 
   Game.instance = new Game(fen);
+  Game.instance.calculateMoves();
 }
 
 function draw() {

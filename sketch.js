@@ -4,9 +4,6 @@ function setup() {
   const size = Math.min(windowWidth, windowHeight);
   createCanvas(size, size);
 
-  // Game.debug = true;
-  // Move.debug = true;
-
   Game.background = createGraphics(size, size);
   Game.resizeBackground(size);
 
@@ -26,8 +23,4 @@ function windowResized() {
   resizeCanvas(size, size);
 
   Game.resizeBackground(size);
-}
-
-function testingthis(...parameters) {
-  console.log(parameters);
 }

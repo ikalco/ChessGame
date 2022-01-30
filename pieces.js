@@ -54,11 +54,11 @@ class Pawn extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return this.moves;
 
     const dir = this.color ? 1 : -1;
 
-    if (!Game.instance.board[this.row + dir]) return;
+    if (!Game.instance.board[this.row + dir]) return this.moves;
 
     if (Game.instance.board[this.row + dir][this.col] instanceof Array) {
       // move 1 forward if empty
@@ -80,6 +80,8 @@ class Pawn extends Piece {
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
+
+    return this.moves;
   }
 
   addMove(targetRow, targetCol) {
@@ -96,18 +98,18 @@ class Pawn extends Piece {
   generateAttacks() {
     const dir = this.color ? 1 : -1;
 
-    if (Game.instance.board[this.row + dir]) {
-      let piece = Game.instance.board[this.row + dir][this.col + 1];
-      if (piece !== undefined) {
-        if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
-        else piece.push([this.row, this.col]);
-      }
+    if (!Game.instance.board[this.row + dir]) return;
 
-      piece = Game.instance.board[this.row + dir][this.col - 1];
-      if (piece !== undefined) {
-        if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
-        else piece.push([this.row, this.col]);
-      }
+    let piece = Game.instance.board[this.row + dir][this.col + 1];
+    if (piece !== undefined) {
+      if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
+      else piece.push([this.row, this.col]);
+    }
+
+    piece = Game.instance.board[this.row + dir][this.col - 1];
+    if (piece !== undefined) {
+      if (piece instanceof Piece) piece.attacks.push([this.row, this.col]);
+      else piece.push([this.row, this.col]);
     }
   }
 
@@ -151,7 +153,7 @@ class Rook extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return this.moves;
 
     const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
@@ -179,6 +181,8 @@ class Rook extends Piece {
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
+
+    return this.moves;
   }
 
   generateAttacks() {
@@ -223,7 +227,7 @@ class Knight extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return this.moves;
 
     const dirs = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
 
@@ -244,6 +248,8 @@ class Knight extends Piece {
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
+
+    return this.moves;
   }
 
   generateAttacks() {
@@ -278,7 +284,7 @@ class Bishop extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return this.moves;
 
     const dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
 
@@ -306,6 +312,8 @@ class Bishop extends Piece {
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
+
+    return this.moves;
   }
 
   generateAttacks() {
@@ -354,7 +362,7 @@ class King extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return this.moves;
 
     // all 8 directions
     let dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -381,14 +389,12 @@ class King extends Piece {
       if (allowedMoves == null || allowedMoves[targetRow][targetCol]) this.moves.push(new Move(this, targetRow, targetCol));
     }
 
-    if (!Game.instance.board[this.row]) return;
-
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
 
     // king can NOT be in check
-    if (this.inCheck()) return;
-    if (this.moveCount != 0) return;
+    if (this.inCheck()) return this.moves;
+    if (this.moveCount != 0) return this.moves;
 
     dirs = [-4, 3];
 
@@ -423,6 +429,8 @@ class King extends Piece {
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
+
+    return this.moves;
   }
 
   generateAttacks() {
@@ -580,7 +588,7 @@ class Queen extends Piece {
   }
 
   generateMoves(allowedMoves = null) {
-    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return;
+    if (this.moves.length != 0 || this.generatedMoves.length != 0 || this.movesGenerated) return this.moves;
 
     const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
 
@@ -608,6 +616,8 @@ class Queen extends Piece {
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
+
+    return this.moves;
   }
 
   generateAttacks() {
@@ -638,8 +648,6 @@ class Queen extends Piece {
     }
   }
 }
-
-let chessPiecesImg;
 
 function preload() {
   chessPiecesImg = loadImage('./assets/pieces.png', () => {

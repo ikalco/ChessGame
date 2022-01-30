@@ -15,25 +15,6 @@ class Game {
     this.checks = 0;
     this.lastDoubleMove = null;
 
-    this.expectedResults = {
-      e2e3: 11427551,
-      g2g3: 4190119,
-      a5a6: 16022983,
-      e2e4: 8853383,
-      g2g4: 13629805,
-      b4b1: 19481757,
-      b4b2: 12755330,
-      b4b3: 15482610,
-      b4a4: 11996400,
-      b4c4: 17400108,
-      b4d4: 15996777,
-      b4e4: 14187097,
-      b4f4: 3069955,
-      a5a4: 14139786,
-    };
-
-    this.timesToCalculateMoves = [[], [], [], [], [], []];
-
     this.loadPosFromFen(fenString);
   }
 
@@ -168,11 +149,11 @@ class Game {
 
   drawPieces() {
     if (!this.running) return;
-    for (let i = 0; i < this.board.length; i++) {
-      for (let j = 0; j < this.board[0].length; j++) {
-        const piece = this.board[i][j];
-        if (piece instanceof Piece) piece.draw();
-      }
+    for (let i = 0; i < this.whitePieces.length; i++) {
+      this.whitePieces[i].draw();
+    }
+    for (let i = 0; i < this.blackPieces.length; i++) {
+      this.blackPieces[i].draw();
     }
   }
 
@@ -201,7 +182,6 @@ class Game {
 
     // returns pinned pieces and their moves are already generated
     const pinnedPieces = this.currentKing.getPinnedPieces();
-    if (Game.debug) console.log(pinnedPieces);
 
     if (this.currentKing.inCheck()) {
       this.checks++;
@@ -211,16 +191,13 @@ class Game {
 
       // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
       // add moves that CAPTURE the piece that is delivering check
+
       const allowedMoves = this.currentKing.getAllowedMovesCheck();
 
       let possibleMoves = [];
 
       for (let i = 0; i < this.currentPieces.length; i++) {
-        const piece = this.currentPieces[i];
-
-        piece.generateMoves(allowedMoves);
-
-        possibleMoves = possibleMoves.concat(piece.moves);
+        possibleMoves = possibleMoves.concat(this.currentPieces[i].generateMoves(allowedMoves));
       }
 
       // generate enpassant moves
@@ -309,12 +286,11 @@ class Game {
 
       if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
+
       let possibleMoves = [];
 
       for (let i = 0; i < this.currentPieces.length; i++) {
-        const piece = this.currentPieces[i];
-        piece.generateMoves();
-        possibleMoves = possibleMoves.concat(piece.moves);
+        possibleMoves = possibleMoves.concat(this.currentPieces[i].generateMoves());
       }
 
       // generate enpassant moves
@@ -404,69 +380,6 @@ class Game {
 
       if (possibleMoves.length == 0) this.stop("Draw!");
     }
-
-    // HOW
-
-    // get current attacks of enemy player
-    // at the same time get all possible attacks of player for king move generation (sliding pieces arent blocked)
-
-    // get pinned pieces (scan like moves of a queen for pieces that have corresponding piece after them)
-
-    // if king is being attacked (check)
-    //    add moves that MOVE king to a square that isn't being attacked (move king out of check)
-    //    add moves that CAPTURE the piece that is delivering check (not pinned pieces unless they deliver check)
-    //    add moves that BLOCK the check 
-    //    add moves for pinned pieces that deliver a check (not necessarily by pinned piece; can be revealed)
-    // otherwise
-    //    generate normal moves except for pinned pieces
-    //    add moves for pinned pieces that deliver a check (not necessarily by pinned piece; can be revealed)
-
-
-
-    // RULES
-    // no pieces can jump other pieces (except knight and [CASTLING])
-
-    // CHECK: king is in check when it is attacked by at least one enemy piece
-    //      no moves can put or leave king in check
-    //      a piece that is pinned MAY still check opponent
-    //      MOVE king to a square that isn't being attacked (move king out of check)
-    //      CAPTURE the piece that is delivering check (not pinned pieces unless they put opponenet in check)
-    //      BLOCK the check by placing a piece in the way of the piece delivering check to where there is no check
-
-    // KING: can move to any square around it that isnt being attacked
-    //       [CASTLING]
-
-    // ROOK: can move to any amount of squares vertically or horizontally
-
-    // BISHOP: can move to any amount of squares diagonally
-
-    // QUEEN: can move to any amount vertically, horizontally, or diagonally
-
-    // KNIGHT: can move to any square not on the same row, col, or diagonal (basically in L shape ; also can jump pieces)
-
-    // PAWNS: can move forward one or two squares if they are vacant along with en passant and promotions
-    //      moves forward one square if it is vacant
-    //      moves forward two squares if they are both vacant AND itself hasn't moved yet
-    //      captures diagonally in front of itself if they are NOT vacant
-    //      capture [EN PASSANT]
-    //      [PROMOTION]
-
-    // [CASTLING]: a king moves two squares towards a rook that goes on the other side of king
-    //           king and rook must NOT have moved
-    //           no pieces between king and rook
-    //           king can NOT be in check
-    //           king can NOT pass through a square under attack
-    //           king can NOT end up in a square under attack
-
-    // [EN PASSANT]: an enemy pawn can capture a pawn that just moved up two spaces if it is adjacent to it after the move because it is a lost capture???
-    //    enemy pawn must have just moved 2 squares forward (first move of enemy)
-    //    only allowed on first move after enemy pawn has moved forward two squares
-    //    pawns are adjacent on same row
-    //    pawn takes enemy pawn and moves to one square behind enemy pawn
-
-    // [PROMOTION]: a pawn can become any piece except a king when getting to the other side of the board
-    //            pawn advances to opposite side of the board (last row)
-    //            player can choose to turn pawn into a queen, rook, bishop, or knight of the same color
   }
 
   move(move) {
@@ -549,6 +462,8 @@ class Game {
   }
 
   stop(endScreenString) {
+    if (Game.debug) return;
+
     this.update();
     this.drawPieces();
     this.running = false;
@@ -652,7 +567,7 @@ class Game {
     return numOfPositions;
   }
 
-  SEMFSO(str) {
+  loadPerftDivideExpectedResults(str) {
     this.expectedResults = {};
     str.split('\n').forEach((_) => this.expectedResults[_.split(':')[0]] = parseInt(_.split(':')[1].trim()));
   }
@@ -748,6 +663,7 @@ class Game {
     Game.SquareSize = width / 8;
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
+        if (Game.instance instanceof Game && Game.instance.board[i][j] instanceof Piece) Game.instance.board[i][j].update();
         if ((i + j) & 1 != 0) this.#background.rect(i * Game.SquareSize, j * Game.SquareSize, Game.SquareSize, Game.SquareSize);
       }
     }
@@ -760,8 +676,4 @@ class Game {
   static set background(bg) {
     if (!this.#background) this.#background = bg;
   }
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }

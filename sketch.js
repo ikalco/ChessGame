@@ -12,6 +12,8 @@ function setup() {
 
   Game.instance = new Game(fen);
   Game.instance.calculateMoves();
+
+  runPerftTests();
 }
 
 function draw() {

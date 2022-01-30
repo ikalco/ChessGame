@@ -5,6 +5,7 @@ function setup() {
   createCanvas(size, size);
 
   // Game.debug = true;
+  // Move.debug = true;
 
   Game.background = createGraphics(size, size);
   Game.resizeBackground(size);

@@ -13,6 +13,7 @@ class Piece {
     this.moveCount = 0;
     this.generatedMoves = [];
     this.movesGenerated = false;
+    this.pinned = false;
   }
 
   highlightMoves() {
@@ -46,7 +47,6 @@ class Pawn extends Piece {
   constructor(row, col, color) {
     super(row, col, color);
     this.enpassant = null;
-    this.canEnpassant = null;
   }
 
   draw() {
@@ -77,30 +77,6 @@ class Pawn extends Piece {
 
     if (Game.instance.board[this.row + dir][this.col - 1] instanceof Piece && Game.instance.board[this.row + dir][this.col - 1].color != this.color)
       if (allowedMoves == null || allowedMoves[this.row + dir][this.col - 1]) this.addMove(this.row + dir, this.col - 1);
-
-    // en passant
-
-    let enemyPiece = Game.instance.board[this.row][this.col + 1];
-    // enemy pawn just moved 2 squares forward (first move of enemy)
-    if (enemyPiece instanceof Piece && enemyPiece.color != this.color && enemyPiece.row == (this.color ? 4 : 3) && enemyPiece.moveCount == 1) {
-      // only allowed on first move after enemy pawn has moved forward two squares
-      if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
-        // pawn takes enemy pawn and moves to one square behind enemy pawn
-        const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col, dir);
-        if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.enpassant = move;
-      }
-    }
-
-    enemyPiece = Game.instance.board[this.row][this.col - 1];
-    // enemy pawn just moved 2 squares forward (first move of enemy)
-    if (enemyPiece instanceof Piece && enemyPiece.color != this.color && enemyPiece.row == (this.color ? 4 : 3) && enemyPiece.moveCount == 1) {
-      // only allowed on first move after enemy pawn has moved forward two squares
-      if (enemyPiece.canEnpassant == Game.instance.halfmoveCount) {
-        // pawn takes enemy pawn and moves to one square behind enemy pawn
-        const move = new EnpassantMove(this, enemyPiece.row + dir, enemyPiece.col, dir);
-        if (allowedMoves == null || allowedMoves[this.row + dir][this.col]) this.enpassant = move;
-      }
-    }
 
     this.generatedMoves = this.moves;
     this.movesGenerated = true;
@@ -479,7 +455,6 @@ class King extends Piece {
     // first four are vertical and horizontal
     // last four are diagonals
     const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
-    //const dirs = [[0, 1]];
 
     // find pinned pieces
     for (let dir = 0; dir < dirs.length; dir++) {
@@ -514,10 +489,7 @@ class King extends Piece {
 
               // add moves that BLOCK or CAPTURE the checking piece
               if (piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen) {
-                let rowOff = piece.row - pinnedPiece.row;
-                rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
-                let colOff = piece.col - pinnedPiece.col;
-                colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
+                const [rowOff, colOff] = Game.getDirFromPos(pinnedPiece.row, pinnedPiece.col, piece.row, piece.col);
 
                 for (let j = 1; j < 8; j++) {
                   const targetRow = this.row + rowOff * j;
@@ -538,7 +510,7 @@ class King extends Piece {
                 if (allowedMoves[pinnedPiece.moves[j].targetRow][pinnedPiece.moves[j].targetCol]) possibleMoves.push(pinnedPiece.moves[j]);
               }
 
-              if (pinnedPiece instanceof Pawn && pinnedPiece.enpassant !== null && !(allowedMoves[pinnedPiece.enpassant.targetRow][pinnedPiece.enpassant.targetCol])) pinnedPiece.enpassant = null;
+              if (pinnedPiece instanceof Pawn && pinnedPiece.enpassant != null && !(allowedMoves[pinnedPiece.enpassant.targetRow][pinnedPiece.enpassant.targetCol])) pinnedPiece.enpassant = null;
 
               pinnedPiece.moves = possibleMoves;
             }
@@ -554,67 +526,9 @@ class King extends Piece {
       }
     }
 
-    // Was for cross check but wasnt legal
-    // add discovery moves
-    /*
-    for (let dir = 0; dir < dirs.length; dir++) {
-      let pinnedPiece = null;
-
-      for (let i = 1; i < 8; i++) {
-        const targetRow = Game.instance.enemyKing.row + dirs[dir][0] * i;
-        const targetCol = Game.instance.enemyKing.col + dirs[dir][1] * i;
-
-        if (Game.instance.board[targetRow] === undefined) continue;
-
-        const piece = Game.instance.board[targetRow][targetCol];
-        if (piece === undefined) continue;
-
-        const isPiece = piece instanceof Piece;
-
-        if (!isPiece) continue;
-
-        if (!pinnedPiece) {
-          if (pinnedPieces.includes(piece)) {
-            // first encountered piece is a pinned piece
-            pinnedPiece = piece;
-          } else {
-            break;
-          }
-        } else {
-          if (piece.color == this.color) {
-            // encountered potential discovery attacker
-            // if in right direction for piece (if piece is a bishop then right direction is diagonals)
-            // then add moves that move it out of the line of sight of piece
-            // could potentially add duplicate moves because of Double Check
-
-            if ((piece instanceof Queen) || (piece instanceof Rook && dir <= 3) || (piece instanceof Bishop && dir > 3)) {
-              // added discovery checks
-              const disallowedMoves = [];
-              for (let l = 1; l < i; l++) {
-                disallowedMoves.push([Game.instance.enemyKing.row + dirs[dir][0] * l, Game.instance.enemyKing.col + dirs[dir][1] * l])
-              }
-              const saveMoves = pinnedPiece.moves;
-              pinnedPiece.moves = pinnedPiece.generatedMoves;
-              for (let l = 0; l < pinnedPiece.moves.length; l++) {
-                for (let k = 0; k < disallowedMoves.length; k++) {
-                  if (!(pinnedPiece.moves[l].targetRow == disallowedMoves[k][0] && pinnedPiece.moves[l].targetCol == disallowedMoves[k][1])) {
-                    saveMoves.push(pinnedPiece.moves[l]);
-                  }
-                }
-              }
-              //pinnedPiece.moves = saveMoves;
-              // add moves that use pinnedPiece to give check
-            }
-          } else {
-            break;
-          }
-        }
-      }
-    }
-    */
-
     for (let i = 0; i < pinnedPieces.length; i++) {
       pinnedPieces[i].movesGenerated = true;
+      pinnedPieces[i].pinned = true;
     }
 
     return pinnedPieces;
@@ -633,10 +547,7 @@ class King extends Piece {
     const piece = Game.instance.board[this.attacks[0][0]][this.attacks[0][1]];
 
     if (piece instanceof Rook || piece instanceof Bishop || piece instanceof Queen) {
-      let rowOff = this.attacks[0][0] - this.row;
-      rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
-      let colOff = this.attacks[0][1] - this.col;
-      colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
+      const [rowOff, colOff] = Game.getDirFromPos(this.row, this.col, this.attacks[0][0], this.attacks[0][1]);
 
       for (let j = 1; j < 8; j++) {
         const targetRow = this.row + rowOff * j;

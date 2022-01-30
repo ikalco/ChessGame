@@ -10,7 +10,7 @@ class Move {
     this.targetRow = targetRow;
     this.targetCol = targetCol;
 
-    this.lastDoubleMove = '-';
+    this.lastDoubleMove = null;
   }
 
   highlight() {
@@ -28,7 +28,7 @@ class Move {
     targetPiece.moveCount++;
 
     this.lastDoubleMove = Game.instance.lastDoubleMove;
-    Game.instance.lastDoubleMove = '-';
+    Game.instance.lastDoubleMove = null;
   }
 
   unmove() {
@@ -89,7 +89,7 @@ class CastleMove extends Move {
     targetPiece.drawY = targetPiece.row * Game.SquareSize;
 
     this.lastDoubleMove = Game.instance.lastDoubleMove;
-    Game.instance.lastDoubleMove = '-';
+    Game.instance.lastDoubleMove = null;
   }
 
   unmove() {
@@ -159,7 +159,7 @@ class EnpassantMove extends Move {
     piece.enpassant = null;
 
     this.lastDoubleMove = Game.instance.lastDoubleMove;
-    Game.instance.lastDoubleMove = '-';
+    Game.instance.lastDoubleMove = null;
   }
 
   unmove() {
@@ -210,7 +210,7 @@ class PromotionMove extends Move {
     Game.instance.add(Game.instance.board[this.targetRow][this.targetCol]);
 
     this.lastDoubleMove = Game.instance.lastDoubleMove;
-    Game.instance.lastDoubleMove = '-';
+    Game.instance.lastDoubleMove = null;
   }
 
   unmove() {
@@ -240,7 +240,6 @@ class DoubleMove extends Move {
   constructor(startPiece, targetRow, targetCol, dir) {
     super(startPiece, targetRow, targetCol);
     this.dir = dir;
-    this.canEnpassantSave = null;
   }
 
   move() {
@@ -248,14 +247,12 @@ class DoubleMove extends Move {
     Game.instance.board[this.targetRow][this.targetCol] = Game.instance.board[this.startRow][this.startCol];
     Game.instance.board[this.startRow][this.startCol] = [];
     const targetPiece = Game.instance.board[this.targetRow][this.targetCol];
-    this.canEnpassantSave = targetPiece.canEnpassant;
-    targetPiece.canEnpassant = Game.instance.halfmoveCount + 1;
     targetPiece.col = this.targetCol;
     targetPiece.row = this.targetRow;
     targetPiece.moveCount++;
 
     this.lastDoubleMove = Game.instance.lastDoubleMove;
-    Game.instance.lastDoubleMove = Game.toAlgNot(this.targetRow - this.dir, this.targetCol);
+    Game.instance.lastDoubleMove = [this.targetRow - this.dir, this.targetCol];
   }
 
   unmove() {
@@ -275,8 +272,6 @@ class DoubleMove extends Move {
 
     this.startPiece.drawX = this.startPiece.col * Game.SquareSize;
     this.startPiece.drawY = this.startPiece.row * Game.SquareSize;
-
-    this.startPiece.canEnpassant = this.canEnpassantSave;
 
     Game.instance.lastDoubleMove = this.lastDoubleMove;
   }

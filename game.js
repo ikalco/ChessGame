@@ -7,23 +7,39 @@ class Game {
   constructor(fenString) {
     if (Game.instance) throw Error("You can only have one game!");
 
-    this.loadPosFromFen(fenString);
-
     this.selected = null;
     this.running = true;
     this.history = [];
 
     this.captures = 0;
     this.checks = 0;
-    this.lastDoubleMove = '-';
+    this.lastDoubleMove = null;
 
     this.expectedResults = {
+      e2e3: 11427551,
+      g2g3: 4190119,
+      a5a6: 16022983,
+      e2e4: 8853383,
+      g2g4: 13629805,
+      b4b1: 19481757,
+      b4b2: 12755330,
+      b4b3: 15482610,
+      b4a4: 11996400,
+      b4c4: 17400108,
+      b4d4: 15996777,
+      b4e4: 14187097,
+      b4f4: 3069955,
+      a5a4: 14139786,
     };
 
     this.timesToCalculateMoves = [[], [], [], [], [], []];
+
+    this.loadPosFromFen(fenString);
   }
 
   loadPosFromFen(fen) {
+    console.log(`FEN = ${fen}`);
+
     const lookup = {
       k: King,
       p: Pawn,
@@ -77,28 +93,14 @@ class Game {
     // doesnt really matter in this implementation
     fields.shift();
 
-    const enPassantPiece = fields.shift();
+    this.lastDoubleMove = fields.shift();
+    this.lastDoubleMove = this.lastDoubleMove == '-' ? null : Game.fromAlgNot(this.lastDoubleMove);
 
     this.halfmoveCount = parseInt(fields.shift());
     this.fullmoveCount = parseInt(fields.shift());
 
     if (isNaN(this.halfmoveCount)) this.halfmoveCount = 0;
     if (isNaN(this.fullmoveCount)) this.fullmoveCount = 1;
-
-    if (enPassantPiece != '-') {
-      if (enPassantPiece[1] == '3') {
-        // add this position to list of white pawn attack moves
-        let [row, col] = Game.fromAlgNot(enPassantPiece);
-        row -= 1;
-        console.log(this.halfmoveCount, this.board[row][col]);
-        this.board[row][col].canEnpassant = this.halfmoveCount;
-      } else if (enPassantPiece[1] == '6') {
-        // add this position to list of black pawn attack moves
-        let [row, col] = Game.fromAlgNot(enPassantPiece);
-        row += 1;
-        this.board[row][col].canEnpassant = this.halfmoveCount;
-      }
-    }
   }
 
   getPosFromFen() {
@@ -133,7 +135,7 @@ class Game {
       fen += '/'
     }
 
-    fen = `${fen.slice(0, fen.length - 1)} ${this.playerToMove ? 'b' : 'w'} KQkq ${this.lastDoubleMove} ${this.halfmoveCount} ${this.fullmoveCount}`;
+    fen = `${fen.slice(0, fen.length - 1)} ${this.playerToMove ? 'b' : 'w'} KQkq ${this.lastDoubleMove === null ? '-' : Game.toAlgNot(this.lastDoubleMove[0], this.lastDoubleMove[1])} ${this.halfmoveCount} ${this.fullmoveCount}`;
     console.log(fen);
   }
 
@@ -175,8 +177,6 @@ class Game {
   }
 
   calculateMoves() {
-    let startTimeOverall = millis();
-
     // reset board attacks and moves
     this.moves = [];
     for (let i = 0; i < this.board.length; i++) {
@@ -188,22 +188,20 @@ class Game {
           piece.enpassant = null;
           piece.generatedMoves = [];
           piece.movesGenerated = false;
+          piece.pinned = false;
         } else {
           this.board[i][j] = [];
         }
       }
     }
 
-    let startTime = millis();
     for (let i = 0; i < this.enemyPieces.length; i++) {
       this.enemyPieces[i].generateAttacks();
     }
-    this.timesToCalculateMoves[0].push(millis() - startTime);
 
     // returns pinned pieces and their moves are already generated
-    startTime = millis();
-    this.currentKing.getPinnedPieces();
-    this.timesToCalculateMoves[1].push(millis() - startTime);
+    const pinnedPieces = this.currentKing.getPinnedPieces();
+    if (Game.debug) console.log(pinnedPieces);
 
     if (this.currentKing.inCheck()) {
       this.checks++;
@@ -211,151 +209,202 @@ class Game {
       // add moves that MOVE king out of check
       this.currentKing.generateMoves();
 
-      startTime = millis();
       // add moves that BLOCK the check (if checking piece is rook, bishop, or queen)
       // add moves that CAPTURE the piece that is delivering check
       const allowedMoves = this.currentKing.getAllowedMovesCheck();
 
-      this.timesToCalculateMoves[2].push(millis() - startTime);
-
-      // Was for cross check but wasnt legal
-      /*
-      let pawnMoves = JSON.parse(JSON.stringify(allowedMoves));
-      const dir = this.color ? -1 : 1
-      let positions = [[dir, 1], [dir, -1]];
-      for (let i = 0; i < positions.length; i++) {
-        const row = this.enemyKing.row + positions[i][0];
-        const col = this.enemyKing.col + positions[i][1];
-
-        if (pawnMoves[row] === undefined) continue;
-        if (pawnMoves[row][col] === undefined) continue;
-
-        pawnMoves[row][col] = true;
-      }
-
-      let rookMoves = JSON.parse(JSON.stringify(allowedMoves));
-      let dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-      for (let dir = 0; dir < dirs.length; dir++) {
-        for (let i = 1; i < 8; i++) {
-          const row = this.enemyKing.row + dirs[dir][0] * i;
-          const col = this.enemyKing.col + dirs[dir][1] * i;
-
-          if (this.board[row] === undefined) continue;
-
-          const piece = this.board[row][col];
-          if (piece === undefined) continue;
-
-          const isPiece = piece instanceof Piece;
-
-          if (isPiece && piece.color == this.currentKing.color) break;
-
-          rookMoves[row][col] = true;
-
-          if (isPiece && piece.color != this.currentKing.color) break;
-        }
-      }
-      console.log(rookMoves);
-
-      let knightMoves = JSON.parse(JSON.stringify(allowedMoves));
-      positions = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
-      for (let i = 0; i < positions.length; i++) {
-        const row = this.enemyKing.row + positions[i][0];
-        const col = this.enemyKing.col + positions[i][1];
-
-        if (knightMoves[row] === undefined) continue;
-        if (knightMoves[row][col] === undefined) continue;
-
-        knightMoves[row][col] = true;
-      }
-
-      let bishopMoves = JSON.parse(JSON.stringify(allowedMoves));
-      dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-      for (let dir = 0; dir < dirs.length; dir++) {
-        for (let i = 1; i < 8; i++) {
-          const row = this.enemyKing.row + dirs[dir][0] * i;
-          const col = this.enemyKing.col + dirs[dir][1] * i;
-
-          if (this.board[row] === undefined) continue;
-
-          const piece = this.board[row][col];
-          if (piece === undefined) continue;
-
-          const isPiece = piece instanceof Piece;
-
-          if (isPiece && piece.color == this.currentKing.color) break;
-
-          bishopMoves[row][col] = true;
-
-          if (isPiece && piece.color != this.currentKing.color) break;
-        }
-      }
-
-      let queenMoves = JSON.parse(JSON.stringify(allowedMoves));
-      dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
-      for (let dir = 0; dir < dirs.length; dir++) {
-        for (let i = 1; i < 8; i++) {
-          const row = this.enemyKing.row + dirs[dir][0] * i;
-          const col = this.enemyKing.col + dirs[dir][1] * i;
-
-          if (this.board[row] === undefined) continue;
-
-          const piece = this.board[row][col];
-          if (piece === undefined) continue;
-
-          const isPiece = piece instanceof Piece;
-
-          if (isPiece && piece.color == this.currentKing.color) break;
-
-          queenMoves[row][col] = true;
-
-          if (isPiece && piece.color != this.currentKing.color) break;
-        }
-      }
-      */
-
       let possibleMoves = [];
 
-      startTime = millis();
       for (let i = 0; i < this.currentPieces.length; i++) {
         const piece = this.currentPieces[i];
-
-        // Was for cross check but wasnt legal
-        /*
-        if (piece instanceof Pawn) piece.generateMoves(pawnMoves);
-        else if (piece instanceof Rook) piece.generateMoves(rookMoves);
-        else if (piece instanceof Knight) piece.generateMoves(knightMoves);
-        else if (piece instanceof Bishop) piece.generateMoves(bishopMoves);
-        else if (piece instanceof Queen) piece.generateMoves(queenMoves);
-        */
 
         piece.generateMoves(allowedMoves);
 
         possibleMoves = possibleMoves.concat(piece.moves);
-        if (piece instanceof Pawn && piece.enpassant != null) possibleMoves.push(piece.enpassant);
+      }
+
+      // generate enpassant moves
+      if (this.lastDoubleMove !== null) {
+        const row = this.lastDoubleMove[0] + (this.lastDoubleMove[0] == 2 ? 1 : -1);
+        const col = this.lastDoubleMove[1];
+
+        const doubleMovePiece = this.board[row][col];
+
+        let piece = this.board[row][col - 1];
+        if (piece instanceof Pawn && piece.color != doubleMovePiece.color && !piece.pinned) {
+          let allowed = true;
+          if (piece.color == this.currentKing.color) {
+            const dirFromPieceToKing = Game.getDirFromPos(piece.row, piece.col, this.currentKing.row, this.currentKing.col);
+            let passedThroughDouble = false;
+            let passedThroughPiece = false;
+            // dir is horizontal
+            if (dirFromPieceToKing[0] == 0) {
+              const dir = dirFromPieceToKing[1] * -1;
+              for (let i = 1; i < 8; i++) {
+                const possiblePiece = this.board[this.currentKing.row][this.currentKing.col + i * dir];
+                if (possiblePiece === undefined) break;
+
+                if (possiblePiece instanceof Array) continue;
+                if (possiblePiece == doubleMovePiece) {
+                  passedThroughDouble = true;
+                  continue;
+                }
+                if (possiblePiece == piece) {
+                  passedThroughPiece = true;
+                  continue;
+                }
+
+                if ((possiblePiece instanceof Rook || possiblePiece instanceof Queen) && possiblePiece.color != this.currentKing.color && passedThroughDouble && passedThroughPiece) {
+                  allowed = false;
+                  break;
+                } else break;
+              }
+            }
+          }
+          if ((allowedMoves[doubleMovePiece.row + (doubleMovePiece.color ? 1 : -1)][doubleMovePiece.col] || allowedMoves[doubleMovePiece.row][doubleMovePiece.col]) && allowed) {
+            piece.enpassant = new EnpassantMove(piece, this.lastDoubleMove[0], this.lastDoubleMove[1], doubleMovePiece.color ? -1 : 1);
+            possibleMoves.push(piece.enpassant);
+          }
+        }
+
+        piece = this.board[row][col + 1];
+        if (piece instanceof Pawn && piece.color != doubleMovePiece.color && !piece.pinned) {
+          let allowed = true;
+          if (piece.color == this.currentKing.color) {
+            const dirFromPieceToKing = Game.getDirFromPos(piece.row, piece.col, this.currentKing.row, this.currentKing.col);
+            let passedThroughDouble = false;
+            let passedThroughPiece = false;
+            // dir is horizontal
+            if (dirFromPieceToKing[0] == 0) {
+              const dir = dirFromPieceToKing[1] * -1;
+              for (let i = 1; i < 8; i++) {
+                const possiblePiece = this.board[this.currentKing.row][this.currentKing.col + i * dir];
+                if (possiblePiece === undefined) break;
+
+                if (possiblePiece instanceof Array) continue;
+                if (possiblePiece == doubleMovePiece) {
+                  passedThroughDouble = true;
+                  continue;
+                }
+                if (possiblePiece == piece) {
+                  passedThroughPiece = true;
+                  continue;
+                }
+
+                if ((possiblePiece instanceof Rook || possiblePiece instanceof Queen) && possiblePiece.color != this.currentKing.color && passedThroughDouble && passedThroughPiece) {
+                  allowed = false;
+                  break;
+                } else break;
+              }
+            }
+          }
+          if ((allowedMoves[doubleMovePiece.row + (doubleMovePiece.color ? 1 : -1)][doubleMovePiece.col] || allowedMoves[doubleMovePiece.row][doubleMovePiece.col]) && allowed) {
+            piece.enpassant = new EnpassantMove(piece, this.lastDoubleMove[0], this.lastDoubleMove[1], doubleMovePiece.color ? -1 : 1);
+            possibleMoves.push(piece.enpassant);
+          }
+        }
       }
 
       this.moves = possibleMoves;
-      this.timesToCalculateMoves[3].push(millis() - startTime);
 
       //if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
-      startTime = millis();
       let possibleMoves = [];
 
       for (let i = 0; i < this.currentPieces.length; i++) {
         const piece = this.currentPieces[i];
         piece.generateMoves();
         possibleMoves = possibleMoves.concat(piece.moves);
-        if (piece instanceof Pawn && piece.enpassant != null) possibleMoves.push(piece.enpassant);
+      }
+
+      // generate enpassant moves
+      if (this.lastDoubleMove !== null) {
+        const row = this.lastDoubleMove[0] + (this.lastDoubleMove[0] == 2 ? 1 : -1);
+        const col = this.lastDoubleMove[1];
+
+        const doubleMovePiece = this.board[row][col];
+
+        let piece = this.board[row][col - 1];
+        // can perform enpassant
+        if (piece instanceof Pawn && piece.color != doubleMovePiece.color && !piece.pinned) {
+          let allowed = true;
+          if (piece.color == this.currentKing.color) {
+            const dirFromPieceToKing = Game.getDirFromPos(piece.row, piece.col, this.currentKing.row, this.currentKing.col);
+            let passedThroughDouble = false;
+            let passedThroughPiece = false;
+            // dir is horizontal
+            if (dirFromPieceToKing[0] == 0) {
+              const dir = dirFromPieceToKing[1] * -1;
+              for (let i = 1; i < 8; i++) {
+                const possiblePiece = this.board[this.currentKing.row][this.currentKing.col + i * dir];
+                if (possiblePiece === undefined) break;
+
+                if (possiblePiece instanceof Array) continue;
+                if (possiblePiece == doubleMovePiece) {
+                  passedThroughDouble = true;
+                  continue;
+                }
+                if (possiblePiece == piece) {
+                  passedThroughPiece = true;
+                  continue;
+                }
+
+                if ((possiblePiece instanceof Rook || possiblePiece instanceof Queen) && possiblePiece.color != this.currentKing.color && passedThroughDouble && passedThroughPiece) {
+                  allowed = false;
+                  break;
+                } else break;
+              }
+            }
+          }
+          if (allowed) {
+            piece.enpassant = new EnpassantMove(piece, this.lastDoubleMove[0], this.lastDoubleMove[1], doubleMovePiece.color ? -1 : 1);
+            possibleMoves.push(piece.enpassant);
+          }
+        }
+
+        piece = this.board[row][col + 1];
+        if (piece instanceof Pawn && piece.color != doubleMovePiece.color && !piece.pinned) {
+          let allowed = true;
+          if (piece.color == this.currentKing.color) {
+            const dirFromPieceToKing = Game.getDirFromPos(piece.row, piece.col, this.currentKing.row, this.currentKing.col);
+            let passedThroughDouble = false;
+            let passedThroughPiece = false;
+            // dir is horizontal
+            if (dirFromPieceToKing[0] == 0) {
+              const dir = dirFromPieceToKing[1] * -1;
+              for (let i = 1; i < 8; i++) {
+                const possiblePiece = this.board[this.currentKing.row][this.currentKing.col + i * dir];
+                if (possiblePiece === undefined) break;
+
+                if (possiblePiece instanceof Array) continue;
+                if (possiblePiece == doubleMovePiece) {
+                  passedThroughDouble = true;
+                  continue;
+                }
+                if (possiblePiece == piece) {
+                  passedThroughPiece = true;
+                  continue;
+                }
+
+                if ((possiblePiece instanceof Rook || possiblePiece instanceof Queen) && possiblePiece.color != this.currentKing.color && passedThroughDouble && passedThroughPiece) {
+                  allowed = false;
+                  break;
+                } else break;
+              }
+            }
+          }
+          if (allowed) {
+            piece.enpassant = new EnpassantMove(piece, this.lastDoubleMove[0], this.lastDoubleMove[1], doubleMovePiece.color ? -1 : 1);
+            possibleMoves.push(piece.enpassant);
+          }
+        }
       }
 
       this.moves = possibleMoves;
 
-      this.timesToCalculateMoves[4].push((millis() - startTime));
       //if (possibleMoves.length == 0) this.stop("Draw!");
     }
 
-    this.timesToCalculateMoves[5].push((millis() - startTimeOverall));
     // HOW
 
     // get current attacks of enemy player
@@ -553,7 +602,7 @@ class Game {
     return numOfPositions;
   }
 
-  perftDivide(depth) {
+  perftDivide(depth, debugMode) {
     console.time(`Amount of time to preform Preft Divide (depth = ${depth})`);
 
     console.log(`Perft Divide (depth = ${depth})`);
@@ -570,12 +619,12 @@ class Game {
 
     for (let i = 0; i < moves.length; i++) {
       this.move(moves[i]);
-      const algNot = Game.toAlgNot(moves[i]);
+      const algNot = Game.moveToAlgNot(moves[i]);
       const perftResult = this.perftBulk(depth - 1);
       console.log(algNot, perftResult);
       results[algNot] = perftResult;
-      if (Game.debug) {
-        if (this.expectedResults[algNot] != perftResult) {
+      if (debugMode) {
+        if (this.expectedResults[algNot] !== perftResult) {
           console.log(`Expected: %c${this.expectedResults[algNot]}`, "color: white; background: black;");
           done = true;
           break;
@@ -585,17 +634,22 @@ class Game {
       this.unmove();
     }
 
+    console.log(results);
+
     console.log("=================================");
     console.log("Total amount of moves: ", numOfPositions);
     console.timeEnd(`Amount of time to preform Preft Divide (depth = ${depth})`);
 
-    if (!done) {
+    if (debugMode && !done) {
       for (let [algNot, result] of Object.entries(this.expectedResults)) {
-        if (results[algNot] != this.expectedResults[algNot]) {
+        if (results[algNot] !== this.expectedResults[algNot]) {
           console.log(`Expected: ${algNot} %c${this.expectedResults[algNot]}`, "color: white; background: black;");
         }
       }
     }
+
+    this.calculateMoves();
+    return numOfPositions;
   }
 
   SEMFSO(str) {
@@ -603,7 +657,16 @@ class Game {
     str.split('\n').forEach((_) => this.expectedResults[_.split(':')[0]] = parseInt(_.split(':')[1].trim()));
   }
 
-  static toAlgNot(...parameters) {
+  static getDirFromPos(fromRow, fromCol, toRow, toCol) {
+    let rowOff = toRow - fromRow;
+    rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
+    let colOff = toCol - fromCol;
+    colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
+
+    return [rowOff, colOff];
+  }
+
+  static toAlgNot(row, col) {
     const lookup = {
       1: 'a',
       2: 'b',
@@ -615,23 +678,47 @@ class Game {
       8: 'h',
     };
 
-    if (parameters.length == 2) {
-      const row = parameters[0];
-      const col = parameters[1];
-      return `${lookup[(col + 1)]}${(8 - row)}`;
-    } else if (parameters.length == 1) {
-      const typelookup = {
-        'Queen': 'q',
-        'Bishop': 'b',
-        'Rook': 'r',
-        'Knight': 'n'
-      }
-      const move = parameters[0];
-      if (move instanceof PromotionMove) {
-        return this.toAlgNot(move.startRow, move.startCol) + this.toAlgNot(move.targetRow, move.targetCol) + typelookup[move.type.name];
-      } else if (move instanceof Move) {
-        return this.toAlgNot(move.startRow, move.startCol) + this.toAlgNot(move.targetRow, move.targetCol);
-      }
+    return `${lookup[(col + 1)]}${(8 - row)}`;
+  }
+
+  static arrToAlgNot(arr) {
+    const lookup = {
+      1: 'a',
+      2: 'b',
+      3: 'c',
+      4: 'd',
+      5: 'e',
+      6: 'f',
+      7: 'g',
+      8: 'h',
+    };
+
+    return `${lookup[(arr[1] + 1)]}${(8 - arr[0])}`;
+  }
+
+  static moveToAlgNot(move) {
+    const lookup = {
+      1: 'a',
+      2: 'b',
+      3: 'c',
+      4: 'd',
+      5: 'e',
+      6: 'f',
+      7: 'g',
+      8: 'h',
+    };
+
+    const typelookup = {
+      'Queen': 'q',
+      'Bishop': 'b',
+      'Rook': 'r',
+      'Knight': 'n'
+    }
+
+    if (move instanceof PromotionMove) {
+      return this.toAlgNot(move.startRow, move.startCol) + this.toAlgNot(move.targetRow, move.targetCol) + typelookup[move.type.name];
+    } else if (move instanceof Move) {
+      return this.toAlgNot(move.startRow, move.startCol) + this.toAlgNot(move.targetRow, move.targetCol);
     }
   }
 

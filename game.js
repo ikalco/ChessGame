@@ -307,7 +307,7 @@ class Game {
 
       this.moves = possibleMoves;
 
-      //if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
+      if (possibleMoves.length == 0) this.stop("Checkmate, " + (this.enemyKing.color ? "black" : "white") + " is victorious!")
     } else {
       let possibleMoves = [];
 
@@ -402,7 +402,7 @@ class Game {
 
       this.moves = possibleMoves;
 
-      //if (possibleMoves.length == 0) this.stop("Draw!");
+      if (possibleMoves.length == 0) this.stop("Draw!");
     }
 
     // HOW

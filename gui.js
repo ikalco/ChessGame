@@ -1,7 +1,7 @@
-class ChessGUI {
+class GUI {
 
 	constructor() {
-		// get nice integer screen size in px to fit in screen
+		// get nice integer screen size in px to fit in view
 		this.screen_size_px = Math.ceil(Math.min(window.innerWidth, window.innerHeight) * 0.9);
 
 		this.initP5();

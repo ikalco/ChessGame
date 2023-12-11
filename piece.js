@@ -9,10 +9,10 @@ class Piece {
 	static KING = 4;
 	static QUEEN = 5;
 
-	constructor(row, col, team, type) {
+	constructor(row, col, color, type) {
 		this.row = row;
 		this.col = col;
-		this.team = team;
+		this.color = color;
 		this.type = type;
 	}
 }

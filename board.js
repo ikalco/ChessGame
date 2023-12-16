@@ -1,17 +1,40 @@
 class Board {
+	// 2d array representing the actual chess board using Piece objects
+	#board;
+
+	// boolean value, whether board is loaded, with FEN for example
+	#loaded;
+
+	// the active color/team either white or black
+	#active_color;
+
+	// not currently defined, but will probably be boolean of which team has castled so far
+	// similar to how FEN represents it
+	#castling;
+
+	// last moved pawn position
+	#enpassant_col;
+	#enpassant_row;
+
+	// halfmoves counted, basically each piece moved
+	#halfmove;
+
+	// fullmoves counted, basically each piece moved by black
+	#fullmove;
+
 	constructor() {
 		// empty 2d 8x8 array
-		this.board = new Array(8).fill(0).map((_) => new Array(8));
-		this.loaded = false;
+		this.#board = new Array(8).fill(0).map((_) => new Array(8));
+		this.#loaded = false;
 	}
 
 	getPieces() {
 		// native js array function,
 		// turns 2d array into 1d array and also removes empty elements
-		return this.board.flat();
+		return this.#board.flat();
 	}
 
-	colorFromLetterFEN(letter) {
+	#colorFromLetterFEN(letter) {
 		if (letter.toLowerCase() == letter) {
 			// black pieces are lowercase
 			return Piece.BLACK;
@@ -21,7 +44,7 @@ class Board {
 		}
 	}
 
-	typeFromLetterFEN(letter) {
+	#typeFromLetterFEN(letter) {
 		switch (letter.toLowerCase()) {
 			case 'p':
 				return Piece.PAWN;
@@ -40,7 +63,7 @@ class Board {
 		}
 	}
 
-	boardArrayFromPlacementFEN(placement) {
+	#boardArrayFromPlacementFEN(placement) {
 		const board = new Array(8).fill(0).map((_) => new Array(8));
 
 		const rows = placement.split("/");
@@ -51,13 +74,14 @@ class Board {
 			for (let col_index = 0; col_index < 8; col_index++) {
 				const piece_letter = row[col_index];
 
-				const color = this.colorFromLetterFEN(piece_letter);
+				const color = this.#colorFromLetterFEN(piece_letter);
 
-				const type = this.typeFromLetterFEN(piece_letter);
+				const type = this.#typeFromLetterFEN(piece_letter);
 
 				if (type == -1 && !isNaN(piece_letter)) {
 					// if it's a number (N), we skip N cells since they're empty
 					col_index += window.parseInt(piece_letter);
+					continue;
 				}
 
 				board[row_index][col_index] = new Piece(row_index, col_index, color, type);
@@ -72,42 +96,42 @@ class Board {
 
 		let [placement, active_color, castling, enpassant, halfmove, fullmove] = fenString.split(' ');
 
-		this.board = this.boardArrayFromPlacementFEN(placement);
+		this.#board = this.#boardArrayFromPlacementFEN(placement);
 
 		if (active_color == 'w') {
-			this.active_color = Piece.WHITE;
+			this.#active_color = Piece.WHITE;
 		} else if (active_color == 'b') {
-			this.active_color = Piece.BLACK;
+			this.#active_color = Piece.BLACK;
 		} else {
-			this.active_color = null;
+			this.#active_color = null;
 			console.error("Invalid FEN active color");
 		}
 
 		if (castling != "-") {
-			this.castling = castling;
+			this.#castling = castling;
 		} else {
-			this.castling = null;
+			this.#castling = null;
 		}
 
 		if (enpassant != '-') {
-			this.enpassant_col = this.algToCol(enpassant);
-			this.enpassant_row = this.algToRow(enpassant);
+			this.#enpassant_col = this.#algToCol(enpassant);
+			this.#enpassant_row = this.#algToRow(enpassant);
 		} else {
-			this.enpassant_col = null;
-			this.enpassant_row = null;
+			this.#enpassant_col = null;
+			this.#enpassant_row = null;
 		}
 
-		this.halfmove = window.parseInt(halfmove);
-		this.fullmove = window.parseInt(fullmove);
+		this.#halfmove = window.parseInt(halfmove);
+		this.#fullmove = window.parseInt(fullmove);
 	}
 
 	// takes in a string in algebraic notation and returns it's row
-	algToRow(algNot) {
+	#algToRow(algNot) {
 		return 8 - window.parseInt(algNot[1]);
 	}
 
 	// takes in a string in algebraic notation and returns it's column
-	algToCol(algNot) {
+	#algToCol(algNot) {
 		const lookup = {
 			'a': 1,
 			'b': 2,

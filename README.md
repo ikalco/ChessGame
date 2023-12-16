@@ -7,6 +7,6 @@ a move generator, interaced with the gui.
 
 # Sources
 
-[The p5js Reference](https://p5js.org/reference/)
-[Wiki for FEN in Chess](https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation)
-[Image of Chess Pieces from Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Chess_Pieces_Sprite.svg)
+[p5js reference](https://p5js.org/reference/) \
+[Wiki for FEN in chess](https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation) \
+[Image of chess pieces from Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Chess_Pieces_Sprite.svg)

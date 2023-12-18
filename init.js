@@ -3,5 +3,4 @@ window.onload = function () {
 	board.loadFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
 	const gui = new GUI(board);
-	gui.show();
 }

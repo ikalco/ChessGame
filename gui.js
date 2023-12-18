@@ -33,6 +33,7 @@ class GUI {
 			// Function.bind in order to redefine the this variable inside the functions
 			// to our ChessGUI object
 
+			p5.preload = this.#preload.bind(this);
 			p5.setup = this.#setup.bind(this);
 			p5.draw = this.#draw.bind(this);
 
@@ -40,24 +41,23 @@ class GUI {
 		}, "p5_container");
 	}
 
+	#preload() {
+		// SOURCE:
+		// adapted from https://commons.wikimedia.org/wiki/File:Chess_Pieces_Sprite.svg
+		this.#piece_images = this.#p5.loadImage('assets/pieces.png');
+	}
+
 	#setup() {
-		// p5.noLoop causes p5js to not continously run draw loop, so that user can start it
-		this.#p5.noLoop();
-
-		this.#p5.createCanvas(this.#screen_size_px, this.#screen_size_px);
-
 		this.#generateBackground();
 
 		this.#generatePieceImages();
 
-		this.hide();
+		this.#p5.createCanvas(this.#screen_size_px, this.#screen_size_px);
 	}
 
 	#draw() {
-		if (this.#p5.isLooping()) {
-			this.#drawBackground();
-			this.#drawPieces();
-		}
+		this.#drawBackground();
+		this.#drawPieces();
 	}
 
 	#drawBackground() {
@@ -107,33 +107,30 @@ class GUI {
 	}
 
 	#generatePieceImages() {
+		const pieces_png = this.#piece_images;
+
 		this.#piece_images = [];
 
 		this.#piece_images[Piece.WHITE] = [];
 		this.#piece_images[Piece.BLACK] = [];
 
-		// SOURCE:
-		// adapted from https://commons.wikimedia.org/wiki/File:Chess_Pieces_Sprite.svg
+		// https://p5js.org/reference/#/p5.Image/get
+		// basically grabs image pixels from x,y, width, and height inside image
+		// (p5.Image).get(x, y, width, height)
 
-		this.#p5.loadImage('./assets/pieces.png', (pieces_png) => {
-			// https://p5js.org/reference/#/p5.Image/get
-			// basically grabs image pixels from x,y, width, and height inside image
-			// (p5.Image).get(x, y, width, height)
+		this.#piece_images[Piece.WHITE][Piece.PAWN] = pieces_png.get(1665, 0.5, 333.33334, 333.5);
+		this.#piece_images[Piece.WHITE][Piece.ROOK] = pieces_png.get(1332, 0.5, 333.33334, 333.5);
+		this.#piece_images[Piece.WHITE][Piece.KNIGHT] = pieces_png.get(999, 0.5, 333.33334, 333.5);
+		this.#piece_images[Piece.WHITE][Piece.BISHOP] = pieces_png.get(666, 0.5, 333.33334, 333.5);
+		this.#piece_images[Piece.WHITE][Piece.KING] = pieces_png.get(0, 0.5, 333.33334, 333.5);
+		this.#piece_images[Piece.WHITE][Piece.QUEEN] = pieces_png.get(333, 0.5, 333.33334, 333.5);
 
-			this.#piece_images[Piece.WHITE][Piece.PAWN] = pieces_png.get(1665, 0.5, 333.33334, 333.5);
-			this.#piece_images[Piece.WHITE][Piece.ROOK] = pieces_png.get(1332, 0.5, 333.33334, 333.5);
-			this.#piece_images[Piece.WHITE][Piece.KNIGHT] = pieces_png.get(999, 0.5, 333.33334, 333.5);
-			this.#piece_images[Piece.WHITE][Piece.BISHOP] = pieces_png.get(666, 0.5, 333.33334, 333.5);
-			this.#piece_images[Piece.WHITE][Piece.KING] = pieces_png.get(0, 0.5, 333.33334, 333.5);
-			this.#piece_images[Piece.WHITE][Piece.QUEEN] = pieces_png.get(333, 0.5, 333.33334, 333.5);
-
-			this.#piece_images[Piece.BLACK][Piece.PAWN] = pieces_png.get(1665, 333.5, 333.33334, 333.5);
-			this.#piece_images[Piece.BLACK][Piece.ROOK] = pieces_png.get(1332, 333.5, 333.33334, 333.5);
-			this.#piece_images[Piece.BLACK][Piece.KNIGHT] = pieces_png.get(999, 333.5, 333.33334, 333.5);
-			this.#piece_images[Piece.BLACK][Piece.BISHOP] = pieces_png.get(666, 333.5, 333.33334, 333.5);
-			this.#piece_images[Piece.BLACK][Piece.KING] = pieces_png.get(0, 333.5, 333.33334, 333.5);
-			this.#piece_images[Piece.BLACK][Piece.QUEEN] = pieces_png.get(333, 333.5, 333.33334, 333.5);
-		});
+		this.#piece_images[Piece.BLACK][Piece.PAWN] = pieces_png.get(1665, 333.5, 333.33334, 333.5);
+		this.#piece_images[Piece.BLACK][Piece.ROOK] = pieces_png.get(1332, 333.5, 333.33334, 333.5);
+		this.#piece_images[Piece.BLACK][Piece.KNIGHT] = pieces_png.get(999, 333.5, 333.33334, 333.5);
+		this.#piece_images[Piece.BLACK][Piece.BISHOP] = pieces_png.get(666, 333.5, 333.33334, 333.5);
+		this.#piece_images[Piece.BLACK][Piece.KING] = pieces_png.get(0, 333.5, 333.33334, 333.5);
+		this.#piece_images[Piece.BLACK][Piece.QUEEN] = pieces_png.get(333, 333.5, 333.33334, 333.5);
 	}
 
 	#generateBackground() {

@@ -30,65 +30,38 @@ class Board {
 
 	getPieces() {
 		// native js array function,
-		// turns 2d array into 1d array and also removes empty elements
+		// turns 2d array into 1d array and also removes empty elements, so convenient
 		return this.#board.flat();
 	}
 
-	#colorFromLetterFEN(letter) {
-		if (letter.toLowerCase() == letter) {
-			// black pieces are lowercase
-			return Piece.BLACK;
-		} else {
-			// white pieces are uppercase
-			return Piece.WHITE;
-		}
+	at(row, col) {
+		if (this.#board[row] != undefined)
+			return this.#board[row][col];
 	}
 
-	#typeFromLetterFEN(letter) {
-		switch (letter.toLowerCase()) {
-			case 'p':
-				return Piece.PAWN;
-			case 'n':
-				return Piece.KNIGHT;
-			case 'b':
-				return Piece.BISHOP;
-			case 'r':
-				return Piece.ROOK;
-			case 'q':
-				return Piece.QUEEN;
-			case 'k':
-				return Piece.KING;
-			default:
-				return -1;
-		}
-	}
+	move(from_row, from_col, to_row, to_col) {
+		// skip if out of bounds
+		if (from_col < 0 || from_col > 7 ||
+			from_row < 0 || from_row > 7 ||
+			to_col < 0 || to_col > 7 ||
+			to_row < 0 || to_row > 7
+		) return;
 
-	#boardArrayFromPlacementFEN(placement) {
-		const board = new Array(8).fill(0).map((_) => new Array(8));
+		// skip if moving to same position
+		if (from_col == to_col && from_row == to_row) return;
 
-		const rows = placement.split("/");
+		// skip if not moving an actual piece
+		if (!(this.#board[from_row][from_col] instanceof Piece)) return;
 
-		for (let row_index = 0; row_index < 8; row_index++) {
-			const row = rows[row_index];
+		// actually move piece
+		this.#board[to_row][to_col] = this.#board[from_row][from_col];
 
-			for (let col_index = 0; col_index < 8; col_index++) {
-				const piece_letter = row[col_index];
+		// update piece col & row
+		this.#board[to_row][to_col].col = to_col;
+		this.#board[to_row][to_col].row = to_row;
 
-				const color = this.#colorFromLetterFEN(piece_letter);
-
-				const type = this.#typeFromLetterFEN(piece_letter);
-
-				if (type == -1 && !isNaN(piece_letter)) {
-					// if it's a number (N), we skip N cells since they're empty
-					col_index += window.parseInt(piece_letter);
-					continue;
-				}
-
-				board[row_index][col_index] = new Piece(row_index, col_index, color, type);
-			}
-		}
-
-		return board;
+		// delete old one from board
+		delete this.#board[from_row][from_col];
 	}
 
 	loadFromFEN(fenString) {
@@ -123,6 +96,63 @@ class Board {
 
 		this.#halfmove = window.parseInt(halfmove);
 		this.#fullmove = window.parseInt(fullmove);
+	}
+
+	#boardArrayFromPlacementFEN(placement) {
+		const board = new Array(8).fill(0).map((_) => new Array(8));
+
+		const rows = placement.split("/");
+
+		for (let row_index = 0; row_index < 8; row_index++) {
+			const row = rows[row_index];
+
+			for (let col_index = 0; col_index < 8; col_index++) {
+				const piece_letter = row[col_index];
+
+				const color = this.#colorFromLetterFEN(piece_letter);
+
+				const type = this.#typeFromLetterFEN(piece_letter);
+
+				if (type == -1 && !isNaN(piece_letter)) {
+					// if it's a number (N), we skip N cells since they're empty
+					col_index += window.parseInt(piece_letter);
+					continue;
+				}
+
+				board[row_index][col_index] = new Piece(row_index, col_index, color, type);
+			}
+		}
+
+		return board;
+	}
+
+	#colorFromLetterFEN(letter) {
+		if (letter.toLowerCase() == letter) {
+			// black pieces are lowercase
+			return Piece.BLACK;
+		} else {
+			// white pieces are uppercase
+			return Piece.WHITE;
+		}
+	}
+
+	#typeFromLetterFEN(letter) {
+		switch (letter.toLowerCase()) {
+			case 'p':
+				return Piece.PAWN;
+			case 'n':
+				return Piece.KNIGHT;
+			case 'b':
+				return Piece.BISHOP;
+			case 'r':
+				return Piece.ROOK;
+			case 'q':
+				return Piece.QUEEN;
+			case 'k':
+				return Piece.KING;
+			default:
+				return -1;
+		}
 	}
 
 	// takes in a string in algebraic notation and returns it's row

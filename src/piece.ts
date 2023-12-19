@@ -1,9 +1,9 @@
-enum PieceColor {
+export enum PieceColor {
 	WHITE,
 	BLACK
 }
 
-enum PieceType {
+export enum PieceType {
 	PAWN,
 	ROOK,
 	KNIGHT,
@@ -12,7 +12,7 @@ enum PieceType {
 	QUEEN
 }
 
-interface Piece {
+export interface Piece {
 	row: number,
 	col: number,
 	color: PieceColor,

@@ -1,116 +1,114 @@
-class ChessNotation {
-	static boardFromFEN(fen_string) {
+import { Board, board_2d } from "./board";
+import { Piece, PieceColor, PieceType } from "./piece";
+
+export class ChessNotation {
+	public static boardFromFEN(fen: string): Board {
 		// https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation
-		const board = new Board();
+		let [placement_str, active_color_str, castling_str, enpassant_str, halfmove_str, fullmove_str] = fen.split(' ');
 
-		let [placement, active_color, castling, enpassant, halfmove, fullmove] = fen_string.split(' ');
+		const board: board_2d = ChessNotation.boardArrayFromPlacementFEN(placement_str);
 
-		board.board = ChessNotation.#boardArrayFromPlacementFEN(placement);
-
-		if (active_color == 'w') {
-			board.active_color = Piece.WHITE;
-		} else if (active_color == 'b') {
-			board.active_color = Piece.BLACK;
+		let active_color: PieceColor;
+		if (active_color_str == 'w') {
+			active_color = PieceColor.WHITE;
+		} else if (active_color_str == 'b') {
+			active_color = PieceColor.BLACK;
 		} else {
-			board.active_color = null;
-			console.error("Invalid FEN active color");
+			throw new Error("Invalid active color in FEN string");
 		}
 
-		if (castling != "-") {
-			board.castling = castling;
-		} else {
-			board.castling = null;
+		let enpassant_piece: (Piece | undefined) = undefined;
+		if (enpassant_str != '-') {
+			const col: number = ChessNotation.algToCol(enpassant_str);
+			const row: number = ChessNotation.algToRow(enpassant_str);
+
+			if (board[row] != undefined)
+				enpassant_piece = board[row][col];
 		}
 
-		if (enpassant != '-') {
-			board.enpassant_col = ChessNotation.#algToCol(enpassant);
-			board.enpassant_row = ChessNotation.#algToRow(enpassant);
-		} else {
-			board.enpassant_col = null;
-			board.enpassant_row = null;
-		}
+		const halfmove: number = Number(halfmove_str);
+		const fullmove: number = Number(fullmove_str);
 
-		board.halfmove = window.parseInt(halfmove);
-		board.fullmove = window.parseInt(fullmove);
-
-		return board;
+		return new Board(board, active_color, castling_str, enpassant_piece, halfmove, fullmove);
 	}
 
-	static #boardArrayFromPlacementFEN(placement) {
-		const board = new Array(8).fill(0).map((_) => new Array(8));
+	private static boardArrayFromPlacementFEN(placement: string): board_2d {
+		const board: board_2d = new Array(8).fill(0).map((_) => new Array(8));
 
-		const rows = placement.split("/");
+		const rows: string[] = placement.split("/");
 
 		for (let row_index = 0; row_index < 8; row_index++) {
-			const row = rows[row_index];
+			const row: string = rows[row_index];
 
 			for (let col_index = 0; col_index < 8; col_index++) {
-				const piece_letter = row[col_index];
+				const piece_letter: string = row[col_index];
+				const color: PieceColor = ChessNotation.colorFromLetterFEN(piece_letter);
+				const type: (PieceType | undefined) = ChessNotation.typeFromLetterFEN(piece_letter);
 
-				const color = ChessNotation.#colorFromLetterFEN(piece_letter);
-
-				const type = ChessNotation.#typeFromLetterFEN(piece_letter);
-
-				if (type == -1 && !isNaN(piece_letter)) {
-					// if it's a number (N), we skip N cells since they're empty
-					col_index += window.parseInt(piece_letter);
+				if (type === undefined) {
+					// if it's not a piece, it's a number and we skip N cells since they're empty
+					col_index += Number(piece_letter);
 					continue;
 				}
 
-				board[row_index][col_index] = new Piece(row_index, col_index, color, type);
+				board[row_index][col_index] = {
+					row: row_index,
+					col: col_index,
+					color: color,
+					type: type
+				};
 			}
 		}
 
 		return board;
 	}
 
-	static #colorFromLetterFEN(letter) {
+	private static colorFromLetterFEN(letter: string): PieceColor {
 		if (letter.toLowerCase() == letter) {
 			// black pieces are lowercase
-			return Piece.BLACK;
+			return PieceColor.BLACK;
 		} else {
 			// white pieces are uppercase
-			return Piece.WHITE;
+			return PieceColor.WHITE;
 		}
 	}
 
-	static #typeFromLetterFEN(letter) {
+	private static typeFromLetterFEN(letter: string): (PieceType | undefined) {
 		switch (letter.toLowerCase()) {
 			case 'p':
-				return Piece.PAWN;
+				return PieceType.PAWN;
 			case 'n':
-				return Piece.KNIGHT;
+				return PieceType.KNIGHT;
 			case 'b':
-				return Piece.BISHOP;
+				return PieceType.BISHOP;
 			case 'r':
-				return Piece.ROOK;
+				return PieceType.ROOK;
 			case 'q':
-				return Piece.QUEEN;
+				return PieceType.QUEEN;
 			case 'k':
-				return Piece.KING;
+				return PieceType.KING;
 			default:
-				return -1;
+				return undefined;
 		}
 	}
 
 	// takes in a string in algebraic notation and returns it's row
-	static #algToRow(algNot) {
-		return 8 - window.parseInt(algNot[1]);
+	private static algToRow(algNot: string): number {
+		return 8 - Number(algNot[1]);
 	}
 
 	// takes in a string in algebraic notation and returns it's column
-	static #algToCol(algNot) {
-		const lookup = {
-			'a': 1,
-			'b': 2,
-			'c': 3,
-			'd': 4,
-			'e': 5,
-			'f': 6,
-			'g': 7,
-			'h': 8,
+	private static algToCol(algNot: string): number {
+		switch (algNot[0]) {
+			case 'a': return 0;
+			case 'b': return 1;
+			case 'c': return 2;
+			case 'd': return 3;
+			case 'e': return 4;
+			case 'f': return 5;
+			case 'g': return 6;
+			case 'h': return 7;
+			default: return -1;
 		}
-
-		return lookup[str[0]] - 1;
 	}
 }

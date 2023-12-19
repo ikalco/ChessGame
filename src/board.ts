@@ -1,13 +1,14 @@
 import { Piece, PieceColor } from "piece"
 
+export type board_2d = (Piece | undefined)[][]
+
 export class Board {
 	// defines and initializes class properties in constructor
 	constructor(
-		private _board: (Piece | undefined)[][],
+		private _board: board_2d,
 		public active_color: PieceColor,
 		public castling: string,
-		public enpassant_col: number,
-		public enpassant_row: number,
+		public enpassant_piece: (Piece | undefined),
 		public halfmove: number,
 		public fullmove: number,
 	) { }

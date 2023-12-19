@@ -1,0 +1,22 @@
+{
+	"name": "chessgame",
+	"version": "1.0.0",
+	"description": "A chess GUI implemented with the P5JS library and a move generator, interfaced with the gui.",
+	"main": "src/init.ts",
+	"scripts": {
+		"build": "npm run build:clean && tsc && npm run build:cp-public && npm run build:cp-assets",
+		"build:cp-public": "cp ./public/** ./dist",
+		"build:cp-assets": "cp ./assets/** ./dist",
+		"build:clean": "rm -rf ./dist/*",
+		"type": "tsc --noEmit"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ikalco/ChessGame.git"
+	},
+	"author": "ikalco",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "^5.3.3"
+	}
+}

@@ -107,7 +107,7 @@ class GUI {
 	}
 
 	#drawPieces() {
-		const pieces = this.#board.getPieces();
+		const pieces = this.#board.pieces;
 		const mouse_pressed_piece = this.#board.at(this.#mouse_pressed_row, this.#mouse_pressed_col);
 
 		for (const piece of pieces) {

@@ -4,7 +4,7 @@
 		"checkJs": true,
 		"outDir": "dist",
 		"sourceMap": true,
-		"target": "ES2019",
+		"target": "ES6",
 		"noImplicitAny": true,
 		"noImplicitReturns": true,
 		"strict": true

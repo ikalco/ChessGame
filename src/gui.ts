@@ -1,8 +1,9 @@
-import * as p5 from "p5";
-import { Board } from "./board";
-import { Piece, PieceColor, PieceType } from "./piece";
+// @ts-expect-error
+import p5 from "p5";
+import { Board } from "./board.js";
+import { Piece, PieceColor, PieceType } from "./piece.js";
 
-class GUI {
+export class GUI {
 	private board: Board
 
 	private p5: (p5 | undefined);
@@ -25,7 +26,9 @@ class GUI {
 
 	private initP5() {
 		// Use p5js instantiation mode, using html element with id "p5_container"
-		this.p5 = new p5((p5) => {
+		// @ts-ignore
+		console.log(p5, p5.Image, p5.p5);
+		this.p5 = new p5((p5: p5) => {
 			this.p5 = p5;
 
 			// In order to refer to GUI object inside p5 functions we need to use

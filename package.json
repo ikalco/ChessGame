@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "npm run build:clean && tsc && npm run build:cp-public && npm run build:cp-assets",
 		"build:cp-public": "cp ./public/** ./dist",
-		"build:cp-assets": "cp ./assets/** ./dist",
+		"build:cp-assets": "mkdir ./dist/assets && cp ./assets/** ./dist/assets/",
 		"build:clean": "rm -rf ./dist/*",
 		"type": "tsc --noEmit"
 	},
@@ -18,6 +18,7 @@
 	"license": "ISC",
 	"devDependencies": {
 		"@types/p5": "^1.7.6",
+		"p5": "^1.9.0",
 		"typescript": "^5.3.3"
 	}
 }

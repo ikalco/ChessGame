@@ -12,14 +12,20 @@
 		}
 	</style>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script type="importmap">
+		{
+			"imports": {
+				"p5": "https://cdn.jsdelivr.net/npm/p5@1.9.0/+esm"
+			}
+		}
+	</script>
 
-	<script src="piece.js"></script>
-	<script src="board.js"></script>
-	<script src="chess_notation.js"></script>
-	<script src="gui.js"></script>
+	<script src="piece.js" type="module"></script>
+	<script src="board.js" type="module"></script>
+	<script src="chess_notation.js" type="module"></script>
+	<script src="gui.js" type="module"></script>
 
-	<script src="init.js"></script>
+	<script src="init.js" type="module"></script>
 </head>
 
 <body>

@@ -1,5 +1,5 @@
-import { Board, board_2d } from "./board";
-import { Piece, PieceColor, PieceType } from "./piece";
+import { Board, board_2d } from "./board.js";
+import { Piece, PieceColor, PieceType } from "./piece.js";
 
 export class ChessNotation {
 	public static boardFromFEN(fen: string): Board {

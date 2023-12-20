@@ -1,4 +1,4 @@
-import { Piece, PieceColor } from "piece"
+import { Piece, PieceColor } from "./piece.js"
 
 export type board_2d = (Piece | undefined)[][]
 
@@ -45,7 +45,7 @@ export class Board {
 		if (from_col == to_col && from_row == to_row) return false;
 
 		// skip if not moving an actual piece
-		if (typeof this._board[from_row][from_col] === undefined) return false;
+		if (this._board[from_row][from_col] === undefined) return false;
 
 		// actually move piece
 		this._board[to_row][to_col] = this._board[from_row][from_col];

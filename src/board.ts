@@ -13,10 +13,17 @@ export class Board {
 		public fullmove: number,
 	) { }
 
-	get pieces(): (Piece | undefined)[] {
-		// native js array function,
-		// turns 2d array into 1d array and also removes empty elements, so convenient
-		return this._board.flat();
+	get pieces(): Piece[] {
+		// turns 2d array into 1d array and also removes empty elements
+		const pieces: Piece[] = [];
+
+		for (let i = 0; i < this._board.length; i++) {
+			for (let j = 0; j < this._board[i].length; j++) {
+				if (this._board[i][j] !== undefined) pieces.push(this._board[i][j]!);
+			}
+		}
+
+		return pieces;
 	}
 
 	at(row: number, col: number): (Piece | undefined) {

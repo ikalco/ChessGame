@@ -4,9 +4,8 @@
 	"description": "A chess GUI implemented with the P5JS library and a move generator, interfaced with the gui.",
 	"main": "src/init.ts",
 	"scripts": {
-		"build": "npm run build:clean && tsc && npm run build:cp-public && npm run build:cp-assets",
-		"build:cp-public": "cp ./public/** ./dist",
-		"build:cp-assets": "mkdir ./dist/assets && cp ./assets/** ./dist/assets/",
+		"build": "npm run build:clean && tsc && npm run build:cp-public",
+		"build:cp-public": "cp -r ./public/** ./dist",
 		"build:clean": "rm -rf ./dist/*",
 		"type": "tsc --noEmit"
 	},

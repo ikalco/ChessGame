@@ -26,8 +26,6 @@ export class GUI {
 
 	private initP5() {
 		// Use p5js instantiation mode, using html element with id "p5_container"
-		// @ts-ignore
-		console.log(p5, p5.Image, p5.p5);
 		this.p5 = new p5((p5: p5) => {
 			this.p5 = p5;
 

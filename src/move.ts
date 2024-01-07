@@ -5,7 +5,6 @@ export type move_flags = {
 }
 
 export class Move {
-    // defines and initializes class properties in the constructor
     constructor(
         public from_row: number,
         public from_col: number,

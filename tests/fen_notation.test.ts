@@ -33,10 +33,10 @@ describe("Testing FEN parsing: \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w K
     })
 
     test("Correctly loaded castling options.", () => {
-        expect(fen.castling_options.black_king).toBe(false);
-        expect(fen.castling_options.black_queen).toBe(false);
-        expect(fen.castling_options.white_king).toBe(false);
-        expect(fen.castling_options.white_queen).toBe(false);
+        expect(fen.castling_options.black_king).toBe(true);
+        expect(fen.castling_options.black_queen).toBe(true);
+        expect(fen.castling_options.white_king).toBe(true);
+        expect(fen.castling_options.white_queen).toBe(true);
     })
 
     test("Correctly loaded enpassant piece.", () => {

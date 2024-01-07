@@ -62,9 +62,6 @@ export class Board {
         // skip if not moving an actual piece
         if (this._board[from_row][from_col] === undefined) return false;
 
-        // add move to move_list
-        this.move_list.push(new Move(from_row, from_col, to_row, to_col));
-
         // actually move piece
         this._board[to_row][to_col] = this._board[from_row][from_col];
 
@@ -76,5 +73,10 @@ export class Board {
         delete this._board[from_row][from_col];
 
         return true;
+    }
+
+    // add move to top of move_list
+    add_move(move: Move) {
+        this.move_list.push(move);
     }
 }

@@ -2,35 +2,38 @@
 <html lang="">
 
 <head>
-	<title>Chess</title>
-	<style>
-		* {
-			width: 0;
-			height: 0;
-			padding: 0;
-			margin: 0;
-		}
-	</style>
+    <title>Chess</title>
+    <style>
+        * {
+            width: 0;
+            height: 0;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
 
-	<script type="importmap">
+    <script type="importmap">
 		{
 			"imports": {
-				"p5": "https://cdn.jsdelivr.net/npm/p5@1.9.0/+esm"
+				"p5": "https://cdn.jsdelivr.net/npm/p5@1.9.0/+esm",
+                "./piece": "./piece.js",
+                "./board": "./board.js",
+                "./fen_notation": "./fen_notation.js",
+                "./gui": "./gui.js"
 			}
 		}
 	</script>
 
-	<script src="piece.js" type="module"></script>
-	<script src="board.js" type="module"></script>
-	<script src="chess_notation.js" type="module"></script>
-	<script src="fen_notation.js" type="module"></script>
-	<script src="gui.js" type="module"></script>
+    <script src="piece.js" type="module"></script>
+    <script src="board.js" type="module"></script>
+    <script src="fen_notation.js" type="module"></script>
+    <script src="gui.js" type="module"></script>
 
-	<script src="init.js" type="module"></script>
+    <script src="init.js" type="module"></script>
 </head>
 
 <body>
-	<main id="p5_container"></main>
+    <main id="p5_container"></main>
 </body>
 
 </html>

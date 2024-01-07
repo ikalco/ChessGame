@@ -68,6 +68,7 @@ export class Board {
         // update piece col & row
         this._board[to_row][to_col]!.col = to_col;
         this._board[to_row][to_col]!.row = to_row;
+        this._board[to_row][to_col]!.moved = true;
 
         // delete old one from board
         delete this._board[from_row][from_col];

@@ -16,5 +16,6 @@ export interface Piece {
     row: number,
     col: number,
     color: PieceColor,
-    type: PieceType
+    type: PieceType,
+    moved: boolean
 }

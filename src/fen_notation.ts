@@ -54,7 +54,8 @@ export class FEN {
                     row: row_index,
                     col: col_index,
                     color: color,
-                    type: type
+                    type: type,
+                    moved: false
                 };
 
                 col_index++;

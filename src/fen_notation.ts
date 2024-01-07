@@ -1,4 +1,4 @@
-import { board_2d } from "./board";
+import { board_2d, castling_options } from "./board";
 import { Piece, PieceColor, PieceType } from "./piece";
 
 // https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation
@@ -70,12 +70,30 @@ export class FEN {
         } else if (this.active_color_str == 'b') {
             return PieceColor.BLACK;
         } else {
-            throw Error("Invalid active color when parsing FEN string");
+            throw Error("Invalid active color when parsing FEN string.");
         }
     }
 
-    get castling_options(): string {
-        return this.castling_str;
+    get castling_options(): castling_options {
+        let options: castling_options = {
+            black_king: false,
+            black_queen: false,
+            white_king: false,
+            white_queen: false,
+        }
+
+        if (this.castling_str == '-') return options;
+
+        if (this.castling_str.length > 4) throw Error("Invalid length for castling options string when parsing FEN string.");
+        if (this.castling_str.match(/[^KQkq]/) != undefined) throw Error("Invalid character in castling options string when parsing FEN string.");
+        if (/(.).*\1/.test(this.castling_str)) throw Error("Repeated character in castling options string when parsing FEN string.");
+
+        if (this.castling_str.includes("K")) options.white_king = true;
+        if (this.castling_str.includes("Q")) options.white_queen = true;
+        if (this.castling_str.includes("k")) options.black_king = true;
+        if (this.castling_str.includes("q")) options.black_queen = true;
+
+        return options;
     }
 
     get enpassant_piece(): (Piece | undefined) {
@@ -97,14 +115,14 @@ export class FEN {
 
     get halfmove(): number {
         if (isNaN(Number(this.halfmove_str)))
-            throw Error("Invalid number for halfmoves when parsing FEN string");
+            throw Error("Invalid number for halfmoves when parsing FEN string.");
         else
             return Number(this.halfmove_str);
     }
 
     get fullmove(): number {
         if (isNaN(Number(this.fullmove_str)))
-            throw Error("Invalid number for fullmoves when parsing FEN string");
+            throw Error("Invalid number for fullmoves when parsing FEN string.");
         else
             return Number(this.fullmove_str);
     }

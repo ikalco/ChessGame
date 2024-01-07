@@ -2,6 +2,13 @@ import { Piece, PieceColor } from "./piece"
 
 export type board_2d = (Piece | undefined)[][]
 
+export type castling_options = {
+    black_queen: boolean;
+    black_king: boolean;
+    white_queen: boolean;
+    white_king: boolean;
+}
+
 export class Board {
     // defines and initializes class properties in constructor
     constructor(

@@ -2,6 +2,7 @@
 .eslintcache
 .npm
 *.tsbuildinfo
+package-lock.json
 # Directories
 dist
 node_modules

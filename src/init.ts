@@ -1,10 +1,11 @@
-import { FEN } from "./fen_notation.js";
-import { GUI } from "./gui.js";
+import { Board } from "./board";
+import { FEN } from "./fen_notation";
+import { GUI } from "./gui";
 
 window.onload = function () {
-	const fen = new FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-	const board = fen.load();
+    const fen = new FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const board = new Board(fen.board, fen.active_color, fen.castling_options, fen.enpassant_piece, fen.halfmove, fen.fullmove);
 
-	const gui = new GUI(board);
-	console.log(gui);
+    const gui = new GUI(board);
+    console.log(gui);
 }

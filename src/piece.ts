@@ -1,20 +1,20 @@
 export enum PieceColor {
-	WHITE,
-	BLACK
+    WHITE,
+    BLACK
 }
 
 export enum PieceType {
-	PAWN,
-	ROOK,
-	KNIGHT,
-	BISHOP,
-	KING,
-	QUEEN
+    PAWN,
+    ROOK,
+    KNIGHT,
+    BISHOP,
+    KING,
+    QUEEN
 }
 
 export interface Piece {
-	row: number,
-	col: number,
-	color: PieceColor,
-	type: PieceType
+    row: number,
+    col: number,
+    color: PieceColor,
+    type: PieceType
 }

@@ -109,21 +109,19 @@ export class FEN {
         return options;
     }
 
-    get enpassant_piece(): (Piece | undefined) {
-        const board = this.board;
+    get enpassant_target_square(): (number[]) {
+        if (this.enpassant_str == '-') return [];
 
-        if (this.enpassant_str == '-') return undefined;
-
-        const col: number = this.algToCol(this.enpassant_str);
         const row: number = this.algToRow(this.enpassant_str);
+        const col: number = this.algToCol(this.enpassant_str);
 
-        if (row == -1)
+        if (row == -1 || (row != 2 && row != 5))
             throw Error("Invalid rank number when parsing FEN string.");
 
         if (col == -1)
             throw Error("Invalid file letter when parsing FEN string.");
 
-        return board[row][col];
+        return [row, col];
     }
 
     get halfmove(): number {

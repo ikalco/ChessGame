@@ -17,6 +17,8 @@ export namespace BoardFactory {
                 board.at(3, enp_col).color != PieceColor.BLACK
             ) throw Error("En Passant target square given by FEN is invalid.");
 
+            board.at(3, enp_col).moved = true;
+
             board.add_move({
                 from_row: 1,
                 from_col: enp_col,
@@ -32,6 +34,8 @@ export namespace BoardFactory {
                 board.at(4, enp_col).type != PieceType.PAWN ||
                 board.at(4, enp_col).color != PieceColor.WHITE
             ) throw Error("En Passant target square given by FEN is invalid.");
+
+            board.at(4, enp_col).moved = true;
 
             board.add_move({
                 from_row: 6,

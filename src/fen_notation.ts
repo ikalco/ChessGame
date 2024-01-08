@@ -169,7 +169,7 @@ export class FEN {
 
     // takes in a position algebraic notation and returns it's rank as a number
     private algToRow(algNot: string): number {
-        switch (algNot[0]) {
+        switch (algNot[1]) {
             case '8': return 0;
             case '7': return 1;
             case '6': return 2;

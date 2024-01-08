@@ -190,6 +190,8 @@ export class GUI {
         if (this.background == undefined)
             this.background = this.p5!.createGraphics(this.screen_size_px, this.screen_size_px);
 
+        this.background.resizeCanvas(this.screen_size_px, this.screen_size_px);
+
         // define colors using hex color codes
         const square_color_even = this.p5!.color("#f1d9c0");
         const square_color_odd = this.p5!.color("#a97b65");

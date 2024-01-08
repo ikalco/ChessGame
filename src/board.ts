@@ -41,12 +41,12 @@ export class Board {
 
         for (let i = 0; i < pieces.length; i++) {
             switch (pieces[i].type) {
-                case PieceType.PAWN: this._pawns.push(pieces[i]);
-                case PieceType.ROOK: this._rooks.push(pieces[i]);
-                case PieceType.KNIGHT: this._knights.push(pieces[i]);
-                case PieceType.BISHOP: this._bishops.push(pieces[i]);
-                case PieceType.KING: this._kings.push(pieces[i]);
-                case PieceType.QUEEN: this._queens.push(pieces[i]);
+                case PieceType.PAWN: this._pawns.push(pieces[i]); break;
+                case PieceType.ROOK: this._rooks.push(pieces[i]); break;
+                case PieceType.KNIGHT: this._knights.push(pieces[i]); break;
+                case PieceType.BISHOP: this._bishops.push(pieces[i]); break;
+                case PieceType.KING: this._kings.push(pieces[i]); break;
+                case PieceType.QUEEN: this._queens.push(pieces[i]); break;
             }
 
             if (pieces[i].color == PieceColor.WHITE) this._whites.push(pieces[i]);
@@ -100,12 +100,12 @@ export class Board {
 
         // update internal arrays
         switch (piece.type) {
-            case PieceType.PAWN: this._pawns = this._pawns.filter(pawn => pawn != piece)
-            case PieceType.ROOK: this._rooks = this._rooks.filter(rook => rook != piece)
-            case PieceType.KNIGHT: this._knights = this._knights.filter(knight => knight != piece)
-            case PieceType.BISHOP: this._bishops = this._bishops.filter(bishop => bishop != piece)
-            case PieceType.KING: this._kings = this._kings.filter(king => king != piece)
-            case PieceType.QUEEN: this._queens = this._queens.filter(queen => queen != piece)
+            case PieceType.PAWN: this._pawns = this._pawns.filter(pawn => pawn != piece); break;
+            case PieceType.ROOK: this._rooks = this._rooks.filter(rook => rook != piece); break;
+            case PieceType.KNIGHT: this._knights = this._knights.filter(knight => knight != piece); break;
+            case PieceType.BISHOP: this._bishops = this._bishops.filter(bishop => bishop != piece); break;
+            case PieceType.KING: this._kings = this._kings.filter(king => king != piece); break;
+            case PieceType.QUEEN: this._queens = this._queens.filter(queen => queen != piece); break;
         }
 
         if (piece.color == PieceColor.WHITE) this._whites.filter(white => white != piece);

@@ -17,7 +17,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         expect(moves.length).toBe(2);
 
         // move one square down
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 1,
             from_col: 0,
             to_row: 2,
@@ -26,7 +26,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         });
 
         // move two square down, pawn double move
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 1,
             from_col: 0,
             to_row: 3,
@@ -41,7 +41,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         expect(moves.length).toBe(2);
 
         // move one square up
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 6,
             from_col: 0,
             to_row: 5,
@@ -50,7 +50,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         });
 
         // move two squares up, pawn double move
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 6,
             from_col: 0,
             to_row: 4,
@@ -65,7 +65,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         expect(moves.length).toBe(1);
 
         // promotion of white pawns
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 1,
             from_col: 1,
             to_row: 0,
@@ -93,7 +93,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         expect(moves.length).toBe(2);
 
         // en passant move on pawn we faked double move on eariler
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 3,
             from_col: 2,
             to_row: 2,
@@ -102,7 +102,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         });
 
         // other normal move
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 3,
             from_col: 2,
             to_row: 2,
@@ -122,7 +122,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
     expect(moves.length).toBe(11);
 
     test("Vertical.", () => {
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 5,
@@ -130,7 +130,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 6,
@@ -138,7 +138,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 7,
@@ -148,7 +148,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
     });
 
     test("Horizontal.", () => {
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 4,
@@ -156,7 +156,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 4,
@@ -164,7 +164,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 4,
@@ -174,7 +174,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
     });
 
     test("Friendly Piece.", () => {
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 4,
@@ -182,7 +182,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 4,
@@ -190,9 +190,6 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        // toContain matches properties you give it, and ignores other properties of other object
-        // toContainEqual matches all properties in both objects
-        // don't match type cause it could be wonky, just where the move is going
         expect(moves).not.toContain({
             from_row: 4,
             from_col: 3,
@@ -202,7 +199,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
     });
 
     test("Enemy Piece.", () => {
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 3,
@@ -210,7 +207,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 2,
@@ -218,7 +215,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
             type: MoveType.Normal
         });
 
-        expect(moves).toContainEqual({
+        expect(moves).toContain({
             from_row: 4,
             from_col: 3,
             to_row: 1,

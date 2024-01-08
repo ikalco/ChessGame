@@ -124,10 +124,10 @@ export class PseduoLegalMoveGenerator {
         //             left,   right,    up,     down
         const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
-        for (const dir of dirs) {
+        for (const [row_change, col_change] of dirs) {
             for (let dist = 1; dist < 8; dist++) {
-                const to_row = rook.row + dir[0] * dist;
-                const to_col = rook.col + dir[1] * dist;
+                const to_row = rook.row + row_change * dist;
+                const to_col = rook.col + col_change * dist;
 
                 // if it doesn't exist, it's the edge so go to other direction
                 if (!this.board.exists(to_row, to_col)) break;
@@ -138,8 +138,8 @@ export class PseduoLegalMoveGenerator {
                 moves.push({
                     from_row: rook.row,
                     from_col: rook.col,
-                    to_row: rook.row + dir[0] * dist,
-                    to_col: rook.col + dir[1] * dist,
+                    to_row: rook.row + row_change * dist,
+                    to_col: rook.col + col_change * dist,
                     type: MoveType.Normal
                 });
 
@@ -153,8 +153,31 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_knight_moves(piece: Piece): Move[] {
-        return [];
+    gen_knight_moves(knight: Piece): Move[] {
+        let moves: Move[] = [];
+
+        const dirs = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
+
+        for (const [row_change, col_change] of dirs) {
+            const to_row = knight.row + row_change;
+            const to_col = knight.col + col_change;
+
+            // if it doesn't exist, it's the edge so go to other direction
+            if (!this.board.exists(to_row, to_col)) continue;
+
+            // if it's a piece with the same color (friendly) then go to other direction
+            if (this.board.at(to_row, to_col).color == knight.color) continue;
+
+            moves.push({
+                from_row: knight.row,
+                from_col: knight.col,
+                to_row: knight.row + row_change,
+                to_col: knight.col + col_change,
+                type: MoveType.Normal
+            });
+        }
+
+        return moves;
     }
 
     gen_bishop_moves(piece: Piece): Move[] {

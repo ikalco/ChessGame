@@ -224,3 +224,82 @@ describe("Testing pseduo legal move generation for rooks", () => {
         });
     });
 });
+
+describe("Testing pseudo legal move generation for knights", () => {
+    const fen = new FEN("8/8/8/2p5/8/1N6/3P4/8 w KQkq - 0 1");
+    const board = new Board(fen.board, [], fen.active_color, fen.castling_options, fen.halfmove);
+    const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
+
+    const moves: Move[] = generator.gen_knight_moves(board.at(5, 1)!);
+
+    expect(moves.length).toBe(5);
+
+    test("Normal.", () => {
+        expect(moves).toContainEqual({
+            from_row: 5,
+            from_col: 1,
+            to_row: 7,
+            to_col: 0,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 5,
+            from_col: 1,
+            to_row: 7,
+            to_col: 2,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 5,
+            from_col: 1,
+            to_row: 4,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 5,
+            from_col: 1,
+            to_row: 3,
+            to_col: 0,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Out of Bounds.", () => {
+        expect(moves).not.toContain({
+            from_row: 5,
+            from_col: 1,
+            to_row: 4,
+            to_col: -1,
+        });
+
+        expect(moves).not.toContain({
+            from_row: 5,
+            from_col: 1,
+            to_row: 6,
+            to_col: -1,
+        });
+    });
+
+    test("Friendly Piece.", () => {
+        expect(moves).not.toContain({
+            from_row: 5,
+            from_col: 1,
+            to_row: 6,
+            to_col: 3,
+        });
+    });
+
+    test("Enemy Piece.", () => {
+        expect(moves).toContainEqual({
+            from_row: 5,
+            from_col: 1,
+            to_row: 3,
+            to_col: 2,
+            type: MoveType.Normal
+        });
+    });
+});

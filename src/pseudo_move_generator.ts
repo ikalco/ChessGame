@@ -180,8 +180,38 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_bishop_moves(piece: Piece): Move[] {
-        return [];
+    gen_bishop_moves(bishop: Piece): Move[] {
+        let moves: Move[] = [];
+
+        const dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+        for (const [row_change, col_change] of dirs) {
+            for (let dist = 1; dist < 8; dist++) {
+                const to_row = bishop.row + row_change * dist;
+                const to_col = bishop.col + col_change * dist;
+
+                // if it doesn't exist, it's the edge so go to other direction
+                if (!this.board.exists(to_row, to_col)) break;
+
+                // if it's a piece with the same color (friendly) then go to other direction
+                if (this.board.at(to_row, to_col).color == bishop.color) break;
+
+                moves.push({
+                    from_row: bishop.row,
+                    from_col: bishop.col,
+                    to_row: bishop.row + row_change * dist,
+                    to_col: bishop.col + col_change * dist,
+                    type: MoveType.Normal
+                });
+
+                // if it's an enemy piece then add the move to take it then go to other direction
+                if (this.board.isPiece(to_row, to_col) &&
+                    this.board.at(to_row, to_col).color != bishop.color
+                ) break;
+            }
+        }
+
+        return moves;
     }
 
     gen_king_moves(piece: Piece): Move[] {

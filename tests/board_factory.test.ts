@@ -19,7 +19,7 @@ describe("Testing board factory for FEN", () => {
         expect(board.last_move).not.toBeUndefined();
         expect(board.last_moved_piece).not.toBeUndefined();
 
-        expect(board.last_moved_piece!.moved).toStrictEqual(true);
+        expect(board.last_moved_piece!.moved).toBe(true);
 
         expect(board.last_move).toStrictEqual({
             from_row: 1,
@@ -36,7 +36,7 @@ describe("Testing board factory for FEN", () => {
         expect(board.last_move).not.toBeUndefined();
         expect(board.last_moved_piece).not.toBeUndefined();
 
-        expect(board.last_moved_piece!.moved).toStrictEqual(true);
+        expect(board.last_moved_piece!.moved).toBe(true);
 
         expect(board.last_move).toStrictEqual({
             from_row: 6,

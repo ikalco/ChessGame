@@ -80,10 +80,15 @@ export class Board {
     get black_king(): Piece { return this._kings.filter((piece) => piece.color == PieceColor.BLACK)[0]; }
     get black_queen(): Piece { return this._queens.filter((piece) => piece.color == PieceColor.BLACK)[0]; }
 
-    // this is needed to implement en passant
     // returns last move in move list
-    get last_move(): Move {
-        return this.move_list.at(this.move_list.length)!;
+    get last_move(): (Move | undefined) {
+        return this.move_list.at(this.move_list.length - 1);
+    }
+
+    // returns last moved piece based on last_move
+    get last_moved_piece(): (Piece | undefined) {
+        if (this.last_move == undefined) return undefined;
+        return this.at(this.last_move.to_row, this.last_move.to_col);
     }
 
     // returns what is at the row and column
@@ -94,9 +99,15 @@ export class Board {
             return undefined;
     }
 
+    isEmpty(row: number, col: number) {
+        return this.at(row, col) == undefined;
+    }
+
     // deletes a piece at a given square position
     delete(row: number, col: number) {
         const piece = this._board[row][col]!;
+
+        if (piece == undefined) return;
 
         // update internal arrays
         switch (piece.type) {

@@ -1,7 +1,9 @@
-export type move_flags = {
-    promotion: boolean,
-    castling: boolean,
-    en_passant: boolean
+export enum MoveType {
+    Normal,
+    PawnDouble,
+    EnPassant,
+    Promotion,
+    Castling
 }
 
 export class Move {
@@ -10,14 +12,10 @@ export class Move {
         public from_col: number,
         public to_row: number,
         public to_col: number,
-        public special_flags?: move_flags
+        public type?: MoveType
     ) {
-        if (typeof (special_flags) === undefined) {
-            this.special_flags = {
-                promotion: false,
-                castling: false,
-                en_passant: false
-            };
+        if (typeof (type) === undefined) {
+            this.type = MoveType.Normal;
         }
     }
 }

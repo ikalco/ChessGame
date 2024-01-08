@@ -127,15 +127,17 @@ export class GUI {
 
         // draw piece grabbed by mouse now
         // this is so that it's above all other pieces
-        if (this.mouse_pressed_col !== undefined && this.mouse_pressed_row !== undefined) {
+        if (this.mouse_pressed_row !== undefined &&
+            this.mouse_pressed_col !== undefined &&
+            this.board.exists(this.mouse_pressed_row, this.mouse_pressed_col)
+        ) {
             // to draw middle on mouse, we need to offset
             const draw_x = this.p5!.mouseX - (this.cell_width_px / 2);
             const draw_y = this.p5!.mouseY - (this.cell_width_px / 2);
 
             const mouse_pressed_piece = this.board.at(this.mouse_pressed_row, this.mouse_pressed_col);
 
-            if (mouse_pressed_piece !== undefined)
-                this.drawPiece(mouse_pressed_piece, draw_x, draw_y);
+            this.drawPiece(mouse_pressed_piece, draw_x, draw_y);
         }
     }
 

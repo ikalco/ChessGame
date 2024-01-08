@@ -99,8 +99,11 @@ export class Board {
             return undefined;
     }
 
+    // checks if square exists and is empty, kinda...
+    // TODO: refactor empty squares to be something other than undefined
+    //       it will almsot definitely lead to bugs, oh well
     isEmpty(row: number, col: number) {
-        return this.at(row, col) == undefined;
+        return this._board[row] != undefined && this.at(row, col) == undefined;
     }
 
     // deletes a piece at a given square position

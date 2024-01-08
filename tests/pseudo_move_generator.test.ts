@@ -121,7 +121,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
 
     expect(moves.length).toBe(11);
 
-    test("Vertical.", () => {
+    test("Normal.", () => {
         expect(moves).toContainEqual({
             from_row: 4,
             from_col: 3,
@@ -147,7 +147,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
         });
     });
 
-    test("Horizontal.", () => {
+    test("Out of bounds.", () => {
         expect(moves).toContainEqual({
             from_row: 4,
             from_col: 3,
@@ -170,6 +170,13 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 4,
             to_col: 0,
             type: MoveType.Normal
+        });
+
+        expect(moves).not.toContain({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: -1,
         });
     });
 
@@ -221,6 +228,13 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 1,
             to_col: 3,
             type: MoveType.Normal
+        });
+
+        expect(moves).not.toContain({
+            from_row: 4,
+            from_col: 3,
+            to_row: 0,
+            to_col: 3,
         });
     });
 });

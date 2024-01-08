@@ -3,13 +3,6 @@ import { Move } from "./move";
 
 export type board_2d = (Piece)[][];
 
-export type castling_options = {
-    black_queen: boolean;
-    black_king: boolean;
-    white_queen: boolean;
-    white_king: boolean;
-};
-
 export class Board {
     // internal arrays to keep track of different piece types
     private _whites: Piece[];
@@ -25,7 +18,6 @@ export class Board {
         private _board: board_2d,
         private move_list: Move[],
         public active_color: PieceColor,
-        public castling_options: castling_options,
         public halfmove_counter: number,
     ) {
         this._whites = [];

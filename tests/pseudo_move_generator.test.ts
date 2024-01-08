@@ -1,14 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
 
 import { PseduoLegalMoveGenerator } from '../src/pseudo_move_generator';
-import { Piece, PieceColor, PieceType } from '../src/piece';
-import { FEN } from '../src/fen_notation';
+import { BoardFactory } from '../src/board_factory';
 import { Move, MoveType } from '../src/move';
-import { Board } from '../src/board';
 
 describe("Testing pseudo legal move generation for pawns", () => {
-    const fen = new FEN("8/pP1p4/8/2P5/8/8/Pp6/8 w KQkq - 0 1");
-    const board = new Board(fen.board, [], fen.active_color, fen.castling_options, fen.halfmove);
+    const board = BoardFactory.createFEN("8/pP1p4/8/2P5/8/8/Pp6/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
     test("Black Pawn ♙.", () => {
@@ -113,8 +110,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
 });
 
 describe("Testing pseduo legal move generation for rooks", () => {
-    const fen = new FEN("8/3P4/8/8/3r2p1/8/8/8 w KQkq - 0 1");
-    const board = new Board(fen.board, [], fen.active_color, fen.castling_options, fen.halfmove);
+    const board = BoardFactory.createFEN("8/3P4/8/8/3r2p1/8/8/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
     const moves: Move[] = generator.gen_rook_moves(board.at(4, 3)!);
@@ -240,8 +236,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
 });
 
 describe("Testing pseudo legal move generation for knights", () => {
-    const fen = new FEN("8/8/8/2p5/8/1N6/3P4/8 w KQkq - 0 1");
-    const board = new Board(fen.board, [], fen.active_color, fen.castling_options, fen.halfmove);
+    const board = BoardFactory.createFEN("8/8/8/2p5/8/1N6/3P4/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
     const moves: Move[] = generator.gen_knight_moves(board.at(5, 1)!);
@@ -282,7 +277,7 @@ describe("Testing pseudo legal move generation for knights", () => {
         });
     });
 
-    test("Out of Bounds.", () => {
+    test("Out of bounds.", () => {
         expect(moves).not.toContain({
             from_row: 5,
             from_col: 1,
@@ -319,8 +314,7 @@ describe("Testing pseudo legal move generation for knights", () => {
 });
 
 describe("Testing pseudo legal move generation for bishops", () => {
-    const fen = new FEN("8/8/8/8/3b4/8/1p3P2/8 w KQkq - 0 1");
-    const board = new Board(fen.board, [], fen.active_color, fen.castling_options, fen.halfmove);
+    const board = BoardFactory.createFEN("8/8/8/8/3b4/8/1p3P2/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
     const moves: Move[] = generator.gen_bishop_moves(board.at(4, 3)!);

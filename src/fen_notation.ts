@@ -1,5 +1,12 @@
-import { board_2d, castling_options } from "./board";
+import { board_2d } from "./board";
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
+
+export type fen_castling_options = {
+    black_queen: boolean;
+    black_king: boolean;
+    white_queen: boolean;
+    white_king: boolean;
+};
 
 // https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation
 export class FEN {
@@ -80,8 +87,8 @@ export class FEN {
         }
     }
 
-    get castling_options(): castling_options {
-        let options: castling_options = {
+    get castling_options(): fen_castling_options {
+        let options: fen_castling_options = {
             black_king: false,
             black_queen: false,
             white_king: false,

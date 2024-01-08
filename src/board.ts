@@ -1,14 +1,14 @@
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece"
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
 import { Move } from "./move";
 
-export type board_2d = (Piece)[][]
+export type board_2d = (Piece)[][];
 
 export type castling_options = {
     black_queen: boolean;
     black_king: boolean;
     white_queen: boolean;
     white_king: boolean;
-}
+};
 
 export class Board {
     // internal arrays to keep track of different piece types
@@ -60,15 +60,15 @@ export class Board {
 
         for (let i = 0; i < this._board.length; i++) {
             for (let j = 0; j < this._board[i].length; j++) {
-                if (this._board[i][j] == EMPTY_PIECE) pieces.push(this._board[i][j]!);
+                if (this._board[i][j] != EMPTY_PIECE) pieces.push(this._board[i][j]!);
             }
         }
 
         return pieces;
     }
 
-    get whites(): Piece[] { return this._whites }
-    get blacks(): Piece[] { return this._blacks }
+    get whites(): Piece[] { return this._whites; }
+    get blacks(): Piece[] { return this._blacks; }
     get pawns(): Piece[] { return this._pawns; }
     get rooks(): Piece[] { return this._rooks; }
     get knights(): Piece[] { return this._knights; }
@@ -106,6 +106,11 @@ export class Board {
     // checks if square is empty
     isEmpty(row: number, col: number) {
         return this.at(row, col) == EMPTY_PIECE;
+    }
+
+    // checks if square is an actual piece
+    isPiece(row: number, col: number) {
+        return this.at(row, col) != EMPTY_PIECE;
     }
 
     // deletes a piece at a given square position

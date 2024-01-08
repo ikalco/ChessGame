@@ -1,21 +1,15 @@
 export enum MoveType {
-    Normal,
+    Normal,     // can be a normal move but also taking, probably bad but oh well
     PawnDouble,
     EnPassant,
     Promotion,
     Castling
 }
 
-export class Move {
-    constructor(
-        public from_row: number,
-        public from_col: number,
-        public to_row: number,
-        public to_col: number,
-        public type?: MoveType
-    ) {
-        if (typeof (type) === undefined) {
-            this.type = MoveType.Normal;
-        }
-    }
-}
+export type Move = {
+    from_row: number,
+    from_col: number,
+    to_row: number,
+    to_col: number,
+    type: MoveType;
+};

@@ -1,9 +1,9 @@
 import p5 from "p5";
 import { Board } from "./board";
-import { Piece, PieceColor, PieceType } from "./piece";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
 
 export class GUI {
-    private board: Board
+    private board: Board;
 
     private p5: (p5 | undefined);
 
@@ -143,6 +143,8 @@ export class GUI {
         if (this.piece_images === undefined) throw Error("piece_images not loaded, can't draw pieces");
         if (this.cell_width_px === undefined) throw Error("cell_width_px is undefined, can't draw pieces");
 
+        if (piece == EMPTY_PIECE) return;
+
         // draw p5.Image
         this.p5!.image(
             this.piece_images[piece.color][piece.type],	// image
@@ -184,8 +186,8 @@ export class GUI {
     }
 
     private generateBackground() {
-        if (this.cell_width_px === undefined) throw Error("cell_width_px is undefined, can't generate background")
-        if (this.screen_size_px === undefined) throw Error("screen_size_px is undefined, can't generate background")
+        if (this.cell_width_px === undefined) throw Error("cell_width_px is undefined, can't generate background");
+        if (this.screen_size_px === undefined) throw Error("screen_size_px is undefined, can't generate background");
 
         if (this.background == undefined)
             this.background = this.p5!.createGraphics(this.screen_size_px, this.screen_size_px);

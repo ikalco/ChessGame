@@ -430,3 +430,98 @@ describe("Testing pseudo legal move generation for bishops", () => {
         });
     });
 });
+
+describe("Testing pseudo legal move generation for kings", () => {
+    const board = BoardFactory.createFEN("8/8/8/8/8/8/3P1p2/R1k1K2R w KQ - 0 1");
+    const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
+
+    const moves: Move[] = generator.gen_king_moves(board.at(7, 4)!);
+
+    expect(moves.length).toBe(5);
+
+    test("Normal.", () => {
+        expect(moves).toContainEqual({
+            from_row: 7,
+            from_col: 4,
+            to_row: 7,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 7,
+            from_col: 4,
+            to_row: 7,
+            to_col: 5,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 7,
+            from_col: 4,
+            to_row: 6,
+            to_col: 4,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Out of bounds.", () => {
+        expect(moves).not.toContain({
+            from_row: 7,
+            from_col: 4,
+            to_row: 8,
+            to_col: 3,
+        });
+
+        expect(moves).not.toContain({
+            from_row: 7,
+            from_col: 4,
+            to_row: 8,
+            to_col: 4,
+        });
+
+        expect(moves).not.toContain({
+            from_row: 7,
+            from_col: 4,
+            to_row: 8,
+            to_col: 5,
+        });
+    });
+
+    test("Friendly Piece.", () => {
+        expect(moves).not.toContain({
+            from_row: 7,
+            from_col: 4,
+            to_row: 6,
+            to_col: 3,
+        });
+    });
+
+    test("Enemy Piece.", () => {
+        expect(moves).toContainEqual({
+            from_row: 7,
+            from_col: 4,
+            to_row: 6,
+            to_col: 5,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Castling.", () => {
+        expect(moves).toContainEqual({
+            from_row: 7,
+            from_col: 4,
+            to_row: 7,
+            to_col: 6,
+            type: MoveType.Castling
+        });
+
+        expect(moves).not.toContainEqual({
+            from_row: 7,
+            from_col: 4,
+            to_row: 7,
+            to_col: 2,
+            type: MoveType.Castling
+        });
+    });
+});

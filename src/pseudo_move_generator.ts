@@ -1,6 +1,6 @@
 import { Board } from "./board";
 import { Move, MoveType } from "./move";
-import { Piece, PieceColor, PieceType } from "./piece";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
 
 export class PseduoLegalMoveGenerator {
     constructor(private board: Board) { }
@@ -214,8 +214,69 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_king_moves(piece: Piece): Move[] {
-        return [];
+    gen_king_moves(king: Piece): Move[] {
+        let moves: Move[] = [];
+
+        const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+        for (const [row_change, col_change] of dirs) {
+            const to_row = king.row + row_change;
+            const to_col = king.col + col_change;
+
+            // if it doesn't exist, it's the edge so go to other direction
+            if (!this.board.exists(to_row, to_col)) continue;
+
+            // if it's a piece with the same color (friendly) then go to other direction
+            if (this.board.at(to_row, to_col).color == king.color) continue;
+
+            moves.push({
+                from_row: king.row,
+                from_col: king.col,
+                to_row: king.row + row_change,
+                to_col: king.col + col_change,
+                type: MoveType.Normal
+            });
+        }
+
+        // castling rules
+        // king & rook haven't moved
+        // no pieces between them
+        // third rule will be handled by LEGAL move generator
+
+        // queen side castle
+        if (this.board.at(king.row, 0).type == PieceType.ROOK &&
+            this.board.at(king.row, 0).moved == false &&
+            king.moved == false &&
+            this.board.at(king.row, 1) == EMPTY_PIECE &&
+            this.board.at(king.row, 2) == EMPTY_PIECE &&
+            this.board.at(king.row, 3) == EMPTY_PIECE
+        ) {
+            moves.push({
+                from_row: king.row,
+                from_col: king.col,
+                to_row: king.row,
+                to_col: king.col - 2,
+                type: MoveType.Castling
+            });
+        }
+
+        // king side castle
+        if (this.board.at(king.row, 7).type == PieceType.ROOK &&
+            this.board.at(king.row, 7).moved == false &&
+            king.moved == false &&
+            this.board.at(king.row, 5) == EMPTY_PIECE &&
+            this.board.at(king.row, 6) == EMPTY_PIECE
+        ) {
+            moves.push({
+                from_row: king.row,
+                from_col: king.col,
+                to_row: king.row,
+                to_col: king.col + 2,
+                type: MoveType.Castling
+            });
+        }
+
+        return moves;
     }
 
     gen_queen_moves(piece: Piece): Move[] {

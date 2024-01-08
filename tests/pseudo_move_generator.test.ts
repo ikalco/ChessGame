@@ -525,3 +525,115 @@ describe("Testing pseudo legal move generation for kings", () => {
         });
     });
 });
+
+describe("Testing pseudo legal move generation for queens", () => {
+    const board = BoardFactory.createFEN("8/8/8/8/3q4/8/1P6/3p4 w KQkq - 0 1");
+    const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
+
+    const moves: Move[] = generator.gen_queen_moves(board.at(4, 3)!);
+
+    expect(moves.length).toBe(25);
+
+    test("Normal.", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 2,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 1,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 0,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Out of bounds.", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 3,
+            to_col: 2,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 2,
+            to_col: 1,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 1,
+            to_col: 0,
+            type: MoveType.Normal
+        });
+
+        expect(moves).not.toContain({
+            from_row: 4,
+            from_col: 3,
+            to_row: 0,
+            to_col: -1,
+        });
+    });
+
+    test("Friendly Piece", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 5,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 6,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).not.toContain({
+            from_row: 4,
+            from_col: 3,
+            to_row: 7,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Enemy Piece", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 5,
+            to_col: 2,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 6,
+            to_col: 1,
+            type: MoveType.Normal
+        });
+    });
+});

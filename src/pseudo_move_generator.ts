@@ -279,7 +279,37 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_queen_moves(piece: Piece): Move[] {
-        return [];
+    gen_queen_moves(queen: Piece): Move[] {
+        let moves: Move[] = [];
+
+        const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+        for (const [row_change, col_change] of dirs) {
+            for (let dist = 1; dist < 8; dist++) {
+                const to_row = queen.row + row_change * dist;
+                const to_col = queen.col + col_change * dist;
+
+                // if it doesn't exist, it's the edge so go to other direction
+                if (!this.board.exists(to_row, to_col)) break;
+
+                // if it's a piece with the same color (friendly) then go to other direction
+                if (this.board.at(to_row, to_col).color == queen.color) break;
+
+                moves.push({
+                    from_row: queen.row,
+                    from_col: queen.col,
+                    to_row: queen.row + row_change * dist,
+                    to_col: queen.col + col_change * dist,
+                    type: MoveType.Normal
+                });
+
+                // if it's an enemy piece then add the move to take it then go to other direction
+                if (this.board.isPiece(to_row, to_col) &&
+                    this.board.at(to_row, to_col).color != queen.color
+                ) break;
+            }
+        }
+
+        return moves;
     }
 }

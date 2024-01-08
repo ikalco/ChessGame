@@ -39,7 +39,7 @@ export class PseduoLegalMoveGenerator {
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col,
-                type: pawn.col == promotion_rank ? MoveType.Promotion : MoveType.Normal
+                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal
             });
 
             if (this.board.exists(pawn.row + dir * 2, pawn.col) &&
@@ -67,7 +67,7 @@ export class PseduoLegalMoveGenerator {
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col + 1,
-                type: pawn.col == promotion_rank ? MoveType.Promotion : MoveType.Normal
+                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal
             });
         }
 
@@ -81,7 +81,7 @@ export class PseduoLegalMoveGenerator {
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col - 1,
-                type: pawn.col == promotion_rank ? MoveType.Promotion : MoveType.Normal
+                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal
             });
         }
 

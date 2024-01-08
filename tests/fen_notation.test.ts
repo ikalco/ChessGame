@@ -7,25 +7,27 @@ describe("Testing FEN parsing: \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w K
     const fen = new FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     test("Correctly loaded board.", () => {
+        const board = fen.board;
+
         // check properties of board
-        expect(fen.board.length).toBe(8);
-        expect(fen.board[0].length).toBe(8);
-        expect(fen.board[7].length).toBe(8);
+        expect(board.length).toBe(8);
+        expect(board[0].length).toBe(8);
+        expect(board[7].length).toBe(8);
 
         // check if pieces were made correctly, 1
-        expect(fen.board[0][0]!.row).toBe(0);
-        expect(fen.board[0][0]!.col).toBe(0);
-        expect(fen.board[0][0]!.color).toBe(PieceColor.BLACK);
-        expect(fen.board[0][0]!.type).toBe(PieceType.ROOK);
+        expect(board[0][0]!.row).toBe(0);
+        expect(board[0][0]!.col).toBe(0);
+        expect(board[0][0]!.color).toBe(PieceColor.BLACK);
+        expect(board[0][0]!.type).toBe(PieceType.ROOK);
 
         // check if pieces were made correctly, 2
-        expect(fen.board[7][7]!.row).toBe(7);
-        expect(fen.board[7][7]!.col).toBe(7);
-        expect(fen.board[7][7]!.color).toBe(PieceColor.WHITE);
-        expect(fen.board[7][7]!.type).toBe(PieceType.ROOK);
+        expect(board[7][7]!.row).toBe(7);
+        expect(board[7][7]!.col).toBe(7);
+        expect(board[7][7]!.color).toBe(PieceColor.WHITE);
+        expect(board[7][7]!.type).toBe(PieceType.ROOK);
 
         // check if empty spaces were made correctly
-        expect(fen.board[3][5]).toBe(EMPTY_PIECE);
+        expect(board[3][5]).toBe(EMPTY_PIECE);
     });
 
     test("Correctly loaded active color.", () => {
@@ -33,14 +35,16 @@ describe("Testing FEN parsing: \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w K
     });
 
     test("Correctly loaded castling options.", () => {
-        expect(fen.castling_options.black_king).toBe(true);
-        expect(fen.castling_options.black_queen).toBe(true);
-        expect(fen.castling_options.white_king).toBe(true);
-        expect(fen.castling_options.white_queen).toBe(true);
+        const castling_options = fen.castling_options;
+
+        expect(castling_options.black_king).toBe(true);
+        expect(castling_options.black_queen).toBe(true);
+        expect(castling_options.white_king).toBe(true);
+        expect(castling_options.white_queen).toBe(true);
     });
 
     test("Correctly loaded enpassant piece.", () => {
-        expect(fen.enpassant_piece).toBeUndefined();
+        expect(fen.enpassant_target_square).toHaveLength(0);
     });
 
     test("Correctly loaded halfmove counter.", () => {

@@ -93,10 +93,14 @@ export class Board {
 
     // returns what is at the row and column
     at(row: number, col: number): (Piece) {
-        if (this._board[row] != undefined && this._board[row][col] != undefined)
+        if (this.exists(row, col))
             return this._board[row][col];
         else
             throw Error("Tried to access undefined piece in board.");
+    }
+
+    exists(row: number, col: number) {
+        return this._board[row] != undefined && this._board[row][col] != undefined;
     }
 
     // checks if square is empty

@@ -1,5 +1,5 @@
 import { board_2d, castling_options } from "./board";
-import { Piece, PieceColor, PieceType } from "./piece";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
 
 // https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation
 export class FEN {
@@ -42,9 +42,14 @@ export class FEN {
                 const type: (PieceType | undefined) = this.typeFromLetterFEN(piece_letter);
 
                 if (type === undefined) {
-                    // if it's not a piece and it's a number and we skip N cells since they're empty
+                    // if it's not a piece and it's a number and we set N cells to empty
                     if (isNaN(Number(piece_letter)))
                         throw Error("Invalid piece letter in piece placement data when parsing FEN string.");
+
+                    const num_empty = Number(piece_letter);
+                    for (let i = 0; i < num_empty; i++) {
+                        board[row_index][col_index + i] = EMPTY_PIECE;
+                    }
 
                     col_index += Number(piece_letter);
                     continue;

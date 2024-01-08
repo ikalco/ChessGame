@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 
 import { FEN } from "../src/fen_notation";
-import { PieceColor, PieceType } from "../src/piece";
+import { EMPTY_PIECE, PieceColor, PieceType } from "../src/piece";
 
 describe("Testing FEN parsing: \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"", () => {
     const fen = new FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -25,7 +25,7 @@ describe("Testing FEN parsing: \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w K
         expect(fen.board[7][7]!.type).toBe(PieceType.ROOK);
 
         // check if empty spaces were made correctly
-        expect(fen.board[3][5]).toBeUndefined();
+        expect(fen.board[3][5]).toBe(EMPTY_PIECE);
     });
 
     test("Correctly loaded active color.", () => {

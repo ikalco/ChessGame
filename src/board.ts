@@ -1,7 +1,7 @@
-import { Piece, PieceColor, PieceType } from "./piece"
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece"
 import { Move } from "./move";
 
-export type board_2d = (Piece | undefined)[][]
+export type board_2d = (Piece)[][]
 
 export type castling_options = {
     black_queen: boolean;
@@ -60,7 +60,7 @@ export class Board {
 
         for (let i = 0; i < this._board.length; i++) {
             for (let j = 0; j < this._board[i].length; j++) {
-                if (this._board[i][j] !== undefined) pieces.push(this._board[i][j]!);
+                if (this._board[i][j] == EMPTY_PIECE) pieces.push(this._board[i][j]!);
             }
         }
 
@@ -92,28 +92,25 @@ export class Board {
     }
 
     // returns what is at the row and column
-    at(row: number, col: number): (Piece | undefined) {
-        if (this._board[row] != undefined)
+    at(row: number, col: number): (Piece) {
+        if (this._board[row] != undefined && this._board[row][col] != undefined)
             return this._board[row][col];
         else
-            return undefined;
+            throw Error("Tried to access undefined piece in board.");
     }
 
-    // checks if square exists and is empty, kinda...
-    // TODO: refactor empty squares to be something other than undefined
-    //       it will almsot definitely lead to bugs, oh well
+    // checks if square is empty
     isEmpty(row: number, col: number) {
-        return this._board[row] != undefined && this.at(row, col) == undefined;
+        return this.at(row, col) == EMPTY_PIECE;
     }
 
     // deletes a piece at a given square position
     delete(row: number, col: number) {
         const piece = this._board[row][col]!;
 
-        if (piece == undefined) return;
-
         // update internal arrays
         switch (piece.type) {
+            case PieceType.EMPTY: return;
             case PieceType.PAWN: this._pawns = this._pawns.filter(pawn => pawn != piece); break;
             case PieceType.ROOK: this._rooks = this._rooks.filter(rook => rook != piece); break;
             case PieceType.KNIGHT: this._knights = this._knights.filter(knight => knight != piece); break;
@@ -126,7 +123,7 @@ export class Board {
         if (piece.color == PieceColor.BLACK) this._blacks.filter(black => black != piece);
 
         // make square empty
-        this._board[row][col] = undefined;
+        this._board[row][col] = EMPTY_PIECE;
     }
 
     // moves a piece from one square to another
@@ -142,7 +139,7 @@ export class Board {
         if (from_col == to_col && from_row == to_row) return false;
 
         // skip if not moving an actual piece
-        if (this._board[from_row][from_col] === undefined) return false;
+        if (this._board[from_row][from_col] == EMPTY_PIECE) return false;
 
         // delete piece in square being moved to
         this.delete(to_row, to_col);
@@ -156,7 +153,7 @@ export class Board {
         this._board[to_row][to_col]!.moved = true;
 
         // make original square empty
-        this._board[from_row][from_col] = undefined;
+        this._board[from_row][from_col] = EMPTY_PIECE;
 
         return true;
     }

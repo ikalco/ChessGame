@@ -27,7 +27,7 @@ export class FEN {
         const rows: string[] = this.placement_str.split("/");
 
         if (rows.length != 8)
-            throw Error("Wrong number of rows in piece placement data when parsing FEN string.")
+            throw Error("Wrong number of rows in piece placement data when parsing FEN string.");
 
         for (let row_index = 0; row_index < 8; row_index++) {
             const row: string = rows[row_index];
@@ -35,7 +35,7 @@ export class FEN {
             let col_index = 0;
             for (let str_index = 0; str_index < row.length; str_index++) {
                 if (col_index > 7)
-                    throw Error(`Too many pieces at row ${row_index + 1} of piece placement data when parsing FEN string.`)
+                    throw Error(`Too many pieces at row ${row_index + 1} of piece placement data when parsing FEN string.`);
 
                 const piece_letter: string = row[str_index];
                 const color: PieceColor = this.colorFromLetterFEN(piece_letter);
@@ -86,7 +86,7 @@ export class FEN {
             black_queen: false,
             white_king: false,
             white_queen: false,
-        }
+        };
 
         if (this.castling_str == '-') return options;
 

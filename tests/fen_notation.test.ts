@@ -30,24 +30,24 @@ describe("Testing FEN parsing: \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w K
 
     test("Correctly loaded active color.", () => {
         expect(fen.active_color).toBe(PieceColor.WHITE);
-    })
+    });
 
     test("Correctly loaded castling options.", () => {
         expect(fen.castling_options.black_king).toBe(true);
         expect(fen.castling_options.black_queen).toBe(true);
         expect(fen.castling_options.white_king).toBe(true);
         expect(fen.castling_options.white_queen).toBe(true);
-    })
+    });
 
     test("Correctly loaded enpassant piece.", () => {
         expect(fen.enpassant_piece).toBeUndefined();
-    })
+    });
 
     test("Correctly loaded halfmove counter.", () => {
         expect(fen.halfmove).toBe(0);
-    })
+    });
 
     test("Correctly loaded fullmove counter.", () => {
         expect(fen.fullmove).toBe(1);
-    })
+    });
 });

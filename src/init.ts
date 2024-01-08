@@ -8,4 +8,4 @@ window.onload = function () {
 
     const gui = new GUI(board);
     console.log(gui);
-}
+};

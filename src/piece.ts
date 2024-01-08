@@ -19,7 +19,7 @@ export interface Piece {
     col: number,
     color: PieceColor,
     type: PieceType,
-    moved: boolean
+    moved: boolean;
 }
 
 export const EMPTY_PIECE = {

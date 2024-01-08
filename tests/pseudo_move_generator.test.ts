@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 
 import { PseduoLegalMoveGenerator } from '../src/pseudo_move_generator';
 import { Piece, PieceColor, PieceType } from '../src/piece';
-import { FEN } from '../src/fen_notation'
+import { FEN } from '../src/fen_notation';
 import { Move, MoveType } from '../src/move';
 import { Board } from '../src/board';
 
@@ -107,6 +107,122 @@ describe("Testing pseudo legal move generation for pawns", () => {
             from_col: 2,
             to_row: 2,
             to_col: 2,
+            type: MoveType.Normal
+        });
+    });
+});
+
+describe("Testing pseduo legal move generation for rooks", () => {
+    const fen = new FEN("8/3P4/8/8/3r2p1/8/8/8 w KQkq - 0 1");
+    const board = new Board(fen.board, [], fen.active_color, fen.castling_options, fen.halfmove);
+    const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
+
+    const moves: Move[] = generator.gen_rook_moves(board.at(4, 3)!);
+
+    expect(moves.length).toBe(11);
+
+    test("Vertical.", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 5,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 6,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 7,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Horizontal.", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 2,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 1,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 0,
+            type: MoveType.Normal
+        });
+    });
+
+    test("Friendly Piece.", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 4,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 5,
+            type: MoveType.Normal
+        });
+
+        // toContain matches properties you give it, and ignores other properties of other object
+        // toContainEqual matches all properties in both objects
+        // don't match type cause it could be wonky, just where the move is going
+        expect(moves).not.toContain({
+            from_row: 4,
+            from_col: 3,
+            to_row: 4,
+            to_col: 6,
+        });
+    });
+
+    test("Enemy Piece.", () => {
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 3,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 2,
+            to_col: 3,
+            type: MoveType.Normal
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 4,
+            from_col: 3,
+            to_row: 1,
+            to_col: 3,
             type: MoveType.Normal
         });
     });

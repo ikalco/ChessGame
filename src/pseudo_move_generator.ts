@@ -59,7 +59,7 @@ export class PseduoLegalMoveGenerator {
 
         // diagonal to the right
         if (this.board.exists(pawn.row + dir, pawn.col + 1) &&
-            !this.board.isEmpty(pawn.row + dir, pawn.col + 1) &&
+            this.board.isPiece(pawn.row + dir, pawn.col + 1) &&
             this.board.at(pawn.row + dir, pawn.col + 1)!.color != pawn.color
         ) {
             moves.push({
@@ -68,12 +68,12 @@ export class PseduoLegalMoveGenerator {
                 to_row: pawn.row + dir,
                 to_col: pawn.col + 1,
                 type: pawn.col == promotion_rank ? MoveType.Promotion : MoveType.Normal
-            })
+            });
         }
 
         // diagonal to the left
         if (this.board.exists(pawn.row + dir, pawn.col - 1) &&
-            !this.board.isEmpty(pawn.row + dir, pawn.col - 1) &&
+            this.board.isPiece(pawn.row + dir, pawn.col - 1) &&
             this.board.at(pawn.row + dir, pawn.col - 1)!.color != pawn.color
         ) {
             moves.push({
@@ -82,7 +82,7 @@ export class PseduoLegalMoveGenerator {
                 to_row: pawn.row + dir,
                 to_col: pawn.col - 1,
                 type: pawn.col == promotion_rank ? MoveType.Promotion : MoveType.Normal
-            })
+            });
         }
 
         // en passant, 
@@ -100,7 +100,7 @@ export class PseduoLegalMoveGenerator {
                     to_row: pawn.row + dir,
                     to_col: pawn.col + 1,
                     type: MoveType.EnPassant
-                })
+                });
             }
 
             if (this.board.last_move.from_col == pawn.col - 1) {
@@ -110,15 +110,47 @@ export class PseduoLegalMoveGenerator {
                     to_row: pawn.row + dir,
                     to_col: pawn.col - 1,
                     type: MoveType.EnPassant
-                })
+                });
             }
         }
 
         return moves;
     }
 
-    gen_rook_moves(piece: Piece): Move[] {
-        return [];
+    gen_rook_moves(rook: Piece): Move[] {
+        let moves: Move[] = [];
+
+        // format of directions is, change in ___ -> [row, col]
+        //             left,   right,    up,     down
+        const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+        for (const dir of dirs) {
+            for (let dist = 1; dist < 8; dist++) {
+                const to_row = rook.row + dir[0] * dist;
+                const to_col = rook.col + dir[1] * dist;
+
+                // if it doesn't exist, it's the edge so go to other direction
+                if (!this.board.exists(to_row, to_col)) break;
+
+                // if it's a piece with the same color (friendly) then go to other direction
+                if (this.board.at(to_row, to_col).color == rook.color) break;
+
+                moves.push({
+                    from_row: rook.row,
+                    from_col: rook.col,
+                    to_row: rook.row + dir[0] * dist,
+                    to_col: rook.col + dir[1] * dist,
+                    type: MoveType.Normal
+                });
+
+                // if it's an enemy piece then add the move to take it then go to other direction
+                if (this.board.isPiece(to_row, to_col) &&
+                    this.board.at(to_row, to_col).color != rook.color
+                ) break;
+            }
+        }
+
+        return moves;
     }
 
     gen_knight_moves(piece: Piece): Move[] {

@@ -107,7 +107,7 @@ export class Board {
 
     // deletes a piece at a given square position
     delete(row: number, col: number) {
-        const piece = this._board[row][col]!;
+        const piece = this.at(row, col);
 
         // update internal arrays
         switch (piece.type) {
@@ -120,27 +120,27 @@ export class Board {
             case PieceType.QUEEN: this._queens = this._queens.filter(queen => queen != piece); break;
         }
 
-        if (piece.color == PieceColor.WHITE) this._whites.filter(white => white != piece);
-        if (piece.color == PieceColor.BLACK) this._blacks.filter(black => black != piece);
+        if (piece.color == PieceColor.WHITE) this._whites = this._whites.filter(white => white != piece);
+        if (piece.color == PieceColor.BLACK) this._blacks = this._blacks.filter(black => black != piece);
 
         // make square empty
         this._board[row][col] = EMPTY_PIECE;
     }
 
     // moves a piece from one square to another
-    move(from_row: number, from_col: number, to_row: number, to_col: number): boolean {
+    move(from_row: number, from_col: number, to_row: number, to_col: number) {
         // skip if out of bounds
         if (from_col < 0 || from_col > 7 ||
             from_row < 0 || from_row > 7 ||
             to_col < 0 || to_col > 7 ||
             to_row < 0 || to_row > 7
-        ) return false;
+        ) return;
 
         // skip if moving to same position
-        if (from_col == to_col && from_row == to_row) return false;
+        if (from_col == to_col && from_row == to_row) return;
 
         // skip if not moving an actual piece
-        if (this._board[from_row][from_col] == EMPTY_PIECE) return false;
+        if (this.isEmpty(from_row, from_col)) return;
 
         // delete piece in square being moved to
         this.delete(to_row, to_col);
@@ -155,8 +155,6 @@ export class Board {
 
         // make original square empty
         this._board[from_row][from_col] = EMPTY_PIECE;
-
-        return true;
     }
 
     // add move to top of move_list

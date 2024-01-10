@@ -23,6 +23,11 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
+    check_first_move(move: Move): Move {
+        if (this.board.at(move.from_row, move.from_col).moved == false) move.first_move = true;
+        return move;
+    }
+
     gen_pawn_moves(pawn: Piece): Move[] {
         let moves: Move[] = [];
 
@@ -34,28 +39,28 @@ export class PseduoLegalMoveGenerator {
             this.board.isEmpty(pawn.row + dir, pawn.col)
         ) {
             // move 1 square
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: pawn.row,
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col,
                 type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal,
                 taking: false
-            });
+            }));
 
             if (this.board.exists(pawn.row + dir * 2, pawn.col) &&
                 this.board.isEmpty(pawn.row + dir * 2, pawn.col) &&
                 pawn.moved == false
             ) {
                 // move 2 squares, pawn double move
-                moves.push({
+                moves.push(this.check_first_move({
                     from_row: pawn.row,
                     from_col: pawn.col,
                     to_row: pawn.row + dir * 2,
                     to_col: pawn.col,
                     type: MoveType.PawnDouble,
                     taking: false
-                });
+                }));
             }
         }
 
@@ -64,14 +69,14 @@ export class PseduoLegalMoveGenerator {
             this.board.isPiece(pawn.row + dir, pawn.col + 1) &&
             this.board.at(pawn.row + dir, pawn.col + 1)!.color != pawn.color
         ) {
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: pawn.row,
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col + 1,
                 type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal,
                 taking: true
-            });
+            }));
         }
 
         // diagonal to the left
@@ -79,14 +84,14 @@ export class PseduoLegalMoveGenerator {
             this.board.isPiece(pawn.row + dir, pawn.col - 1) &&
             this.board.at(pawn.row + dir, pawn.col - 1)!.color != pawn.color
         ) {
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: pawn.row,
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col - 1,
                 type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal,
                 taking: true
-            });
+            }));
         }
 
         // en passant, 
@@ -98,25 +103,25 @@ export class PseduoLegalMoveGenerator {
             this.board.last_move.to_row == pawn.row
         ) {
             if (this.board.last_move.from_col == pawn.col + 1) {
-                moves.push({
+                moves.push(this.check_first_move({
                     from_row: pawn.row,
                     from_col: pawn.col,
                     to_row: pawn.row + dir,
                     to_col: pawn.col + 1,
                     type: MoveType.EnPassant,
                     taking: true
-                });
+                }));
             }
 
             if (this.board.last_move.from_col == pawn.col - 1) {
-                moves.push({
+                moves.push(this.check_first_move({
                     from_row: pawn.row,
                     from_col: pawn.col,
                     to_row: pawn.row + dir,
                     to_col: pawn.col - 1,
                     type: MoveType.EnPassant,
                     taking: true
-                });
+                }));
             }
         }
 
@@ -146,14 +151,14 @@ export class PseduoLegalMoveGenerator {
                     else taking = true;
                 }
 
-                moves.push({
+                moves.push(this.check_first_move({
                     from_row: rook.row,
                     from_col: rook.col,
                     to_row: rook.row + row_change * dist,
                     to_col: rook.col + col_change * dist,
                     type: MoveType.Normal,
                     taking: taking
-                });
+                }));
 
                 // if it's an enemy piece then add the move to take it then go to other direction
                 if (this.board.isPiece(to_row, to_col) &&
@@ -185,14 +190,14 @@ export class PseduoLegalMoveGenerator {
                 else taking = true;
             }
 
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: knight.row,
                 from_col: knight.col,
                 to_row: knight.row + row_change,
                 to_col: knight.col + col_change,
                 type: MoveType.Normal,
                 taking: taking
-            });
+            }));
         }
 
         return moves;
@@ -219,14 +224,14 @@ export class PseduoLegalMoveGenerator {
                     else taking = true;
                 }
 
-                moves.push({
+                moves.push(this.check_first_move({
                     from_row: bishop.row,
                     from_col: bishop.col,
                     to_row: bishop.row + row_change * dist,
                     to_col: bishop.col + col_change * dist,
                     type: MoveType.Normal,
                     taking: taking
-                });
+                }));
 
                 // if it's an enemy piece then add the move to take it then go to other direction
                 if (this.board.isPiece(to_row, to_col) &&
@@ -258,14 +263,14 @@ export class PseduoLegalMoveGenerator {
                 else taking = true;
             }
 
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: king.row,
                 from_col: king.col,
                 to_row: king.row + row_change,
                 to_col: king.col + col_change,
                 type: MoveType.Normal,
                 taking: taking
-            });
+            }));
         }
 
         // castling rules
@@ -281,14 +286,14 @@ export class PseduoLegalMoveGenerator {
             this.board.at(king.row, 2) == EMPTY_PIECE &&
             this.board.at(king.row, 3) == EMPTY_PIECE
         ) {
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: king.row,
                 from_col: king.col,
                 to_row: king.row,
                 to_col: king.col - 2,
                 type: MoveType.Castling,
                 taking: false
-            });
+            }));
         }
 
         // king side castle
@@ -298,14 +303,14 @@ export class PseduoLegalMoveGenerator {
             this.board.at(king.row, 5) == EMPTY_PIECE &&
             this.board.at(king.row, 6) == EMPTY_PIECE
         ) {
-            moves.push({
+            moves.push(this.check_first_move({
                 from_row: king.row,
                 from_col: king.col,
                 to_row: king.row,
                 to_col: king.col + 2,
                 type: MoveType.Castling,
                 taking: false
-            });
+            }));
         }
 
         return moves;
@@ -332,14 +337,14 @@ export class PseduoLegalMoveGenerator {
                     else taking = true;
                 }
 
-                moves.push({
+                moves.push(this.check_first_move({
                     from_row: queen.row,
                     from_col: queen.col,
                     to_row: queen.row + row_change * dist,
                     to_col: queen.col + col_change * dist,
                     type: MoveType.Normal,
-                    taking: taking
-                });
+                    taking: taking,
+                }));
 
                 // if it's an enemy piece then add the move to take it then go to other direction
                 if (this.board.isPiece(to_row, to_col) &&

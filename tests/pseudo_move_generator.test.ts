@@ -51,7 +51,8 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_row: 2,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -66,7 +67,8 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_row: 5,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -94,7 +96,8 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_row: 2,
             to_col: 1,
             type: MoveType.Normal,
-            taking: true
+            taking: true,
+            first_move: true
         });
     });
 
@@ -107,8 +110,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
             from_row: 1,
             from_col: 0,
             to_row: 2,
-            to_col: 1,
-            type: MoveType.Normal
+            to_col: 1
         });
     });
 
@@ -123,7 +125,8 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_row: 4,
             to_col: 0,
             type: MoveType.PawnDouble,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -138,7 +141,8 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_row: 7,
             to_col: 7,
             type: MoveType.Promotion,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -150,7 +154,8 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_row: 3,
             to_col: 3,
             type: MoveType.PawnDouble,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         // make sure other pawn has "already moved"
@@ -197,7 +202,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 5,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -206,7 +212,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 6,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -215,7 +222,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 7,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -226,7 +234,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 4,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -235,7 +244,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 4,
             to_col: 1,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -244,7 +254,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 4,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -262,7 +273,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 4,
             to_col: 4,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -271,7 +283,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 4,
             to_col: 5,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -289,7 +302,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 3,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -298,7 +312,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 2,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -307,7 +322,8 @@ describe("Testing pseduo legal move generation for rooks", () => {
             to_row: 1,
             to_col: 3,
             type: MoveType.Normal,
-            taking: true
+            taking: true,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -334,7 +350,8 @@ describe("Testing pseudo legal move generation for knights", () => {
             to_row: 7,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -343,7 +360,8 @@ describe("Testing pseudo legal move generation for knights", () => {
             to_row: 7,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -352,7 +370,8 @@ describe("Testing pseudo legal move generation for knights", () => {
             to_row: 4,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -361,7 +380,8 @@ describe("Testing pseudo legal move generation for knights", () => {
             to_row: 3,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -397,7 +417,8 @@ describe("Testing pseudo legal move generation for knights", () => {
             to_row: 3,
             to_col: 2,
             type: MoveType.Normal,
-            taking: true
+            taking: true,
+            first_move: true
         });
     });
 });
@@ -417,7 +438,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 3,
             to_col: 4,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -426,7 +448,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 2,
             to_col: 5,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -435,7 +458,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 1,
             to_col: 6,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -444,7 +468,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 0,
             to_col: 7,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -455,7 +480,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 3,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -464,7 +490,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 2,
             to_col: 1,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -473,7 +500,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 1,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -491,7 +519,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 5,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -509,7 +538,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 5,
             to_col: 4,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -518,7 +548,8 @@ describe("Testing pseudo legal move generation for bishops", () => {
             to_row: 6,
             to_col: 5,
             type: MoveType.Normal,
-            taking: true
+            taking: true,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -545,7 +576,8 @@ describe("Testing pseudo legal move generation for kings", () => {
             to_row: 7,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -554,7 +586,8 @@ describe("Testing pseudo legal move generation for kings", () => {
             to_row: 7,
             to_col: 5,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -563,7 +596,8 @@ describe("Testing pseudo legal move generation for kings", () => {
             to_row: 6,
             to_col: 4,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -606,7 +640,8 @@ describe("Testing pseudo legal move generation for kings", () => {
             to_row: 6,
             to_col: 5,
             type: MoveType.Normal,
-            taking: true
+            taking: true,
+            first_move: true
         });
     });
 
@@ -617,7 +652,8 @@ describe("Testing pseudo legal move generation for kings", () => {
             to_row: 7,
             to_col: 6,
             type: MoveType.Castling,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContainEqual({
@@ -626,7 +662,8 @@ describe("Testing pseudo legal move generation for kings", () => {
             to_row: 7,
             to_col: 2,
             type: MoveType.Castling,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 });
@@ -646,7 +683,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 4,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -655,7 +693,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 4,
             to_col: 1,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -664,7 +703,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 4,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
     });
 
@@ -675,7 +715,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 3,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -684,7 +725,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 2,
             to_col: 1,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -693,7 +735,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 1,
             to_col: 0,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -711,7 +754,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 5,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -720,7 +764,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 6,
             to_col: 3,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).not.toContain({
@@ -738,7 +783,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 5,
             to_col: 2,
             type: MoveType.Normal,
-            taking: false
+            taking: false,
+            first_move: true
         });
 
         expect(moves).toContainEqual({
@@ -747,7 +793,8 @@ describe("Testing pseudo legal move generation for queens", () => {
             to_row: 6,
             to_col: 1,
             type: MoveType.Normal,
-            taking: true
+            taking: true,
+            first_move: true
         });
     });
 });

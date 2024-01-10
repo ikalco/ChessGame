@@ -15,5 +15,6 @@ export type Move = {
     to_col: number,
     type: MoveType,
     taking: boolean,
+    first_move?: boolean,
     promotion_type?: PieceType;
 };

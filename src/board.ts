@@ -121,6 +121,7 @@ export class Board {
         }
 
         this.move_list.push(move);
+        this.active_color = this.active_color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
     }
 
     // deletes a piece at a given square position

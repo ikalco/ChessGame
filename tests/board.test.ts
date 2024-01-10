@@ -113,6 +113,8 @@ describe("Testing functions of Board class.", () => {
         expect(new_board.at(2, 1).moved).toBe(true);
 
         expect(new_board.last_move).toStrictEqual(move);
+
+        expect(new_board.active_color).toBe(PieceColor.BLACK);
     });
 
     test("Castling move is performed correctly.", () => {

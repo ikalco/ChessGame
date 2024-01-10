@@ -5,7 +5,7 @@ import { Move, MoveType } from '../src/move';
 import { PieceColor, PieceType } from '../src/piece';
 
 describe("Testing functions of Board class.", () => {
-    const board = BoardFactory.createFEN("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR w KQkq a6 0 1");
+    const board = BoardFactory.createFEN("rnbqkbnr/1ppppppp/8/p7/8/8/PPPPPPPP/RNBQKBNR w KQkq a6 0 1");
 
     test("Keeping track of different piece types.", () => {
         expect(board.pieces).toHaveLength(32);
@@ -66,7 +66,23 @@ describe("Testing functions of Board class.", () => {
         expect(board.isPiece(2, 2)).toBe(false);
     });
 
-    // is it bad to mutate an object outside an individual test case??? idk ¯\_(ツ)_/¯
+    test("Move is added correctly.", () => {
+        const new_board = BoardFactory.createFEN("rnbqkbnr/1ppppppp/8/p7/8/8/PPPPPPPP/RNBQKBNR w KQkq a6 0 1");
+
+        const move: Move = {
+            from_row: 1,
+            from_col: 1,
+            to_row: 2,
+            to_col: 1,
+            type: MoveType.Normal
+        };
+
+        new_board.add_move(move);
+
+        expect(new_board.last_move).toStrictEqual(move);
+        expect(new_board.last_moved_piece).toStrictEqual(new_board.at(2, 1));
+    });
+
     test("Piece is deleted correctly.", () => {
         board.delete(7, 0);
 
@@ -76,18 +92,9 @@ describe("Testing functions of Board class.", () => {
         expect(board.rooks).toHaveLength(3);
     });
 
-    test("Piece is moved correctly.", () => {
-        board.move(1, 1, 2, 1);
+    test("Normal move is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        expect(board.isEmpty(1, 1)).toBe(true);
-        expect(board.isPiece(2, 1)).toBe(true);
-
-        expect(board.at(2, 1).row).toBe(2);
-        expect(board.at(2, 1).col).toBe(1);
-        expect(board.at(2, 1).moved).toBe(true);
-    });
-
-    test("Move is added correctly.", () => {
         const move: Move = {
             from_row: 1,
             from_col: 1,
@@ -96,9 +103,68 @@ describe("Testing functions of Board class.", () => {
             type: MoveType.Normal
         };
 
-        board.add_move(move);
+        new_board.move(move);
 
-        expect(board.last_move).toStrictEqual(move);
-        expect(board.last_moved_piece).toStrictEqual(board.at(2, 1));
+        expect(new_board.isEmpty(1, 1)).toBe(true);
+        expect(new_board.isPiece(2, 1)).toBe(true);
+
+        expect(new_board.at(2, 1).row).toBe(2);
+        expect(new_board.at(2, 1).col).toBe(1);
+        expect(new_board.at(2, 1).moved).toBe(true);
+
+        expect(new_board.last_move).toStrictEqual(move);
+    });
+
+    test("Castling move is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("r3k3/8/8/8/8/8/8/4K2R w KQkq - 0 1");
+
+        const move: Move = {
+            from_row: 0,
+            from_col: 4,
+            to_row: 0,
+            to_col: 2,
+            type: MoveType.Castling
+        };
+
+        new_board.move(move);
+
+        expect(new_board.at(0, 2).type).toBe(PieceType.KING);
+        expect(new_board.at(0, 3).type).toBe(PieceType.ROOK);
+        expect(new_board.at(0, 0).type).toBe(PieceType.EMPTY);
+    });
+
+    test("Enpassant move is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("8/8/8/pP6/8/8/8/8 w KQkq a6 0 1");
+
+        const move: Move = {
+            from_row: 3,
+            from_col: 1,
+            to_row: 2,
+            to_col: 0,
+            type: MoveType.EnPassant
+        };
+
+        new_board.move(move);
+
+        expect(new_board.at(2, 0).type).toBe(PieceType.PAWN);
+        expect(new_board.at(2, 0).color).toBe(PieceColor.WHITE);
+        expect(new_board.at(3, 0).type).toBe(PieceType.EMPTY);
+    });
+
+    test("Promotion move is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("8/P7/8/8/8/8/8/8 w KQkq - 0 1");
+
+        const move: Move = {
+            from_row: 1,
+            from_col: 0,
+            to_row: 0,
+            to_col: 0,
+            type: MoveType.Promotion,
+            promotion_type: PieceType.QUEEN
+        };
+
+        new_board.move(move);
+
+        expect(new_board.at(0, 0).type).toBe(PieceType.QUEEN);
     });
 });

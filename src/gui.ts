@@ -1,6 +1,7 @@
 import p5 from "p5";
 import { Board } from "./board";
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
+import { MoveType } from "./move";
 
 export class GUI {
     private board: Board;
@@ -91,12 +92,14 @@ export class GUI {
         const to_col: number = Math.floor(this.p5!.mouseX / this.cell_width_px);
         const to_row: number = Math.floor(this.p5!.mouseY / this.cell_width_px);
 
-        this.board.move(
-            this.mouse_pressed_row,
-            this.mouse_pressed_col,
-            to_row,
-            to_col
-        );
+        // will change this later to work better
+        this.board.move({
+            from_row: this.mouse_pressed_row,
+            from_col: this.mouse_pressed_col,
+            to_row: to_row,
+            to_col: to_col,
+            type: MoveType.Normal
+        });
 
         this.mouse_pressed_row = undefined;
         this.mouse_pressed_col = undefined;

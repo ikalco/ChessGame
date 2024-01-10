@@ -1,5 +1,5 @@
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
-import { Move } from "./move";
+import { Move, MoveType } from "./move";
 
 export type board_2d = (Piece)[][];
 
@@ -105,6 +105,24 @@ export class Board {
         return this.at(row, col) != EMPTY_PIECE;
     }
 
+    // add move to top of move_list
+    add_move(move: Move) {
+        this.move_list.push(move);
+    }
+
+    move(move: Move) {
+        switch (move.type) {
+            case MoveType.Normal: this._move_normal(move); break;
+            case MoveType.Castling: this._move_castling(move); break;
+            case MoveType.EnPassant: this._move_enpassant(move); break;
+            case MoveType.PawnDouble: this._move_pawndouble(move); break;
+            case MoveType.Promotion: this._move_promotion(move); break;
+            default: throw Error("Invalid move type.");
+        }
+
+        this.move_list.push(move);
+    }
+
     // deletes a piece at a given square position
     delete(row: number, col: number) {
         const piece = this.at(row, col);
@@ -128,7 +146,7 @@ export class Board {
     }
 
     // moves a piece from one square to another
-    move(from_row: number, from_col: number, to_row: number, to_col: number) {
+    private _move(from_row: number, from_col: number, to_row: number, to_col: number) {
         // skip if out of bounds
         if (from_col < 0 || from_col > 7 ||
             from_row < 0 || from_row > 7 ||
@@ -157,8 +175,34 @@ export class Board {
         this._board[from_row][from_col] = EMPTY_PIECE;
     }
 
-    // add move to top of move_list
-    add_move(move: Move) {
-        this.move_list.push(move);
+    private _move_normal(move: Move) {
+        this._move(move.from_row, move.from_col, move.to_row, move.to_col);
+    }
+
+    private _move_castling(move: Move) {
+        this._move(move.from_row, move.from_col, move.to_row, move.to_col);
+
+        if (move.to_col == 2) this._move(move.from_row, 0, move.to_row, 3); // queen side
+        if (move.to_col == 6) this._move(move.from_row, 7, move.to_row, 5); // king side
+    }
+
+    private _move_enpassant(move: Move) {
+        this._move(move.from_row, move.from_col, move.to_row, move.to_col);
+        this.delete(move.from_row, move.to_col);
+    }
+
+    private _move_pawndouble(move: Move) {
+        this._move(move.from_row, move.from_col, move.to_row, move.to_col);
+    }
+
+    private _move_promotion(move: Move) {
+        if (move.promotion_type != PieceType.QUEEN &&
+            move.promotion_type != PieceType.ROOK &&
+            move.promotion_type != PieceType.BISHOP &&
+            move.promotion_type != PieceType.KNIGHT
+        ) throw Error("Invalid piece type for promotion move.");
+
+        this._move(move.from_row, move.from_col, move.to_row, move.to_col);
+        this.at(move.to_row, move.to_col).type = move.promotion_type;
     }
 }

@@ -139,8 +139,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
 
     test("En Passant.", () => {
         // fake a double move, yes its wonky rn, oh well
-        board.move(1, 3, 3, 3);
-        board.add_move({
+        board.move({
             from_row: 1,
             from_col: 3,
             to_row: 3,

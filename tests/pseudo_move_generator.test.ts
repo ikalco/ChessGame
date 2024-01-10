@@ -3,6 +3,38 @@ import { describe, expect, test } from '@jest/globals';
 import { PseduoLegalMoveGenerator } from '../src/pseudo_move_generator';
 import { BoardFactory } from '../src/board_factory';
 import { Move, MoveType } from '../src/move';
+import { PieceColor } from '../src/piece';
+
+describe("Testing pseudo legal move generation for piece groups.", () => {
+    const board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
+
+    test("All pieces.", () => {
+        const moves: Move[] = generator.gen_all_moves(board.pieces);
+
+        expect(moves.length).toBe(40);
+    });
+
+    test("White pieces.", () => {
+        const moves: Move[] = generator.gen_all_moves(board.whites);
+
+        expect(moves.length).toBe(20);
+
+        for (let i = 0; i < 20; i++) {
+            expect(board.at(moves[i].from_row, moves[i].from_col).color).toBe(PieceColor.WHITE);
+        }
+    });
+
+    test("Black pieces.", () => {
+        const moves: Move[] = generator.gen_all_moves(board.blacks);
+
+        expect(moves.length).toBe(20);
+
+        for (let i = 0; i < 20; i++) {
+            expect(board.at(moves[i].from_row, moves[i].from_col).color).toBe(PieceColor.BLACK);
+        }
+    });
+});
 
 describe("Testing pseudo legal move generation for pawns", () => {
     const board = BoardFactory.createFEN("7P/p2p4/1P6/2P5/8/1P6/P6p/8 w KQkq - 0 1");

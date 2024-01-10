@@ -5,18 +5,18 @@ import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
 export class PseduoLegalMoveGenerator {
     constructor(private board: Board) { }
 
-    gen_all_moves(): Move[] {
+    gen_all_moves(pieces: Piece[]): Move[] {
         let moves: Move[] = [];
-        let pieces: Piece[] = this.board.pieces;
 
         for (const piece of pieces) {
             switch (piece.type) {
-                case PieceType.PAWN: moves.concat(this.gen_pawn_moves(piece)); break;
-                case PieceType.ROOK: moves.concat(this.gen_rook_moves(piece)); break;
-                case PieceType.KNIGHT: moves.concat(this.gen_knight_moves(piece)); break;
-                case PieceType.BISHOP: moves.concat(this.gen_bishop_moves(piece)); break;
-                case PieceType.KING: moves.concat(this.gen_king_moves(piece)); break;
-                case PieceType.QUEEN: moves.concat(this.gen_queen_moves(piece)); break;
+                case PieceType.EMPTY: continue;
+                case PieceType.PAWN: moves = moves.concat(this.gen_pawn_moves(piece)); break;
+                case PieceType.ROOK: moves = moves.concat(this.gen_rook_moves(piece)); break;
+                case PieceType.KNIGHT: moves = moves.concat(this.gen_knight_moves(piece)); break;
+                case PieceType.BISHOP: moves = moves.concat(this.gen_bishop_moves(piece)); break;
+                case PieceType.KING: moves = moves.concat(this.gen_king_moves(piece)); break;
+                case PieceType.QUEEN: moves = moves.concat(this.gen_queen_moves(piece)); break;
             }
         }
 

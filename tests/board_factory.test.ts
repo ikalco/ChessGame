@@ -26,7 +26,8 @@ describe("Testing board factory for FEN", () => {
             from_col: 0,
             to_row: 3,
             to_col: 0,
-            type: MoveType.PawnDouble
+            type: MoveType.PawnDouble,
+            taking: false
         });
     });
 
@@ -43,7 +44,8 @@ describe("Testing board factory for FEN", () => {
             from_col: 0,
             to_row: 4,
             to_col: 0,
-            type: MoveType.PawnDouble
+            type: MoveType.PawnDouble,
+            taking: false
         });
     });
 });

@@ -24,7 +24,8 @@ export namespace BoardFactory {
                 from_col: enp_col,
                 to_row: 3,
                 to_col: enp_col,
-                type: MoveType.PawnDouble
+                type: MoveType.PawnDouble,
+                taking: false
             });
         }
 
@@ -42,7 +43,8 @@ export namespace BoardFactory {
                 from_col: enp_col,
                 to_row: 4,
                 to_col: enp_col,
-                type: MoveType.PawnDouble
+                type: MoveType.PawnDouble,
+                taking: false
             });
         }
 

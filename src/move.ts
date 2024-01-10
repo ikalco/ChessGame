@@ -1,7 +1,7 @@
 import { PieceType } from "./piece";
 
 export enum MoveType {
-    Normal,     // can be a normal move but also taking, probably bad but oh well
+    Normal,
     PawnDouble,
     EnPassant,
     Promotion,
@@ -14,5 +14,6 @@ export type Move = {
     to_row: number,
     to_col: number,
     type: MoveType,
+    taking: boolean,
     promotion_type?: PieceType;
 };

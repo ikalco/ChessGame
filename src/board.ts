@@ -14,12 +14,16 @@ export class Board {
     private _kings: Piece[];
     private _queens: Piece[];
 
+    private deleted: Piece[];
+
     constructor(
         private _board: board_2d,
         private move_list: Move[],
         public active_color: PieceColor,
         public halfmove_counter: number,
     ) {
+        this.deleted = [];
+
         this._whites = [];
         this._blacks = [];
         this._pawns = [];
@@ -141,6 +145,8 @@ export class Board {
 
         if (piece.color == PieceColor.WHITE) this._whites = this._whites.filter(white => white != piece);
         if (piece.color == PieceColor.BLACK) this._blacks = this._blacks.filter(black => black != piece);
+
+        this.deleted.push(piece);
 
         // make square empty
         this._board[row][col] = EMPTY_PIECE;

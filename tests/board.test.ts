@@ -35,7 +35,8 @@ describe("Testing functions of Board class.", () => {
             from_col: 0,
             to_row: 3,
             to_col: 0,
-            type: MoveType.PawnDouble
+            type: MoveType.PawnDouble,
+            taking: false
         });
     });
 
@@ -74,7 +75,8 @@ describe("Testing functions of Board class.", () => {
             from_col: 1,
             to_row: 2,
             to_col: 1,
-            type: MoveType.Normal
+            type: MoveType.Normal,
+            taking: false
         };
 
         new_board.add_move(move);
@@ -100,7 +102,8 @@ describe("Testing functions of Board class.", () => {
             from_col: 1,
             to_row: 2,
             to_col: 1,
-            type: MoveType.Normal
+            type: MoveType.Normal,
+            taking: false
         };
 
         new_board.move(move);
@@ -125,7 +128,8 @@ describe("Testing functions of Board class.", () => {
             from_col: 4,
             to_row: 0,
             to_col: 2,
-            type: MoveType.Castling
+            type: MoveType.Castling,
+            taking: false
         };
 
         new_board.move(move);
@@ -143,7 +147,8 @@ describe("Testing functions of Board class.", () => {
             from_col: 1,
             to_row: 2,
             to_col: 0,
-            type: MoveType.EnPassant
+            type: MoveType.EnPassant,
+            taking: true
         };
 
         new_board.move(move);
@@ -162,6 +167,7 @@ describe("Testing functions of Board class.", () => {
             to_row: 0,
             to_col: 0,
             type: MoveType.Promotion,
+            taking: false,
             promotion_type: PieceType.QUEEN
         };
 

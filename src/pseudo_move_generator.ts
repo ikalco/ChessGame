@@ -39,7 +39,8 @@ export class PseduoLegalMoveGenerator {
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col,
-                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal
+                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal,
+                taking: false
             });
 
             if (this.board.exists(pawn.row + dir * 2, pawn.col) &&
@@ -52,7 +53,8 @@ export class PseduoLegalMoveGenerator {
                     from_col: pawn.col,
                     to_row: pawn.row + dir * 2,
                     to_col: pawn.col,
-                    type: MoveType.PawnDouble
+                    type: MoveType.PawnDouble,
+                    taking: false
                 });
             }
         }
@@ -67,7 +69,8 @@ export class PseduoLegalMoveGenerator {
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col + 1,
-                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal
+                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal,
+                taking: true
             });
         }
 
@@ -81,7 +84,8 @@ export class PseduoLegalMoveGenerator {
                 from_col: pawn.col,
                 to_row: pawn.row + dir,
                 to_col: pawn.col - 1,
-                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal
+                type: pawn.row == promotion_rank ? MoveType.Promotion : MoveType.Normal,
+                taking: true
             });
         }
 
@@ -99,7 +103,8 @@ export class PseduoLegalMoveGenerator {
                     from_col: pawn.col,
                     to_row: pawn.row + dir,
                     to_col: pawn.col + 1,
-                    type: MoveType.EnPassant
+                    type: MoveType.EnPassant,
+                    taking: true
                 });
             }
 
@@ -109,7 +114,8 @@ export class PseduoLegalMoveGenerator {
                     from_col: pawn.col,
                     to_row: pawn.row + dir,
                     to_col: pawn.col - 1,
-                    type: MoveType.EnPassant
+                    type: MoveType.EnPassant,
+                    taking: true
                 });
             }
         }
@@ -132,15 +138,21 @@ export class PseduoLegalMoveGenerator {
                 // if it doesn't exist, it's the edge so go to other direction
                 if (!this.board.exists(to_row, to_col)) break;
 
+                let taking = false;
+
                 // if it's a piece with the same color (friendly) then go to other direction
-                if (this.board.at(to_row, to_col).color == rook.color) break;
+                if (this.board.isPiece(to_row, to_col)) {
+                    if (this.board.at(to_row, to_col).color == rook.color) break;
+                    else taking = true;
+                }
 
                 moves.push({
                     from_row: rook.row,
                     from_col: rook.col,
                     to_row: rook.row + row_change * dist,
                     to_col: rook.col + col_change * dist,
-                    type: MoveType.Normal
+                    type: MoveType.Normal,
+                    taking: taking
                 });
 
                 // if it's an enemy piece then add the move to take it then go to other direction
@@ -165,15 +177,21 @@ export class PseduoLegalMoveGenerator {
             // if it doesn't exist, it's the edge so go to other direction
             if (!this.board.exists(to_row, to_col)) continue;
 
+            let taking = false;
+
             // if it's a piece with the same color (friendly) then go to other direction
-            if (this.board.at(to_row, to_col).color == knight.color) continue;
+            if (this.board.isPiece(to_row, to_col)) {
+                if (this.board.at(to_row, to_col).color == knight.color) continue;
+                else taking = true;
+            }
 
             moves.push({
                 from_row: knight.row,
                 from_col: knight.col,
                 to_row: knight.row + row_change,
                 to_col: knight.col + col_change,
-                type: MoveType.Normal
+                type: MoveType.Normal,
+                taking: taking
             });
         }
 
@@ -193,15 +211,21 @@ export class PseduoLegalMoveGenerator {
                 // if it doesn't exist, it's the edge so go to other direction
                 if (!this.board.exists(to_row, to_col)) break;
 
+                let taking = false;
+
                 // if it's a piece with the same color (friendly) then go to other direction
-                if (this.board.at(to_row, to_col).color == bishop.color) break;
+                if (this.board.isPiece(to_row, to_col)) {
+                    if (this.board.at(to_row, to_col).color == bishop.color) break;
+                    else taking = true;
+                }
 
                 moves.push({
                     from_row: bishop.row,
                     from_col: bishop.col,
                     to_row: bishop.row + row_change * dist,
                     to_col: bishop.col + col_change * dist,
-                    type: MoveType.Normal
+                    type: MoveType.Normal,
+                    taking: taking
                 });
 
                 // if it's an enemy piece then add the move to take it then go to other direction
@@ -226,15 +250,21 @@ export class PseduoLegalMoveGenerator {
             // if it doesn't exist, it's the edge so go to other direction
             if (!this.board.exists(to_row, to_col)) continue;
 
+            let taking = false;
+
             // if it's a piece with the same color (friendly) then go to other direction
-            if (this.board.at(to_row, to_col).color == king.color) continue;
+            if (this.board.isPiece(to_row, to_col)) {
+                if (this.board.at(to_row, to_col).color == king.color) continue;
+                else taking = true;
+            }
 
             moves.push({
                 from_row: king.row,
                 from_col: king.col,
                 to_row: king.row + row_change,
                 to_col: king.col + col_change,
-                type: MoveType.Normal
+                type: MoveType.Normal,
+                taking: taking
             });
         }
 
@@ -256,7 +286,8 @@ export class PseduoLegalMoveGenerator {
                 from_col: king.col,
                 to_row: king.row,
                 to_col: king.col - 2,
-                type: MoveType.Castling
+                type: MoveType.Castling,
+                taking: false
             });
         }
 
@@ -272,7 +303,8 @@ export class PseduoLegalMoveGenerator {
                 from_col: king.col,
                 to_row: king.row,
                 to_col: king.col + 2,
-                type: MoveType.Castling
+                type: MoveType.Castling,
+                taking: false
             });
         }
 
@@ -292,15 +324,21 @@ export class PseduoLegalMoveGenerator {
                 // if it doesn't exist, it's the edge so go to other direction
                 if (!this.board.exists(to_row, to_col)) break;
 
+                let taking = false;
+
                 // if it's a piece with the same color (friendly) then go to other direction
-                if (this.board.at(to_row, to_col).color == queen.color) break;
+                if (this.board.isPiece(to_row, to_col)) {
+                    if (this.board.at(to_row, to_col).color == queen.color) break;
+                    else taking = true;
+                }
 
                 moves.push({
                     from_row: queen.row,
                     from_col: queen.col,
                     to_row: queen.row + row_change * dist,
                     to_col: queen.col + col_change * dist,
-                    type: MoveType.Normal
+                    type: MoveType.Normal,
+                    taking: taking
                 });
 
                 // if it's an enemy piece then add the move to take it then go to other direction

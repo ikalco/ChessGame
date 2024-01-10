@@ -108,7 +108,8 @@ export class GUI {
             from_col: from_col,
             to_row: to_row,
             to_col: to_col,
-            type: MoveType.Normal
+            type: MoveType.Normal,
+            taking: true
         });
     }
 

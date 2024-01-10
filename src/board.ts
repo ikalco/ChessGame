@@ -128,6 +128,27 @@ export class Board {
         this.active_color = this.active_color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
     }
 
+    unmove() {
+        if (this.move_list.length == 0) throw Error("Unable to undo last move as it doesn't exist.");
+
+        const prev_move: Move = <Move>this.last_move;
+
+        switch (prev_move.type) {
+            case MoveType.Normal: this._unmove_normal(prev_move); break;
+            case MoveType.Castling: this._unmove_castling(prev_move); break;
+            case MoveType.EnPassant: this._unmove_enpassant(prev_move); break;
+            case MoveType.PawnDouble: this._unmove_pawndouble(prev_move); break;
+            case MoveType.Promotion: this._unmove_promotion(prev_move); break;
+            default: throw Error("Invalid move type.");
+        }
+
+        this.move_list.pop();
+        this.active_color = this.active_color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+
+        if (prev_move.first_move == true) this.at(prev_move.from_row, prev_move.from_col).moved = false;
+        else this.at(prev_move.from_row, prev_move.from_col).moved = true;
+    }
+
     // deletes a piece at a given square position
     delete(row: number, col: number) {
         const piece = this.at(row, col);
@@ -211,5 +232,40 @@ export class Board {
 
         this._move(move.from_row, move.from_col, move.to_row, move.to_col);
         this.at(move.to_row, move.to_col).type = move.promotion_type;
+    }
+
+    private _unmove_normal(move: Move) {
+        this._move(move.to_row, move.to_col, move.from_row, move.from_col);
+
+        if (move.taking) this._board[move.to_row][move.to_col] = <Piece>this.deleted.pop();
+    }
+
+    private _unmove_castling(move: Move) {
+        this._move(move.to_row, move.to_col, move.from_row, move.from_col);
+
+        if (move.to_col == 2) {
+            this._move(move.from_row, 3, move.to_row, 0); // queen side
+            this.at(move.to_row, 0).moved = false;
+        }
+        if (move.to_col == 6) {
+            this._move(move.from_row, 5, move.to_row, 7); // king side
+            this.at(move.to_row, 7).moved = false;
+        }
+    }
+
+    private _unmove_enpassant(move: Move) {
+        this._move(move.to_row, move.to_col, move.from_row, move.from_col);
+
+        // don't have to check for taking because it's en passant
+        this._board[move.from_row][move.to_col] = <Piece>this.deleted.pop();
+    }
+
+    private _unmove_pawndouble(move: Move) {
+        this._move(move.to_row, move.to_col, move.from_row, move.from_col);
+    }
+
+    private _unmove_promotion(move: Move) {
+        this._move(move.to_row, move.to_col, move.from_row, move.from_col);
+        this.at(move.from_row, move.from_col).type = PieceType.PAWN;
     }
 }

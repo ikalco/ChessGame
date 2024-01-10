@@ -175,4 +175,140 @@ describe("Testing functions of Board class.", () => {
 
         expect(new_board.at(0, 0).type).toBe(PieceType.QUEEN);
     });
+
+    test("Normal unmove is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("rnbqkbnr/pppppppp/P7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        new_board.at(1, 1).moved = true;
+
+        const move: Move = {
+            from_row: 1,
+            from_col: 1,
+            to_row: 2,
+            to_col: 0,
+            type: MoveType.Normal,
+            taking: true
+        };
+
+        new_board.move(move);
+        new_board.unmove();
+
+        expect(new_board.isPiece(1, 1)).toBe(true);
+        expect(new_board.isPiece(2, 0)).toBe(true);
+
+        expect(new_board.at(1, 1).row).toBe(1);
+        expect(new_board.at(1, 1).col).toBe(1);
+        expect(new_board.at(1, 1).type).toBe(PieceType.PAWN);
+        expect(new_board.at(1, 1).color).toBe(PieceColor.BLACK);
+        expect(new_board.at(1, 1).moved).toBe(true);
+
+        expect(new_board.at(2, 0).row).toBe(2);
+        expect(new_board.at(2, 0).col).toBe(0);
+        expect(new_board.at(2, 0).type).toBe(PieceType.PAWN);
+        expect(new_board.at(2, 0).color).toBe(PieceColor.WHITE);
+        expect(new_board.at(2, 0).moved).toBe(false);
+
+        expect(new_board.last_move).toBeUndefined();
+
+        expect(new_board.active_color).toBe(PieceColor.WHITE);
+    });
+
+    test("Castling unmove is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("r3k3/8/8/8/8/8/8/4K2R w KQkq - 0 1");
+
+        const move: Move = {
+            from_row: 0,
+            from_col: 4,
+            to_row: 0,
+            to_col: 2,
+            type: MoveType.Castling,
+            taking: false,
+            first_move: true
+        };
+
+        new_board.move(move);
+        new_board.unmove();
+
+        expect(new_board.isPiece(0, 4)).toBe(true);
+        expect(new_board.isPiece(0, 0)).toBe(true);
+
+        expect(new_board.isEmpty(0, 1)).toBe(true);
+        expect(new_board.isEmpty(0, 2)).toBe(true);
+        expect(new_board.isEmpty(0, 3)).toBe(true);
+
+        expect(new_board.at(0, 4).row).toBe(0);
+        expect(new_board.at(0, 4).col).toBe(4);
+        expect(new_board.at(0, 4).type).toBe(PieceType.KING);
+        expect(new_board.at(0, 4).color).toBe(PieceColor.BLACK);
+        expect(new_board.at(0, 4).moved).toBe(false);
+
+        expect(new_board.at(0, 0).row).toBe(0);
+        expect(new_board.at(0, 0).col).toBe(0);
+        expect(new_board.at(0, 0).type).toBe(PieceType.ROOK);
+        expect(new_board.at(0, 0).color).toBe(PieceColor.BLACK);
+        expect(new_board.at(0, 0).moved).toBe(false);
+    });
+
+    test("Enpassant unmove is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("8/8/8/pP6/8/8/8/8 w KQkq a6 0 1");
+
+        const move: Move = {
+            from_row: 3,
+            from_col: 1,
+            to_row: 2,
+            to_col: 0,
+            type: MoveType.EnPassant,
+            taking: true
+        };
+
+        new_board.move(move);
+        new_board.unmove();
+
+        expect(new_board.isPiece(3, 1)).toBe(true);
+        expect(new_board.isPiece(3, 0)).toBe(true);
+
+        expect(new_board.isEmpty(2, 0)).toBe(true);
+
+        expect(new_board.at(3, 1).row).toBe(3);
+        expect(new_board.at(3, 1).col).toBe(1);
+        expect(new_board.at(3, 1).type).toBe(PieceType.PAWN);
+        expect(new_board.at(3, 1).color).toBe(PieceColor.WHITE);
+        expect(new_board.at(3, 1).moved).toBe(true);
+
+        expect(new_board.at(3, 0).row).toBe(3);
+        expect(new_board.at(3, 0).col).toBe(0);
+        expect(new_board.at(3, 0).type).toBe(PieceType.PAWN);
+        expect(new_board.at(3, 0).color).toBe(PieceColor.BLACK);
+        expect(new_board.at(3, 0).moved).toBe(true);
+
+        expect(new_board.last_move!.type).toBe(MoveType.PawnDouble);
+    });
+
+    test("Promotion unmove is performed correctly.", () => {
+        const new_board = BoardFactory.createFEN("8/P7/8/8/8/8/8/8 w KQkq - 0 1");
+
+        const move: Move = {
+            from_row: 1,
+            from_col: 0,
+            to_row: 0,
+            to_col: 0,
+            type: MoveType.Promotion,
+            promotion_type: PieceType.QUEEN,
+            taking: false,
+            first_move: true
+        };
+
+        new_board.move(move);
+        new_board.unmove();
+
+        expect(new_board.isPiece(1, 0)).toBe(true);
+
+        expect(new_board.isEmpty(0, 0)).toBe(true);
+
+        expect(new_board.at(1, 0).row).toBe(1);
+        expect(new_board.at(1, 0).col).toBe(0);
+        expect(new_board.at(1, 0).type).toBe(PieceType.PAWN);
+        expect(new_board.at(1, 0).color).toBe(PieceColor.WHITE);
+        expect(new_board.at(1, 0).moved).toBe(false);
+    });
 });

@@ -80,6 +80,8 @@ export class GUI {
 
         this.mouse_pressed_col = Math.floor(this.p5!.mouseX / this.cell_width_px);
         this.mouse_pressed_row = Math.floor(this.p5!.mouseY / this.cell_width_px);
+
+        this.drawPossibleMoves();
     }
 
     private handleMouseReleased() {
@@ -89,20 +91,25 @@ export class GUI {
         if (this.cell_width_px === undefined)
             throw Error("cell_width_px is undefined, can't determine mouse position in row/col");
 
-        const to_col: number = Math.floor(this.p5!.mouseX / this.cell_width_px);
         const to_row: number = Math.floor(this.p5!.mouseY / this.cell_width_px);
+        const to_col: number = Math.floor(this.p5!.mouseX / this.cell_width_px);
 
-        // will change this later to work better
+        this.handleMove(this.mouse_pressed_row, this.mouse_pressed_col, to_row, to_col);
+
+        this.mouse_pressed_row = undefined;
+        this.mouse_pressed_col = undefined;
+    }
+
+    private handleMove(from_row: number, from_col: number, to_row: number, to_col: number) {
+        // TODO: implement a way to only play allowed moves
+
         this.board.move({
-            from_row: this.mouse_pressed_row,
-            from_col: this.mouse_pressed_col,
+            from_row: from_row,
+            from_col: from_col,
             to_row: to_row,
             to_col: to_col,
             type: MoveType.Normal
         });
-
-        this.mouse_pressed_row = undefined;
-        this.mouse_pressed_col = undefined;
     }
 
     private drawBackground() {
@@ -110,6 +117,10 @@ export class GUI {
 
         // only way to draw a p5.Graphics object to canvas is with image draw function
         this.p5!.image(this.background, 0, 0);
+    }
+
+    private drawPossibleMoves() {
+        // TODO: implement a way to draw possible moves on a clicked piece
     }
 
     private drawPieces() {

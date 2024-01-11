@@ -7,7 +7,7 @@ export type attack_2d = boolean[][];
 export class PseduoLegalMoveGenerator {
     constructor(private board: Board) { }
 
-    gen_all_moves(pieces: Piece[]): Move[] {
+    gen_moves(pieces: Piece[]): Move[] {
         let moves: Move[] = [];
 
         for (const piece of pieces) {
@@ -25,7 +25,7 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_all_attacking(pieces: Piece[]): attack_2d {
+    gen_attacked(pieces: Piece[]): Move[] {
         let moves: Move[] = [];
 
         for (const piece of pieces) {
@@ -40,14 +40,7 @@ export class PseduoLegalMoveGenerator {
             }
         }
 
-        const attacks: attack_2d = new Array(8).fill(0).map((_) => new Array(8).fill(false));
-
-        // then we transform move list to attack_2d
-        for (const move of moves) {
-            attacks[move.to_row][move.to_col] = true;
-        }
-
-        return attacks;
+        return moves;
     }
 
     private check_first_move(move: Move): Move {

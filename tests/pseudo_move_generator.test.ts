@@ -10,13 +10,13 @@ describe("Testing pseudo legal move generation for piece groups.", () => {
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
     test("All pieces.", () => {
-        const moves: Move[] = generator.gen_all_moves(board.pieces);
+        const moves: Move[] = generator.gen_moves(board.pieces);
 
         expect(moves.length).toBe(40);
     });
 
     test("White pieces.", () => {
-        const moves: Move[] = generator.gen_all_moves(board.whites);
+        const moves: Move[] = generator.gen_moves(board.whites);
 
         expect(moves.length).toBe(20);
 
@@ -26,7 +26,7 @@ describe("Testing pseudo legal move generation for piece groups.", () => {
     });
 
     test("Black pieces.", () => {
-        const moves: Move[] = generator.gen_all_moves(board.blacks);
+        const moves: Move[] = generator.gen_moves(board.blacks);
 
         expect(moves.length).toBe(20);
 
@@ -41,7 +41,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
     test("Normal (Black Pawn).", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(1, 0));
+        const moves: Move[] = generator.gen_moves([board.at(1, 0)]);
 
         expect(moves.length).toBe(3);
 
@@ -57,7 +57,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     });
 
     test("Normal (White Pawn).", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(6, 0));
+        const moves: Move[] = generator.gen_moves([board.at(6, 0)]);
 
         expect(moves.length).toBe(2);
 
@@ -73,7 +73,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     });
 
     test("Friendly Piece.", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(6, 0));
+        const moves: Move[] = generator.gen_moves([board.at(6, 0)]);
 
         expect(moves.length).toBe(2);
 
@@ -86,7 +86,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     });
 
     test("Enemy Piece.", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(1, 0));
+        const moves: Move[] = generator.gen_moves([board.at(1, 0)]);
 
         expect(moves.length).toBe(3);
 
@@ -102,7 +102,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     });
 
     test("Out of bounds.", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(0, 7));
+        const moves: Move[] = generator.gen_moves([board.at(0, 7)]);
 
         expect(moves.length).toBe(0);
 
@@ -115,7 +115,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     });
 
     test("Pawn Double.", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(6, 0));
+        const moves: Move[] = generator.gen_moves([board.at(6, 0)]);
 
         expect(moves.length).toBe(2);
 
@@ -131,7 +131,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     });
 
     test("Promotion.", () => {
-        const moves: Move[] = generator.gen_pawn_moves(board.at(6, 7));
+        const moves: Move[] = generator.gen_moves([board.at(6, 7)]);
 
         expect(moves.length).toBe(1);
 
@@ -161,7 +161,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         // make sure other pawn has "already moved"
         board.at(3, 2).moved = true;
 
-        const moves: Move[] = generator.gen_pawn_moves(board.at(3, 2));
+        const moves: Move[] = generator.gen_moves([board.at(3, 2)]);
 
         expect(moves.length).toBe(2);
 
@@ -191,7 +191,7 @@ describe("Testing pseduo legal move generation for rooks", () => {
     const board = BoardFactory.createFEN("8/3P4/8/8/3r2p1/8/8/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
-    const moves: Move[] = generator.gen_rook_moves(board.at(4, 3));
+    const moves: Move[] = generator.gen_moves([board.at(4, 3)]);
 
     expect(moves.length).toBe(11);
 
@@ -339,7 +339,7 @@ describe("Testing pseudo legal move generation for knights", () => {
     const board = BoardFactory.createFEN("8/8/8/2p5/8/1N6/3P4/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
-    const moves: Move[] = generator.gen_knight_moves(board.at(5, 1));
+    const moves: Move[] = generator.gen_moves([board.at(5, 1)]);
 
     expect(moves.length).toBe(5);
 
@@ -427,7 +427,7 @@ describe("Testing pseudo legal move generation for bishops", () => {
     const board = BoardFactory.createFEN("8/8/8/8/3b4/8/1p3P2/8 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
-    const moves: Move[] = generator.gen_bishop_moves(board.at(4, 3));
+    const moves: Move[] = generator.gen_moves([board.at(4, 3)]);
 
     expect(moves.length).toBe(10);
 
@@ -565,7 +565,7 @@ describe("Testing pseudo legal move generation for kings", () => {
     const board = BoardFactory.createFEN("8/8/8/8/8/8/3P1p2/R1k1K2R w KQ - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
-    const moves: Move[] = generator.gen_king_moves(board.at(7, 4));
+    const moves: Move[] = generator.gen_moves([board.at(7, 4)]);
 
     expect(moves.length).toBe(5);
 
@@ -672,7 +672,7 @@ describe("Testing pseudo legal move generation for queens", () => {
     const board = BoardFactory.createFEN("8/8/8/8/3q4/8/1P6/3p4 w KQkq - 0 1");
     const generator: PseduoLegalMoveGenerator = new PseduoLegalMoveGenerator(board);
 
-    const moves: Move[] = generator.gen_queen_moves(board.at(4, 3));
+    const moves: Move[] = generator.gen_moves([board.at(4, 3)]);
 
     expect(moves.length).toBe(25);
 

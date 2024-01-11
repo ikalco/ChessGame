@@ -1,6 +1,8 @@
-import { Board } from "./board";
+import { Board, board_2d } from "./board";
 import { Move, MoveType } from "./move";
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
+
+export type attack_2d = boolean[][];
 
 export class PseduoLegalMoveGenerator {
     constructor(private board: Board) { }
@@ -11,24 +13,49 @@ export class PseduoLegalMoveGenerator {
         for (const piece of pieces) {
             switch (piece.type) {
                 case PieceType.EMPTY: continue;
-                case PieceType.PAWN: moves = moves.concat(this.gen_pawn_moves(piece)); break;
-                case PieceType.ROOK: moves = moves.concat(this.gen_rook_moves(piece)); break;
-                case PieceType.KNIGHT: moves = moves.concat(this.gen_knight_moves(piece)); break;
-                case PieceType.BISHOP: moves = moves.concat(this.gen_bishop_moves(piece)); break;
-                case PieceType.KING: moves = moves.concat(this.gen_king_moves(piece)); break;
-                case PieceType.QUEEN: moves = moves.concat(this.gen_queen_moves(piece)); break;
+                case PieceType.PAWN: moves = moves.concat(this.gen_pawn_moves(piece, false)); break;
+                case PieceType.ROOK: moves = moves.concat(this.gen_rook_moves(piece, false)); break;
+                case PieceType.KNIGHT: moves = moves.concat(this.gen_knight_moves(piece, false)); break;
+                case PieceType.BISHOP: moves = moves.concat(this.gen_bishop_moves(piece, false)); break;
+                case PieceType.KING: moves = moves.concat(this.gen_king_moves(piece, false)); break;
+                case PieceType.QUEEN: moves = moves.concat(this.gen_queen_moves(piece, false)); break;
             }
         }
 
         return moves;
     }
 
-    check_first_move(move: Move): Move {
+    gen_all_attacking(pieces: Piece[]): attack_2d {
+        let moves: Move[] = [];
+
+        for (const piece of pieces) {
+            switch (piece.type) {
+                case PieceType.EMPTY: continue;
+                case PieceType.PAWN: moves = moves.concat(this.gen_pawn_moves(piece, true)); break;
+                case PieceType.ROOK: moves = moves.concat(this.gen_rook_moves(piece, true)); break;
+                case PieceType.KNIGHT: moves = moves.concat(this.gen_knight_moves(piece, true)); break;
+                case PieceType.BISHOP: moves = moves.concat(this.gen_bishop_moves(piece, true)); break;
+                case PieceType.KING: moves = moves.concat(this.gen_king_moves(piece, true)); break;
+                case PieceType.QUEEN: moves = moves.concat(this.gen_queen_moves(piece, true)); break;
+            }
+        }
+
+        const attacks: attack_2d = new Array(8).fill(0).map((_) => new Array(8).fill(false));
+
+        // then we transform move list to attack_2d
+        for (const move of moves) {
+            attacks[move.to_row][move.to_col] = true;
+        }
+
+        return attacks;
+    }
+
+    private check_first_move(move: Move): Move {
         if (this.board.at(move.from_row, move.from_col).moved == false) move.first_move = true;
         return move;
     }
 
-    gen_pawn_moves(pawn: Piece): Move[] {
+    private gen_pawn_moves(pawn: Piece, attacking: boolean): Move[] {
         let moves: Move[] = [];
 
         // if white then up, if black then down
@@ -36,7 +63,8 @@ export class PseduoLegalMoveGenerator {
         const promotion_rank = pawn.color == PieceColor.WHITE ? 1 : 6;
 
         if (this.board.exists(pawn.row + dir, pawn.col) &&
-            this.board.isEmpty(pawn.row + dir, pawn.col)
+            this.board.isEmpty(pawn.row + dir, pawn.col) &&
+            !attacking
         ) {
             // move 1 square
             moves.push(this.check_first_move({
@@ -67,7 +95,8 @@ export class PseduoLegalMoveGenerator {
         // diagonal to the right
         if (this.board.exists(pawn.row + dir, pawn.col + 1) &&
             this.board.isPiece(pawn.row + dir, pawn.col + 1) &&
-            this.board.at(pawn.row + dir, pawn.col + 1)!.color != pawn.color
+            this.board.at(pawn.row + dir, pawn.col + 1)!.color != pawn.color ||
+            attacking
         ) {
             moves.push(this.check_first_move({
                 from_row: pawn.row,
@@ -82,7 +111,8 @@ export class PseduoLegalMoveGenerator {
         // diagonal to the left
         if (this.board.exists(pawn.row + dir, pawn.col - 1) &&
             this.board.isPiece(pawn.row + dir, pawn.col - 1) &&
-            this.board.at(pawn.row + dir, pawn.col - 1)!.color != pawn.color
+            this.board.at(pawn.row + dir, pawn.col - 1)!.color != pawn.color ||
+            attacking
         ) {
             moves.push(this.check_first_move({
                 from_row: pawn.row,
@@ -94,7 +124,10 @@ export class PseduoLegalMoveGenerator {
             }));
         }
 
-        // en passant, 
+        // TODO: will probably need to add en passant somehow to work with attacking
+        // 		 variable, will worry about it later tho
+
+        // en passant,
         // btw won't if square to move to exists because last move supposedly went through it
         if (this.board.last_move != undefined &&
             this.board.last_moved_piece != undefined &&
@@ -128,7 +161,7 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_rook_moves(rook: Piece): Move[] {
+    private gen_rook_moves(rook: Piece, attacking: boolean): Move[] {
         let moves: Move[] = [];
 
         // format of directions is, change in ___ -> [row, col]
@@ -147,7 +180,7 @@ export class PseduoLegalMoveGenerator {
 
                 // if it's a piece with the same color (friendly) then go to other direction
                 if (this.board.isPiece(to_row, to_col)) {
-                    if (this.board.at(to_row, to_col).color == rook.color) break;
+                    if (this.board.at(to_row, to_col).color == rook.color && !attacking) break;
                     else taking = true;
                 }
 
@@ -163,14 +196,18 @@ export class PseduoLegalMoveGenerator {
                 // if it's an enemy piece then add the move to take it then go to other direction
                 if (this.board.isPiece(to_row, to_col) &&
                     this.board.at(to_row, to_col).color != rook.color
-                ) break;
+                ) {
+                    // if we are generating attacks, then a sliding piece can attack through an enemy king
+                    if (this.board.at(to_row, to_col).type == PieceType.KING && attacking) continue;
+                    else break;
+                }
             }
         }
 
         return moves;
     }
 
-    gen_knight_moves(knight: Piece): Move[] {
+    private gen_knight_moves(knight: Piece, attacking: boolean): Move[] {
         let moves: Move[] = [];
 
         const dirs = [[-1, 2], [-1, -2], [-2, 1], [-2, -1], [1, 2], [1, -2], [2, 1], [2, -1]];
@@ -186,7 +223,7 @@ export class PseduoLegalMoveGenerator {
 
             // if it's a piece with the same color (friendly) then go to other direction
             if (this.board.isPiece(to_row, to_col)) {
-                if (this.board.at(to_row, to_col).color == knight.color) continue;
+                if (this.board.at(to_row, to_col).color == knight.color && !attacking) continue;
                 else taking = true;
             }
 
@@ -203,7 +240,7 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_bishop_moves(bishop: Piece): Move[] {
+    private gen_bishop_moves(bishop: Piece, attacking: boolean): Move[] {
         let moves: Move[] = [];
 
         const dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -220,7 +257,7 @@ export class PseduoLegalMoveGenerator {
 
                 // if it's a piece with the same color (friendly) then go to other direction
                 if (this.board.isPiece(to_row, to_col)) {
-                    if (this.board.at(to_row, to_col).color == bishop.color) break;
+                    if (this.board.at(to_row, to_col).color == bishop.color && !attacking) break;
                     else taking = true;
                 }
 
@@ -236,14 +273,17 @@ export class PseduoLegalMoveGenerator {
                 // if it's an enemy piece then add the move to take it then go to other direction
                 if (this.board.isPiece(to_row, to_col) &&
                     this.board.at(to_row, to_col).color != bishop.color
-                ) break;
+                ) {
+                    if (this.board.at(to_row, to_col).type == PieceType.KING && attacking) continue;
+                    else break;
+                }
             }
         }
 
         return moves;
     }
 
-    gen_king_moves(king: Piece): Move[] {
+    private gen_king_moves(king: Piece, attacking: boolean): Move[] {
         let moves: Move[] = [];
 
         const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -259,7 +299,7 @@ export class PseduoLegalMoveGenerator {
 
             // if it's a piece with the same color (friendly) then go to other direction
             if (this.board.isPiece(to_row, to_col)) {
-                if (this.board.at(to_row, to_col).color == king.color) continue;
+                if (this.board.at(to_row, to_col).color == king.color && !attacking) continue;
                 else taking = true;
             }
 
@@ -279,7 +319,8 @@ export class PseduoLegalMoveGenerator {
         // third rule will be handled by LEGAL move generator
 
         // queen side castle
-        if (this.board.at(king.row, 0).type == PieceType.ROOK &&
+        if (!attacking &&
+            this.board.at(king.row, 0).type == PieceType.ROOK &&
             this.board.at(king.row, 0).moved == false &&
             king.moved == false &&
             this.board.at(king.row, 1) == EMPTY_PIECE &&
@@ -297,7 +338,8 @@ export class PseduoLegalMoveGenerator {
         }
 
         // king side castle
-        if (this.board.at(king.row, 7).type == PieceType.ROOK &&
+        if (!attacking &&
+            this.board.at(king.row, 7).type == PieceType.ROOK &&
             this.board.at(king.row, 7).moved == false &&
             king.moved == false &&
             this.board.at(king.row, 5) == EMPTY_PIECE &&
@@ -316,7 +358,7 @@ export class PseduoLegalMoveGenerator {
         return moves;
     }
 
-    gen_queen_moves(queen: Piece): Move[] {
+    private gen_queen_moves(queen: Piece, attacking: boolean): Move[] {
         let moves: Move[] = [];
 
         const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -333,7 +375,7 @@ export class PseduoLegalMoveGenerator {
 
                 // if it's a piece with the same color (friendly) then go to other direction
                 if (this.board.isPiece(to_row, to_col)) {
-                    if (this.board.at(to_row, to_col).color == queen.color) break;
+                    if (this.board.at(to_row, to_col).color == queen.color && !attacking) break;
                     else taking = true;
                 }
 
@@ -346,10 +388,13 @@ export class PseduoLegalMoveGenerator {
                     taking: taking,
                 }));
 
-                // if it's an enemy piece then add the move to take it then go to other direction
+                /// if it's an enemy piece then add the move to take it then go to other direction
                 if (this.board.isPiece(to_row, to_col) &&
                     this.board.at(to_row, to_col).color != queen.color
-                ) break;
+                ) {
+                    if (this.board.at(to_row, to_col).type == PieceType.KING && attacking) continue;
+                    else break;
+                }
             }
         }
 

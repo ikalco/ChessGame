@@ -95,6 +95,54 @@ describe("Testing functions of Board class.", () => {
         expect(board.rooks).toHaveLength(3);
     });
 
+    test("Halfmove counter.", () => {
+        const new_board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        new_board.move({
+            from_row: 0,
+            from_col: 1,
+            to_row: 2,
+            to_col: 0,
+            type: MoveType.Normal,
+            taking: false
+        });
+
+        expect(new_board.halfmove_counter).toBe(1);
+
+        new_board.move({
+            from_row: 1,
+            from_col: 1,
+            to_row: 2,
+            to_col: 1,
+            type: MoveType.Normal,
+            taking: false
+        });
+
+        expect(new_board.halfmove_counter).toBe(0);
+
+        new_board.move({
+            from_row: 2,
+            from_col: 0,
+            to_row: 4,
+            to_col: 1,
+            type: MoveType.Normal,
+            taking: false
+        });
+
+        expect(new_board.halfmove_counter).toBe(1);
+
+        new_board.move({
+            from_row: 4,
+            from_col: 1,
+            to_row: 6,
+            to_col: 0,
+            type: MoveType.Normal,
+            taking: true
+        });
+
+        expect(new_board.halfmove_counter).toBe(0);
+    });
+
     test("Normal move is performed correctly.", () => {
         const new_board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 

@@ -76,6 +76,11 @@ export class Board {
     get black_king(): Piece { return this._kings.filter((piece) => piece.color == PieceColor.BLACK)[0]; }
     get black_queen(): Piece { return this._queens.filter((piece) => piece.color == PieceColor.BLACK)[0]; }
 
+    // get number of moves
+    get num_moves(): number {
+        return this.move_list.length;
+    }
+
     // returns last move in move list
     get last_move(): (Move | undefined) {
         return this.move_list.at(this.move_list.length - 1);

@@ -28,6 +28,7 @@ describe("Testing functions of Board class.", () => {
         expect(board.last_move).not.toBeUndefined();
         expect(board.last_moved_piece).not.toBeUndefined();
 
+        expect(board.num_moves).toBe(1);
         expect(board.last_moved_piece!.moved).toBe(true);
 
         expect(board.last_move).toStrictEqual({

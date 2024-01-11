@@ -1,6 +1,6 @@
 import { Board } from "./board";
-import { Move, MoveType } from "./move";
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
+import { Move } from "./move";
+import { PieceColor } from "./piece";
 import { PseduoLegalMoveGenerator } from "./pseudo_move_generator";
 
 export class LegalMoveGenerator {
@@ -10,11 +10,23 @@ export class LegalMoveGenerator {
         this.pseudo_gen = new PseduoLegalMoveGenerator(board);
     }
 
-    gen_moves_active(): Move[] {
-        return [];
+    private gen_moves_active(): Move[] {
+        return this.pseudo_gen.gen_moves(
+            this.board.active_color == PieceColor.WHITE ?
+                this.board.whites :
+                this.board.blacks
+        );
     }
 
-    gen_moves_inactive(): Move[] {
-        return [];
+    private gen_moves_inactive(): Move[] {
+        return this.pseudo_gen.gen_moves(
+            this.board.active_color == PieceColor.WHITE ?
+                this.board.blacks :
+                this.board.whites
+        );
+    }
+
+    gen_legal_moves(): Move[] {
+        return this.gen_moves_active();
     }
 }

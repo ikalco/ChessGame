@@ -8,6 +8,12 @@ import { Move } from '../src/move';
 describe("Tests for move generation using perft.", () => {
     const tests = [
         // depth, expected result, fen_string
+        [0, 1, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
+        [1, 20, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
+        [2, 400, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
+        [3, 8902, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
+        [4, 197281, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
+        [5, 4865609, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
         [6, 119060324, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
         [5, 193690690, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"],
         [7, 178633661, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"],
@@ -32,7 +38,9 @@ describe("Tests for move generation using perft.", () => {
     function perftBulk(board: Board, generator: LegalMoveGenerator, depth: number) {
         if (depth == 0) return 1;
 
-        const moves: Move[] = generator.gen_moves_active();
+        const moves: Move[] = generator.gen_legal_moves();
+
+        if (depth == 1) return moves.length;
 
         let num_positions = 0;
 

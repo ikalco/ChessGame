@@ -1,3 +1,5 @@
+import { Move } from "./move";
+
 export namespace AlgebraNotation {
     export function toRow(algNot: string): number {
         switch (algNot[1]) {
@@ -53,5 +55,9 @@ export namespace AlgebraNotation {
             case 7: return 'h';
             default: throw Error("Invalid column to convert into algebra notation.");
         }
+    }
+
+    export function fromMoveSimple(move: Move): string {
+        return AlgebraNotation.fromCol(move.from_col) + AlgebraNotation.fromRow(move.from_row) + AlgebraNotation.fromCol(move.to_col) + AlgebraNotation.fromRow(move.to_row);
     }
 }

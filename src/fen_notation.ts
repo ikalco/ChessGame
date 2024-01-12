@@ -1,4 +1,6 @@
-import { board_2d } from "./board";
+import { AlgebraNotation } from "./algebra_notation";
+import { Board, board_2d } from "./board";
+import { MoveType } from "./move";
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
 
 export type fen_castling_options = {
@@ -26,6 +28,107 @@ export class FEN {
         this.enpassant_str = enpassant_str;
         this.halfmove_str = halfmove_str;
         this.fullmove_str = fullmove_str;
+    }
+
+    static from(board: Board): FEN {
+        const placement_str = FEN.placement(board);
+        const castling_str = FEN.castling(board);
+        const enpassant_str = FEN.enpassant(board);
+
+        const active_color_str = board.active_color == PieceColor.WHITE ? 'w' : 'b';
+        const halfmove_str = board.halfmove_counter;
+        const fullmove_str = board.fullmove_counter;
+
+        const raw_string = `${placement_str} ${active_color_str} ${castling_str} ${enpassant_str} ${halfmove_str} ${fullmove_str}`;
+
+        return new FEN(raw_string);
+    }
+
+    // no idea why I did it this way... but I already did it and it works
+    private static placement(board: Board): string {
+        const pieces = board.pieces;
+
+        // convert string to editable array
+        let placement: string[] = [..."________/________/________/________/________/________/________/________"];
+
+        for (const piece of pieces) {
+            let letter_type = "";
+
+            switch (piece.type) {
+                case PieceType.PAWN: letter_type = 'p'; break;
+                case PieceType.ROOK: letter_type = 'r'; break;
+                case PieceType.KNIGHT: letter_type = 'n'; break;
+                case PieceType.BISHOP: letter_type = 'b'; break;
+                case PieceType.KING: letter_type = 'k'; break;
+                case PieceType.QUEEN: letter_type = 'q'; break;
+            }
+
+            if (piece.color == PieceColor.WHITE) letter_type = letter_type.toUpperCase();
+
+            // calculate index at which to write character, it's by 9 because of the '/'
+            placement[piece.col + (piece.row) * 9] = letter_type;
+        }
+
+        // convert from editable array to string
+        let placement_str = placement.join('');
+
+        // change underscores to actual numbers
+        let count = 0;
+        let start = -1;
+        for (let i = 0; i < placement_str.length; i++) {
+            const char = placement_str[i];
+
+            // increment counter for '_' when we see one
+            if (char == '_') count++;
+
+            // set start of underscores if it's not set
+            if (start == -1) start = i;
+
+            // replace '_' with correct number when encountering non '_' and at the end of string
+            if (char != '_' || i == placement_str.length - 1) {
+                // if we haven't seen any '_' then just reset and continue at next character
+                if (count == 0) {
+                    start = -1;
+                    continue;
+                };
+
+                // reform placement_str to remove counted '_' and replace with the actual number
+                placement_str = placement_str.substring(0, start) + count + placement_str.substring(start + count);
+
+                // adjust index counter for removing characters from string
+                i -= count;
+
+                // reset counting variables
+                count = 0;
+                start = -1;
+            }
+        }
+
+        return placement_str;
+    }
+
+    private static castling(board: Board): string {
+        let castling_str: string = "";
+
+        if (board.at(7, 7).type == PieceType.ROOK && board.at(7, 7).moved == false) castling_str += "K";
+        if (board.at(7, 0).type == PieceType.ROOK && board.at(7, 0).moved == false) castling_str += "Q";
+        if (board.at(0, 7).type == PieceType.ROOK && board.at(0, 7).moved == false) castling_str += "k";
+        if (board.at(0, 0).type == PieceType.ROOK && board.at(0, 0).moved == false) castling_str += "q";
+
+        return castling_str;
+    }
+
+    // Not using "updated version of the spec" (from wiki) for compatibilty
+    private static enpassant(board: Board): string {
+        const last_move = board.last_move;
+
+        if (last_move === undefined) return "-";
+
+        if (last_move.type != MoveType.PawnDouble) return "-";
+
+        const dir = board.last_moved_piece!.color == PieceColor.WHITE ? -1 : 1;
+
+        return `${AlgebraNotation.fromCol(last_move.from_col)}${AlgebraNotation.fromRow(last_move.from_row + dir)}`;
     }
 
     get board(): board_2d {
@@ -112,8 +215,8 @@ export class FEN {
     get enpassant_target_square(): (number[]) {
         if (this.enpassant_str == '-') return [];
 
-        const row: number = this.algToRow(this.enpassant_str);
-        const col: number = this.algToCol(this.enpassant_str);
+        const row: number = AlgebraNotation.toRow(this.enpassant_str);
+        const col: number = AlgebraNotation.toCol(this.enpassant_str);
 
         if (row == -1 || (row != 2 && row != 5))
             throw Error("Invalid rank number when parsing FEN string.");
@@ -164,36 +267,6 @@ export class FEN {
                 return PieceType.KING;
             default:
                 return undefined;
-        }
-    }
-
-    // takes in a position algebraic notation and returns it's rank as a number
-    private algToRow(algNot: string): number {
-        switch (algNot[1]) {
-            case '8': return 0;
-            case '7': return 1;
-            case '6': return 2;
-            case '5': return 3;
-            case '4': return 4;
-            case '3': return 5;
-            case '2': return 6;
-            case '1': return 7;
-            default: return -1;
-        }
-    }
-
-    // takes in a position algebraic notation and returns it's file as a number
-    private algToCol(algNot: string): number {
-        switch (algNot[0]) {
-            case 'a': return 0;
-            case 'b': return 1;
-            case 'c': return 2;
-            case 'd': return 3;
-            case 'e': return 4;
-            case 'f': return 5;
-            case 'g': return 6;
-            case 'h': return 7;
-            default: return -1;
         }
     }
 }

@@ -95,7 +95,9 @@ describe("Testing functions of Board class.", () => {
         expect(board.rooks).toHaveLength(3);
     });
 
-    test("Halfmove counter.", () => {
+    test("Halfmove and Fullmove counters.", () => {
+        // yes I know technically these moves are illegal but we are testing here so idc
+
         const new_board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         new_board.move({
@@ -108,6 +110,7 @@ describe("Testing functions of Board class.", () => {
         });
 
         expect(new_board.halfmove_counter).toBe(1);
+        expect(new_board.fullmove_counter).toBe(1);
 
         new_board.move({
             from_row: 1,
@@ -119,6 +122,7 @@ describe("Testing functions of Board class.", () => {
         });
 
         expect(new_board.halfmove_counter).toBe(0);
+        expect(new_board.fullmove_counter).toBe(2);
 
         new_board.move({
             from_row: 2,
@@ -130,6 +134,7 @@ describe("Testing functions of Board class.", () => {
         });
 
         expect(new_board.halfmove_counter).toBe(1);
+        expect(new_board.fullmove_counter).toBe(2);
 
         new_board.move({
             from_row: 4,
@@ -141,6 +146,7 @@ describe("Testing functions of Board class.", () => {
         });
 
         expect(new_board.halfmove_counter).toBe(0);
+        expect(new_board.fullmove_counter).toBe(3);
     });
 
     test("Normal move is performed correctly.", () => {

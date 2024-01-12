@@ -6,7 +6,7 @@ import { MoveType } from "./move";
 export namespace BoardFactory {
     export function createFEN(raw_string: string): Board {
         const fen = new FEN(raw_string);
-        const board = new Board(fen.board, [], fen.active_color, fen.halfmove);
+        const board = new Board(fen.board, [], fen.active_color, fen.halfmove, fen.fullmove);
 
         const [enp_row, enp_col] = fen.enpassant_target_square;
 

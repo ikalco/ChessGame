@@ -20,7 +20,8 @@ export class Board {
         private _board: board_2d,
         private move_list: Move[],
         public active_color: PieceColor,
-        public halfmove_counter: number
+        public halfmove_counter: number,
+        public fullmove_counter: number
     ) {
         this.deleted = [];
 
@@ -122,6 +123,8 @@ export class Board {
     move(move: Move) {
         if (this.at(move.from_row, move.from_col).type == PieceType.PAWN || move.taking == true) this.halfmove_counter = 0;
         else this.halfmove_counter++;
+
+        if (this.active_color == PieceColor.BLACK) this.fullmove_counter++;
 
         switch (move.type) {
             case MoveType.Normal: this._move_normal(move); break;

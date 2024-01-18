@@ -38,6 +38,11 @@ describe("Tests for move generation using perft.", () => {
         // [4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"]
     ];
 
+    type perft_divide = {
+      [key:string]: number,
+      num_positions: number
+    }
+
     function perftBulk(board: Board, generator: LegalMoveGenerator, depth: number) {
         if (depth == 0) return 1;
 
@@ -57,9 +62,7 @@ describe("Tests for move generation using perft.", () => {
     }
 
     function perftDivide(board: Board, generator: LegalMoveGenerator, depth: number) {
-        let result: {
-            [key: string]: number;
-        } = {
+        let result: perft_divide = {
             num_positions: 0
         };
 
@@ -98,9 +101,7 @@ describe("Tests for move generation using perft.", () => {
         // remove new line before the last line so that next step doesn't break
         lines.pop();
 
-        let result: {
-            [key: string]: number;
-        } = {
+        let result: perft_divide = {
             // get number after semicolon, also trim extra space in front of semicolon
             num_positions: Number(last_line.split(":")[1].trimStart())
         };

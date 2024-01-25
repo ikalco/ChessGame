@@ -1,13 +1,49 @@
 import { describe, expect, test } from '@jest/globals';
-import * as cp from "node:child_process";
 import { existsSync } from "node:fs";
+import * as cp from "node:child_process";
 
-import { Board } from '../src/board';
 import { BoardFactory } from '../src/board_factory';
 import { LegalMoveGenerator } from '../src/legal_move_generator';
-import { Move } from '../src/move';
-import { AlgebraNotation } from '../src/algebra_notation';
+import { Perft } from '../src/perft';
+import { Board } from '../src/board';
 import { FEN } from '../src/fen_notation';
+
+function divideStockfish(board: Board, depth: number): Perft.perft_divide {
+    const fen_string = FEN.from(board).raw_string;
+
+    // these set the given fen position in stockfish,
+    // get the perft divie results for the given depth,
+    // then quit stockfish in order to finish function
+    const commands = `position fen ${fen_string}\r\ngo perft ${depth}\r\nquit`;
+
+    // use node:child_process to spawn stockfish process and pass commands above
+    const stockfish = cp.spawnSync("./Stockfish/src/stockfish", {
+        encoding: 'utf-8',
+        input: commands
+    });
+
+    // first line and last two is always junk so we discard it
+    const lines = stockfish.stdout.split("\n").slice(1, -2);
+    const last_line = lines.pop() as string;
+
+    // remove new line before the last line so that next step doesn't break
+    lines.pop();
+
+    let result: Perft.perft_divide = {
+        // get number after semicolon, also trim extra space in front of semicolon
+        num_positions: Number(last_line.split(":")[1].trimStart())
+    };
+
+    // get perft divide results and save them in result
+    for (const line of lines) {
+        const [move, positions] = line.split(":");
+
+        // the positions string contains the space after the semicolon, so trim it
+        result[move] = Number(positions.trimStart());
+    }
+
+    return result;
+}
 
 describe("Tests for move generation using perft.", () => {
     const tests = [
@@ -38,85 +74,6 @@ describe("Tests for move generation using perft.", () => {
         // [4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"]
     ];
 
-    type perft_divide = {
-        [key: string]: number,
-        num_positions: number;
-    };
-
-    function perftBulk(board: Board, generator: LegalMoveGenerator, depth: number) {
-        if (depth == 0) return 1;
-
-        const moves: Move[] = generator.gen_legal_moves();
-
-        if (depth == 1) return moves.length;
-
-        let num_positions = 0;
-
-        for (const move of moves) {
-            board.move(move);
-            num_positions += perftBulk(board, generator, depth - 1);
-            board.unmove();
-        }
-
-        return num_positions;
-    }
-
-    function perftDivide(board: Board, generator: LegalMoveGenerator, depth: number) {
-        let result: perft_divide = {
-            num_positions: 0
-        };
-
-        const moves: Move[] = generator.gen_legal_moves();
-
-        for (const move of moves) {
-            board.move(move);
-            const positions = perftBulk(board, generator, depth - 1);
-            board.unmove();
-
-            result.num_positions += positions;
-            result[AlgebraNotation.fromMoveSimple(move)] = positions;
-        }
-
-        return result;
-    }
-
-    function stockfishPerftDivide(board: Board, depth: number) {
-        const fen_string = FEN.from(board).raw_string;
-
-        // these set the given fen position in stockfish,
-        // get the perft divie results for the given depth,
-        // then quit stockfish in order to finish function
-        const commands = `position fen ${fen_string}\r\ngo perft ${depth}\r\nquit`;
-
-        // use node:child_process to spawn stockfish process and pass commands above
-        const stockfish = cp.spawnSync("./Stockfish/src/stockfish", {
-            encoding: 'utf-8',
-            input: commands
-        });
-
-        // first line and last two is always junk so we discard it
-        const lines = stockfish.stdout.split("\n").slice(1, -2);
-        const last_line = lines.pop() as string;
-
-        // remove new line before the last line so that next step doesn't break
-        lines.pop();
-
-        let result: perft_divide = {
-            // get number after semicolon, also trim extra space in front of semicolon
-            num_positions: Number(last_line.split(":")[1].trimStart())
-        };
-
-        // get perft divide results and save them in result
-        for (const line of lines) {
-            const [move, positions] = line.split(":");
-
-            // the positions string contains the space after the semicolon, so trim it
-            result[move] = Number(positions.trimStart());
-        }
-
-        return result;
-    }
-
     test("Stockfish binary exists.", () => {
         try {
             expect(existsSync("./Stockfish/src/stockfish")).toBe(true);
@@ -129,7 +86,7 @@ describe("Tests for move generation using perft.", () => {
         const [depth, expected_result, fen_string] = tests[0];
         const board = BoardFactory.createFEN(<string>fen_string);
 
-        expect(stockfishPerftDivide(board, (<number>depth))).toMatchInlineSnapshot(`
+        expect(divideStockfish(board, (<number>depth))).toMatchInlineSnapshot(`
 {
   "a2a3": 1,
   "a2a4": 1,
@@ -160,6 +117,6 @@ describe("Tests for move generation using perft.", () => {
         const board = BoardFactory.createFEN(<string>fen_string);
         const generator = new LegalMoveGenerator(board);
 
-        expect(perftBulk(board, generator, <number>depth)).toBe(<number>expected_result);
+        expect(Perft.bulk(board, generator, <number>depth)).toBe(<number>expected_result);
     });
 });

@@ -117,6 +117,6 @@ describe("Tests for move generation using perft.", () => {
         const board = BoardFactory.createFEN(<string>fen_string);
         const generator = new LegalMoveGenerator(board);
 
-        expect(Perft.bulk(board, generator, <number>depth)).toBe(<number>expected_result);
+        expect(Perft.divide(board, generator, <number>depth)).toStrictEqual(divideStockfish(board, <number>depth));
     });
 });

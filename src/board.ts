@@ -196,6 +196,26 @@ export class Board {
         this._board[row][col] = EMPTY_PIECE;
     }
 
+    // un deletes a piece at a given square position
+    undelete(row: number, col: number) {
+        const piece = <Piece>this.deleted.pop();
+
+        this._board[row][col] = piece;
+
+        if (piece.color == PieceColor.WHITE) this._whites.push(piece);
+        if (piece.color == PieceColor.BLACK) this._blacks.push(piece);
+
+        switch (piece.type) {
+            case PieceType.EMPTY: return;
+            case PieceType.PAWN: this._pawns.push(piece); break;
+            case PieceType.ROOK: this._rooks.push(piece); break;
+            case PieceType.KNIGHT: this._knights.push(piece); break;
+            case PieceType.BISHOP: this._bishops.push(piece); break;
+            case PieceType.KING: this._kings.push(piece); break;
+            case PieceType.QUEEN: this._queens.push(piece); break;
+        }
+    }
+
     // moves a piece from one square to another
     private _move(from_row: number, from_col: number, to_row: number, to_col: number) {
         // skip if out of bounds
@@ -260,7 +280,7 @@ export class Board {
     private _unmove_normal(move: Move) {
         this._move(move.to_row, move.to_col, move.from_row, move.from_col);
 
-        if (move.taking) this._board[move.to_row][move.to_col] = <Piece>this.deleted.pop();
+        if (move.taking) this.undelete(move.to_row, move.to_col);
     }
 
     private _unmove_castling(move: Move) {
@@ -278,9 +298,7 @@ export class Board {
 
     private _unmove_enpassant(move: Move) {
         this._move(move.to_row, move.to_col, move.from_row, move.from_col);
-
-        // don't have to check for taking because it's en passant
-        this._board[move.from_row][move.to_col] = <Piece>this.deleted.pop();
+        this.undelete(move.from_row, move.to_col);
     }
 
     private _unmove_pawndouble(move: Move) {

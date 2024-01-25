@@ -39,9 +39,9 @@ describe("Tests for move generation using perft.", () => {
     ];
 
     type perft_divide = {
-      [key:string]: number,
-      num_positions: number
-    }
+        [key: string]: number,
+        num_positions: number;
+    };
 
     function perftBulk(board: Board, generator: LegalMoveGenerator, depth: number) {
         if (depth == 0) return 1;

@@ -237,7 +237,7 @@ describe("Testing functions of Board class.", () => {
         new_board.at(1, 1).moved = true;
 
         const move: Move = {
-            from_row: 1,
+            from_row: 0,
             from_col: 1,
             to_row: 2,
             to_col: 0,
@@ -248,14 +248,14 @@ describe("Testing functions of Board class.", () => {
         new_board.move(move);
         new_board.unmove();
 
-        expect(new_board.isPiece(1, 1)).toBe(true);
+        expect(new_board.isPiece(0, 1)).toBe(true);
         expect(new_board.isPiece(2, 0)).toBe(true);
 
-        expect(new_board.at(1, 1).row).toBe(1);
-        expect(new_board.at(1, 1).col).toBe(1);
-        expect(new_board.at(1, 1).type).toBe(PieceType.PAWN);
-        expect(new_board.at(1, 1).color).toBe(PieceColor.BLACK);
-        expect(new_board.at(1, 1).moved).toBe(true);
+        expect(new_board.at(0, 1).row).toBe(0);
+        expect(new_board.at(0, 1).col).toBe(1);
+        expect(new_board.at(0, 1).type).toBe(PieceType.KNIGHT);
+        expect(new_board.at(0, 1).color).toBe(PieceColor.BLACK);
+        expect(new_board.at(0, 1).moved).toBe(true);
 
         expect(new_board.at(2, 0).row).toBe(2);
         expect(new_board.at(2, 0).col).toBe(0);
@@ -266,6 +266,9 @@ describe("Testing functions of Board class.", () => {
         expect(new_board.last_move).toBeUndefined();
 
         expect(new_board.active_color).toBe(PieceColor.WHITE);
+
+        expect(new_board.fullmove_counter).toBe(1);
+        expect(new_board.halfmove_counter).toBe(0);
     });
 
     test("Castling unmove is performed correctly.", () => {

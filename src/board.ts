@@ -16,7 +16,7 @@ export class Board {
 
     private deleted: Piece[];
 
-    private prev_halfmove_counter: number;
+    private prev_halfmove_counter: number[];
 
     constructor(
         private _board: board_2d,
@@ -52,7 +52,7 @@ export class Board {
             if (pieces[i].color == PieceColor.BLACK) this._blacks.push(pieces[i]);
         }
 
-        this.prev_halfmove_counter = this.halfmove_counter;
+        this.prev_halfmove_counter = [this.halfmove_counter];
     }
 
     // returns a flat array of all the pieces in the board
@@ -126,7 +126,7 @@ export class Board {
 
     move(move: Move) {
         if (this.at(move.from_row, move.from_col).type == PieceType.PAWN || move.taking == true) {
-            this.prev_halfmove_counter = this.halfmove_counter;
+            this.prev_halfmove_counter.push(this.halfmove_counter);
             this.halfmove_counter = 0;
         }
         else this.halfmove_counter++;
@@ -165,7 +165,7 @@ export class Board {
 
         if (this.active_color == PieceColor.BLACK) this.fullmove_counter--;
 
-        if (this.at(prev_move.from_row, prev_move.from_col).type == PieceType.PAWN || prev_move.taking == true) this.halfmove_counter = this.prev_halfmove_counter;
+        if (this.at(prev_move.from_row, prev_move.from_col).type == PieceType.PAWN || prev_move.taking == true) this.halfmove_counter = this.prev_halfmove_counter.pop()!;
         else this.halfmove_counter--;
 
         if (prev_move.first_move == true) this.at(prev_move.from_row, prev_move.from_col).moved = false;

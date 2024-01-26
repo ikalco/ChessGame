@@ -130,9 +130,12 @@ export class LegalMoveGenerator {
         return active.filter((move) => {
             if (this.board.at(move.from_row, move.from_col) != king) return true;
 
-            // if it's the king, and the move goes to an attacked space, then filter it out, else allow it
-            if (attacked[move.to_row][move.to_col]) return false;
-            else return true;
+            // if it's the king, and the move goes to an actively attacked space, then filter it out, else allow it
+            for (const enemy_move of inactive) {
+                if (move.to_row == enemy_move.to_row && move.to_col == enemy_move.to_col) return false;
+            }
+
+            return true;
         });
     }
 

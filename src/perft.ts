@@ -9,8 +9,10 @@ export namespace Perft {
         num_positions: number;
     };
 
-    export function bulk(board: Board, generator: LegalMoveGenerator, depth: number): number {
+    export function bulk(board: Board, depth: number): number {
         if (depth == 0) return 1;
+
+        const generator = new LegalMoveGenerator(board);
 
         const moves: Move[] = generator.gen_legal_moves();
 
@@ -20,23 +22,25 @@ export namespace Perft {
 
         for (const move of moves) {
             board.move(move);
-            num_positions += bulk(board, generator, depth - 1);
+            num_positions += bulk(board, depth - 1);
             board.unmove();
         }
 
         return num_positions;
     }
 
-    export function divide(board: Board, generator: LegalMoveGenerator, depth: number): perft_divide {
+    export function divide(board: Board, depth: number): perft_divide {
         let result: perft_divide = {
             num_positions: 0
         };
+
+        const generator = new LegalMoveGenerator(board);
 
         const moves: Move[] = generator.gen_legal_moves();
 
         for (const move of moves) {
             board.move(move);
-            const positions = bulk(board, generator, depth - 1);
+            const positions = bulk(board, depth - 1);
             board.unmove();
 
             result.num_positions += positions;

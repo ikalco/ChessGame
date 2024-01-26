@@ -7,6 +7,8 @@ import { LegalMoveGenerator } from '../src/legal_move_generator';
 import { Perft } from '../src/perft';
 import { Board } from '../src/board';
 import { FEN } from '../src/fen_notation';
+import { AlgebraNotation } from '../src/algebra_notation';
+import { Move } from '../src/move';
 
 function divideStockfish(board: Board, depth: number): Perft.perft_divide {
     const fen_string = FEN.from(board).raw_string;
@@ -43,6 +45,80 @@ function divideStockfish(board: Board, depth: number): Perft.perft_divide {
     }
 
     return result;
+}
+
+function print_moves(board: Board) {
+    const num_moves = board.num_moves;
+    const moves: string[] = [];
+
+    while (board.last_move != undefined) {
+        moves.push(AlgebraNotation.fromMoveSimple(board.last_move));
+        board.unmove();
+    }
+
+    console.log(`depth: ${num_moves}\nmoves: ${moves.reverse().join(", ")}`);
+}
+
+function max_diff_move_divide(local: Perft.perft_divide, stockfish: Perft.perft_divide): (string | undefined) {
+    let max_diff_move;
+
+    for (const [move, num_positions] of Object.entries(stockfish)) {
+        if (move == 'num_positions') continue;
+        if (local[move] != undefined && local[move] == num_positions) continue;
+
+        const diff = Math.abs(local[move] - stockfish[move]);
+        if (max_diff_move == undefined) max_diff_move = move;
+
+        const max_diff = Math.abs(local[max_diff_move] - stockfish[max_diff_move]);
+        if (diff > max_diff) max_diff_move = move;
+    }
+
+    return max_diff_move;
+}
+
+function find_move(board: Board, move: string): (Move | undefined) {
+    const from_col = AlgebraNotation.toCol(move[0]);
+    const from_row = AlgebraNotation.toRow(move[1]);
+    const to_col = AlgebraNotation.toCol(move[2]);
+    const to_row = AlgebraNotation.toRow(move[3]);
+
+    let offending_move;
+    const moves = new LegalMoveGenerator(board).gen_legal_moves();
+
+    for (const move of moves) {
+        if (move.from_col == from_col &&
+            move.from_row == from_row &&
+            move.to_row == to_row &&
+            move.to_col == to_col
+        ) {
+            offending_move = move;
+            break;
+        }
+    }
+
+    return offending_move;
+}
+
+function find_offender_divide(board: Board, depth: number, local: Perft.perft_divide, stockfish: Perft.perft_divide) {
+    if (depth == 1) {
+        print_moves(board);
+        expect(local).toStrictEqual(stockfish);
+    }
+
+    let max_diff_move = max_diff_move_divide(local, stockfish);
+
+    if (max_diff_move == undefined) throw Error("Local and Stockfish perft divides are the same!");
+
+    const offending_move = find_move(board, max_diff_move);
+
+    if (offending_move == undefined) throw Error(`Offending move isn't generated locally!\nmove: ${max_diff_move}`);
+
+    board.move(offending_move);
+
+    const new_local = Perft.divide(board, depth - 1);
+    const new_stockfish = divideStockfish(board, depth - 1);
+
+    find_offender_divide(board, depth - 1, new_local, new_stockfish);
 }
 
 describe("Tests for move generation using perft.", () => {
@@ -115,8 +191,16 @@ describe("Tests for move generation using perft.", () => {
 
     test.each(tests)("Depth: %i | Expected Result: %s", (depth, expected_result, fen_string) => {
         const board = BoardFactory.createFEN(<string>fen_string);
-        const generator = new LegalMoveGenerator(board);
 
-        expect(Perft.divide(board, generator, <number>depth)).toStrictEqual(divideStockfish(board, <number>depth));
+        const local = Perft.divide(board, <number>depth);
+        const stockfish = divideStockfish(board, <number>depth);
+
+        try {
+            expect(local).toStrictEqual(stockfish);
+            expect(local.num_positions).toBe(expected_result);
+        } catch (error) {
+            find_offender_divide(board, <number>depth, local, stockfish);
+            throw Error("find_offender_divide failed");
+        }
     });
 });

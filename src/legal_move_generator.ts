@@ -55,10 +55,10 @@ export class LegalMoveGenerator {
     }
 
     // TODO: redo this since it's copied from old BAD code
-    private direction_to_piece(from: Piece, to: Piece) {
-        let rowOff = to.row - from.row;
+    private direction_to_piece(from_row: number, from_col: number, to_row: number, to_col: number) {
+        let rowOff = to_row - from_row;
         rowOff /= Math.abs(rowOff) == 0 ? 1 : Math.abs(rowOff);
-        let colOff = to.col - from.col;
+        let colOff = to_col - from_col;
         colOff /= Math.abs(colOff) == 0 ? 1 : Math.abs(colOff);
 
         return [rowOff, colOff];
@@ -94,7 +94,7 @@ export class LegalMoveGenerator {
             if (!attacked[move.to_row][move.to_col]) allowed_moves.add(move);
         }
 
-        const [row_change, col_change] = this.direction_to_piece(king, checking_piece);
+        const [row_change, col_change] = this.direction_to_piece(king.row, king.col, checking_piece.row, checking_piece.col);
 
         for (const move of active) {
             // allow moves that CAPTURE the piece that's delivering check

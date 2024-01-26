@@ -43,6 +43,12 @@ export class LegalMoveGenerator {
         return attacks;
     }
 
+    private in_check(attacked: attack_2d): boolean {
+        // if the king is attacked then it's in check
+        const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
+        return attacked[king.row][king.col];
+    }
+
     // TODO: redo this since it's copied from old BAD code
     private direction_to_piece(from: Piece, to: Piece) {
         let rowOff = to.row - from.row;
@@ -68,12 +74,9 @@ export class LegalMoveGenerator {
         return checking_piece;
     }
 
-    // ensure king isn't left or placed in check
-    private filter_moves_check(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
+    // ensure king isn't left or placed in check, after being check
+    private moves_during_check(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
-
-        // if the king is not attacked (ie. in check), then return all moves
-        if (!attacked[king.row][king.col]) return active;
 
         const checking_piece: Piece = this.get_checking_piece(king, inactive);
 
@@ -95,7 +98,7 @@ export class LegalMoveGenerator {
                 move.to_col == checking_piece.col
             ) allowed_moves.add(move);
 
-            // allow moves that BLOCK the check (ie. checking piece is rook, bishop, or queen)
+            // allow moves that BLOCK the check (only if checking piece is rook, bishop, or queen)
             if (checking_piece.type != PieceType.ROOK &&
                 checking_piece.type != PieceType.BISHOP &&
                 checking_piece.type != PieceType.QUEEN
@@ -120,7 +123,13 @@ export class LegalMoveGenerator {
         return Array.from(allowed_moves);
     }
 
-    private moves_pinning(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
+    // remove moves that will put king in check
+    private remove_checked_moves(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
+        return active;
+    }
+
+    // remove moves of pinned pieces
+    private remove_pinned_moves(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
         return active;
     }
 
@@ -129,9 +138,11 @@ export class LegalMoveGenerator {
         const inactive: Move[] = this.gen_moves_inactive();
         const attacked: attack_2d = this.gen_attacking();
 
-        const moves_check = this.filter_moves_check(active, inactive, attacked);
-        const moves_pinning = this.moves_pinning(moves_check, inactive, attacked);
+        if (this.in_check(attacked)) return this.moves_during_check(active, inactive, attacked);
 
-        return moves_pinning;
+        const moves_1 = this.remove_checked_moves(active, inactive, attacked);
+        const moves_2 = this.remove_pinned_moves(moves_1, inactive, attacked);
+
+        return moves_2;
     }
 }

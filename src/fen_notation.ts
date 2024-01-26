@@ -215,8 +215,8 @@ export class FEN {
     get enpassant_target_square(): (number[]) {
         if (this.enpassant_str == '-') return [];
 
-        const row: number = AlgebraNotation.toRow(this.enpassant_str);
-        const col: number = AlgebraNotation.toCol(this.enpassant_str);
+        const row: number = AlgebraNotation.toRow(this.enpassant_str[1]);
+        const col: number = AlgebraNotation.toCol(this.enpassant_str[0]);
 
         if (row == -1 || (row != 2 && row != 5))
             throw Error("Invalid rank number when parsing FEN string.");

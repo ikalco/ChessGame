@@ -1,8 +1,8 @@
 import { Move } from "./move";
 
 export namespace AlgebraNotation {
-    export function toRow(algNot: string): number {
-        switch (algNot[1]) {
+    export function toRow(row: string): number {
+        switch (row) {
             case '8': return 0;
             case '7': return 1;
             case '6': return 2;
@@ -29,8 +29,8 @@ export namespace AlgebraNotation {
         }
     }
 
-    export function toCol(algNot: string): number {
-        switch (algNot[0]) {
+    export function toCol(col: string): number {
+        switch (col) {
             case 'a': return 0;
             case 'b': return 1;
             case 'c': return 2;

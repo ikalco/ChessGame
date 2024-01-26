@@ -103,6 +103,8 @@ export class GUI {
     private handleMove(from_row: number, from_col: number, to_row: number, to_col: number) {
         // TODO: implement a way to only play allowed moves
 
+        if (!this.board.exists(from_row, from_col) || !this.board.exists(to_row, to_col)) return;
+
         this.board.move({
             from_row: from_row,
             from_col: from_col,

@@ -138,7 +138,83 @@ export class LegalMoveGenerator {
 
     // remove moves of pinned pieces
     private remove_pinned_moves(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
-        return active;
+        const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
+
+        // go outwards from king in all directions
+        // if friendly piece encountered first, 
+        // and an enemy piece with ability to move in same direction encountered second
+        // then friendly piece is pinned, so remove all moves
+
+        let moves = active;
+
+        const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+        for (const [row_change, col_change] of dirs) {
+            let friendly: (undefined | Piece) = undefined;
+
+            for (let dist = 1; dist < 8; dist++) {
+                const to_row = king.row + row_change * dist;
+                const to_col = king.col + col_change * dist;
+
+                // if it doesn't exist, it's the edge so go to other direction
+                if (!this.board.exists(to_row, to_col)) break;
+
+                // if empty then continue in direction
+                if (this.board.isEmpty(to_row, to_col)) continue;
+
+                const piece = this.board.at(to_row, to_col);
+
+                // if encountered friendly piece, then set it and continue to look for pinning piece
+                if (piece.color == king.color) {
+                    // if there's two friendly pieces in the way, then pin isn't possible 
+                    if (friendly != undefined) break;
+                    friendly = piece;
+                    continue;
+                }
+
+                // if encountered enemy piece before friendly, then no pins can happen in this direction
+                if (friendly == undefined) break;
+
+                // if enemy rook, and in same direction, then piece is pinned, so remove it's moves
+                if (piece.type == PieceType.ROOK &&
+                    (
+                        (row_change == 1 && col_change == 0) ||
+                        (row_change == -1 && col_change == 0) ||
+                        (row_change == 0 && col_change == 1) ||
+                        (row_change == 0 && col_change == -1)
+                    )
+                ) {
+                    moves = moves.filter((move: Move) => this.board.at(move.from_row, move.from_col) != friendly);
+                    break;
+                }
+
+                // same for bishop
+                if (piece.type == PieceType.BISHOP &&
+                    (
+                        (row_change == 1 && col_change == 1) ||
+                        (row_change == 1 && col_change == -1) ||
+                        (row_change == -1 && col_change == 1) ||
+                        (row_change == -1 && col_change == -1)
+                    )
+                ) {
+                    moves = moves.filter((move: Move) => this.board.at(move.from_row, move.from_col) != friendly);
+                    break;
+                }
+
+                // same for queen, except it can be all dirs so no need to check
+                if (piece.type == PieceType.QUEEN) {
+                    moves = moves.filter((move: Move) => this.board.at(move.from_row, move.from_col) != friendly);
+                    break;
+                }
+
+                // if it's not one of those pieces then pin isn't possible since there's now two pieces in the way
+                break;
+            }
+        }
+
+        // TODO, check if piece that is causing pin can actually pin... (it isn't pinned itself)
+
+        return moves;
     }
 
     gen_legal_moves(): Move[] {

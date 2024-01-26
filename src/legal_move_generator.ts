@@ -125,7 +125,15 @@ export class LegalMoveGenerator {
 
     // remove moves that will put king in check
     private remove_checked_moves(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
-        return active;
+        const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
+
+        return active.filter((move) => {
+            if (this.board.at(move.from_row, move.from_col) != king) return true;
+
+            // if it's the king, and the move goes to an attacked space, then filter it out, else allow it
+            if (attacked[move.to_row][move.to_col]) return false;
+            else return true;
+        });
     }
 
     // remove moves of pinned pieces

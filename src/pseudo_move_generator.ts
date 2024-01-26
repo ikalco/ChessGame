@@ -186,12 +186,12 @@ export class PseduoLegalMoveGenerator {
                     taking: taking
                 }));
 
-                // if it's an enemy piece then add the move to take it then go to other direction
-                if (this.board.isPiece(to_row, to_col) &&
-                    this.board.at(to_row, to_col).color != rook.color
-                ) {
+                // if it's an enemy piece (checked earlier) then add the move to take it then go to other direction
+                if (this.board.isPiece(to_row, to_col)) {
                     // if we are generating attacks, then a sliding piece can attack through an enemy king
-                    if (this.board.at(to_row, to_col).type == PieceType.KING && attacking) continue;
+                    if (this.board.at(to_row, to_col).color != rook.color &&
+                        this.board.at(to_row, to_col).type == PieceType.KING &&
+                        attacking) continue;
                     else break;
                 }
             }
@@ -263,11 +263,12 @@ export class PseduoLegalMoveGenerator {
                     taking: taking
                 }));
 
-                // if it's an enemy piece then add the move to take it then go to other direction
-                if (this.board.isPiece(to_row, to_col) &&
-                    this.board.at(to_row, to_col).color != bishop.color
-                ) {
-                    if (this.board.at(to_row, to_col).type == PieceType.KING && attacking) continue;
+                // if it's an enemy piece (checked earlier) then add the move to take it then go to other direction
+                if (this.board.isPiece(to_row, to_col)) {
+                    // if we are generating attacks, then a sliding piece can attack through an enemy king
+                    if (this.board.at(to_row, to_col).color != bishop.color &&
+                        this.board.at(to_row, to_col).type == PieceType.KING &&
+                        attacking) continue;
                     else break;
                 }
             }
@@ -381,11 +382,12 @@ export class PseduoLegalMoveGenerator {
                     taking: taking,
                 }));
 
-                /// if it's an enemy piece then add the move to take it then go to other direction
-                if (this.board.isPiece(to_row, to_col) &&
-                    this.board.at(to_row, to_col).color != queen.color
-                ) {
-                    if (this.board.at(to_row, to_col).type == PieceType.KING && attacking) continue;
+                // if it's an enemy piece (checked earlier) then add the move to take it then go to other direction
+                if (this.board.isPiece(to_row, to_col)) {
+                    // if we are generating attacks, then a sliding piece can attack through an enemy king
+                    if (this.board.at(to_row, to_col).color != queen.color &&
+                        this.board.at(to_row, to_col).type == PieceType.KING &&
+                        attacking) continue;
                     else break;
                 }
             }

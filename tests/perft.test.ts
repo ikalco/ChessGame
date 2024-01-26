@@ -121,6 +121,24 @@ function find_offender_divide(board: Board, depth: number, local: Perft.perft_di
     find_offender_divide(board, depth - 1, new_local, new_stockfish);
 }
 
+/* TODO:
+    depth: 5
+    moves: d2d4, e7e5, d4d5, e8e7, d5d6
+
+    - Expected  - 1
+    + Received  + 2
+
+      Object {
+        "c7d6": 1,
+    +   "e7d6": 1,
+        "e7e6": 1,
+        "e7e8": 1,
+        "e7f6": 1,
+    -   "num_positions": 4,
+    +   "num_positions": 5,
+      }
+*/
+
 describe("Tests for move generation using perft.", () => {
     const tests = [
         // depth, expected result, fen_string

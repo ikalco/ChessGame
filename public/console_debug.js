@@ -19,3 +19,30 @@ async function load_modules_dev_console() {
 
     console.log("Loaded modules to dev console tool.");
 };
+
+function do_moves(move_string) {
+    if (window.board == undefined) throw Error("Modules aren't imported to dev console.");
+
+    const generator = new LegalMoveGenerator(board)
+    const moves = move_string.split(", ");
+
+    for (const move of moves) {
+        const from_col = AlgebraNotation.toCol(move[0]);
+        const from_row = AlgebraNotation.toRow(move[1]);
+        const to_col = AlgebraNotation.toCol(move[2]);
+        const to_row = AlgebraNotation.toRow(move[3]);
+
+        const possible_moves = generator.gen_legal_moves();
+
+        for (const possible_move of possible_moves) {
+            if (possible_move.from_col == from_col &&
+                possible_move.from_row == from_row &&
+                possible_move.to_row == to_row &&
+                possible_move.to_col == to_col
+            ) {
+                board.move(possible_move);
+                break;
+            }
+        }
+    }
+}

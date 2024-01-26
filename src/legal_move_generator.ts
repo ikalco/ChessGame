@@ -43,15 +43,11 @@ export class LegalMoveGenerator {
         return attacks;
     }
 
-    private in_check(inactive: Move[]): boolean {
+    private in_check(attacked: attack_2d): boolean {
         // if the king is actively attacked then it's in check
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
 
-        for (const enemy_move of inactive) {
-            if (king.row == enemy_move.to_row && king.col == enemy_move.to_col) return true;
-        }
-
-        return false;
+        return attacked[king.row][king.col];
     }
 
     // TODO: redo this since it's copied from old BAD code
@@ -136,11 +132,7 @@ export class LegalMoveGenerator {
             if (this.board.at(move.from_row, move.from_col) != king) return true;
 
             // if it's the king, and the move goes to an actively attacked space, then filter it out, else allow it
-            for (const enemy_move of inactive) {
-                if (move.to_row == enemy_move.to_row && move.to_col == enemy_move.to_col) return false;
-            }
-
-            return true;
+            return !attacked[move.to_row][move.to_col];
         });
     }
 
@@ -249,7 +241,7 @@ export class LegalMoveGenerator {
         const inactive: Move[] = this.gen_moves_inactive();
         const attacked: attack_2d = this.gen_attacking();
 
-        if (this.in_check(inactive)) return this.moves_during_check(active, inactive, attacked);
+        if (this.in_check(attacked)) return this.moves_during_check(active, inactive, attacked);
 
         const moves_1 = this.remove_checked_moves(active, inactive, attacked);
         const moves_2 = this.remove_pinned_moves(moves_1, inactive, attacked);

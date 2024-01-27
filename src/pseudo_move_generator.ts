@@ -88,8 +88,8 @@ export class PseduoLegalMoveGenerator {
         // diagonal to the right
         if (this.board.exists(pawn.row + dir, pawn.col + 1) &&
             this.board.isPiece(pawn.row + dir, pawn.col + 1) &&
-            this.board.at(pawn.row + dir, pawn.col + 1)!.color != pawn.color ||
-            attacking
+            (this.board.at(pawn.row + dir, pawn.col + 1)!.color != pawn.color ||
+                attacking)
         ) {
             moves.push(this.check_first_move({
                 from_row: pawn.row,
@@ -104,8 +104,8 @@ export class PseduoLegalMoveGenerator {
         // diagonal to the left
         if (this.board.exists(pawn.row + dir, pawn.col - 1) &&
             this.board.isPiece(pawn.row + dir, pawn.col - 1) &&
-            this.board.at(pawn.row + dir, pawn.col - 1)!.color != pawn.color ||
-            attacking
+            (this.board.at(pawn.row + dir, pawn.col - 1)!.color != pawn.color ||
+                attacking)
         ) {
             moves.push(this.check_first_move({
                 from_row: pawn.row,

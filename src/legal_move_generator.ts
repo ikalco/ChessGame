@@ -76,9 +76,10 @@ export class LegalMoveGenerator {
     }
 
     // ensure king isn't left or placed in check, after being check
-    private moves_during_check(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
+    private moves_during_check(active: Move[], attacked: attack_2d): Move[] {
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
 
+        const inactive: Move[] = this.gen_moves_inactive();
         const checking_piece: Piece = this.get_checking_piece(king, inactive);
 
         // so that we don't add the same move in twice
@@ -125,7 +126,7 @@ export class LegalMoveGenerator {
     }
 
     // remove moves that will put king in check
-    private remove_checked_moves(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
+    private remove_checked_moves(active: Move[], attacked: attack_2d): Move[] {
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
 
         return active.filter((move) => {
@@ -137,7 +138,7 @@ export class LegalMoveGenerator {
     }
 
     // only allow moves of pinned pieces that keep king safe
-    private remove_pinned_moves(active: Move[], inactive: Move[], attacked: attack_2d): Move[] {
+    private remove_pinned_moves(active: Move[], attacked: attack_2d): Move[] {
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
 
         let moves = active;
@@ -238,13 +239,12 @@ export class LegalMoveGenerator {
 
     gen_legal_moves(): Move[] {
         const active: Move[] = this.gen_moves_active();
-        const inactive: Move[] = this.gen_moves_inactive();
         const attacked: attack_2d = this.gen_attacking();
 
-        if (this.in_check(attacked)) return this.moves_during_check(active, inactive, attacked);
+        if (this.in_check(attacked)) return this.moves_during_check(active, attacked);
 
-        const moves_1 = this.remove_checked_moves(active, inactive, attacked);
-        const moves_2 = this.remove_pinned_moves(moves_1, inactive, attacked);
+        const moves_1 = this.remove_checked_moves(active, attacked);
+        const moves_2 = this.remove_pinned_moves(moves_1, attacked);
 
         return moves_2;
     }

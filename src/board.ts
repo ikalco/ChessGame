@@ -267,11 +267,12 @@ export class Board {
     }
 
     private _move_promotion(move: Move) {
+        // default promotion to queen
         if (move.promotion_type != PieceType.QUEEN &&
             move.promotion_type != PieceType.ROOK &&
             move.promotion_type != PieceType.BISHOP &&
             move.promotion_type != PieceType.KNIGHT
-        ) throw Error("Invalid piece type for promotion move.");
+        ) move.promotion_type = PieceType.QUEEN;
 
         this._move(move.from_row, move.from_col, move.to_row, move.to_col);
         this.at(move.to_row, move.to_col).type = move.promotion_type;

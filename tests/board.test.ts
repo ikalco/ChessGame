@@ -261,7 +261,7 @@ describe("Testing functions of Board class.", () => {
         expect(new_board.at(2, 0).col).toBe(0);
         expect(new_board.at(2, 0).type).toBe(PieceType.PAWN);
         expect(new_board.at(2, 0).color).toBe(PieceColor.WHITE);
-        expect(new_board.at(2, 0).moved).toBe(false);
+        expect(new_board.at(2, 0).moved).toBe(true);
 
         expect(new_board.last_move).toBeUndefined();
 

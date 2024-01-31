@@ -142,7 +142,6 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_col: 7,
             type: MoveType.Promotion,
             taking: false,
-            first_move: true
         });
     });
 

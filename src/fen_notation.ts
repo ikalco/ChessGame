@@ -165,12 +165,18 @@ export class FEN {
                     continue;
                 }
 
+                let moved = false;
+                if (type == PieceType.PAWN) {
+                    if (color == PieceColor.BLACK && row_index != 1) moved = true;
+                    if (color == PieceColor.WHITE && row_index != 6) moved = true;
+                }
+
                 board[row_index][col_index] = {
                     row: row_index,
                     col: col_index,
                     color: color,
                     type: type,
-                    moved: false
+                    moved: moved
                 };
 
                 col_index++;

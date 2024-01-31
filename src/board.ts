@@ -309,5 +309,6 @@ export class Board {
     private _unmove_promotion(move: Move) {
         this._move(move.to_row, move.to_col, move.from_row, move.from_col);
         this.at(move.from_row, move.from_col).type = PieceType.PAWN;
+        if (move.taking) this.undelete(move.to_row, move.to_col);
     }
 }

@@ -1,5 +1,5 @@
 import { Board } from "./board.js";
-import { Move } from "./move.js";
+import { Move, MoveType } from "./move.js";
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
 import { PseduoLegalMoveGenerator, attack_2d } from "./pseudo_move_generator.js";
 
@@ -132,7 +132,13 @@ export class LegalMoveGenerator {
         return active.filter((move) => {
             if (this.board.at(move.from_row, move.from_col) != king) return true;
 
-            // if it's the king, and the move goes to an actively attacked space, then filter it out, else allow it
+            // if it's the king, and the move goes to or through an actively attacked space, 
+            // then filter it out, otherwise it's allowed it
+
+            if (move.type == MoveType.Castling &&
+                attacked[king.row][king.col + (king.col + 2 == move.to_col ? 1 : -1)]
+            ) return false;
+
             return !attacked[move.to_row][move.to_col];
         });
     }

@@ -195,6 +195,8 @@ describe("Tests for move generation using perft.", () => {
         const local = Perft.divide(board, <number>depth);
         const stockfish = divideStockfish(board, <number>depth);
 
+        expect(FEN.from(board).raw_string).toBe(<string>fen_string);
+
         try {
             expect(local).toStrictEqual(stockfish);
             expect(local.num_positions).toBe(expected_result);

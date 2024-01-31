@@ -1,7 +1,7 @@
-import { AlgebraNotation } from "./algebra_notation";
-import { Board, board_2d } from "./board";
-import { MoveType } from "./move";
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
+import { AlgebraNotation } from "./algebra_notation.js";
+import { Board, board_2d } from "./board.js";
+import { MoveType } from "./move.js";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
 
 export type fen_castling_options = {
     black_queen: boolean;

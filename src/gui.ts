@@ -1,7 +1,7 @@
 import p5 from "p5";
-import { Board } from "./board";
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
-import { MoveType } from "./move";
+import { Board } from "./board.js";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
+import { MoveType } from "./move.js";
 
 export class GUI {
     private board: Board;

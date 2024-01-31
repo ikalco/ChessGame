@@ -1,4 +1,4 @@
-import { Move } from "./move";
+import { Move } from "./move.js";
 
 export namespace AlgebraNotation {
     export function toRow(row: string): number {

@@ -1,7 +1,7 @@
-import { Board } from "./board";
-import { PieceColor, PieceType } from "./piece";
-import { FEN } from "./fen_notation";
-import { MoveType } from "./move";
+import { Board } from "./board.js";
+import { PieceColor, PieceType } from "./piece.js";
+import { FEN } from "./fen_notation.js";
+import { MoveType } from "./move.js";
 
 export namespace BoardFactory {
     export function createFEN(raw_string: string): Board {

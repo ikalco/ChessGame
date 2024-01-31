@@ -1,5 +1,5 @@
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
-import { Move, MoveType } from "./move";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
+import { Move, MoveType } from "./move.js";
 
 export type board_2d = (Piece)[][];
 

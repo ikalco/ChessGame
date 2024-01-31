@@ -1,5 +1,5 @@
-import { BoardFactory } from "./board_factory";
-import { GUI } from "./gui";
+import { BoardFactory } from "./board_factory.js";
+import { GUI } from "./gui.js";
 
 export const board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 

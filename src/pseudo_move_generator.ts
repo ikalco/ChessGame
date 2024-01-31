@@ -1,6 +1,6 @@
-import { Board, board_2d } from "./board";
-import { Move, MoveType } from "./move";
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
+import { Board, board_2d } from "./board.js";
+import { Move, MoveType } from "./move.js";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
 
 export type attack_2d = boolean[][];
 

@@ -1,4 +1,4 @@
-import { PieceType } from "./piece";
+import { PieceType } from "./piece.js";
 
 export enum MoveType {
     Normal,

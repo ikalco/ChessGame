@@ -1,7 +1,7 @@
-import { Board } from "./board";
-import { LegalMoveGenerator } from "./legal_move_generator";
-import { Move } from "./move";
-import { AlgebraNotation } from "./algebra_notation";
+import { Board } from "./board.js";
+import { LegalMoveGenerator } from "./legal_move_generator.js";
+import { Move } from "./move.js";
+import { AlgebraNotation } from "./algebra_notation.js";
 
 export namespace Perft {
     export type perft_divide = {

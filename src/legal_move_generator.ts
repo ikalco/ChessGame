@@ -1,7 +1,7 @@
-import { Board } from "./board";
-import { Move } from "./move";
-import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece";
-import { PseduoLegalMoveGenerator, attack_2d } from "./pseudo_move_generator";
+import { Board } from "./board.js";
+import { Move } from "./move.js";
+import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
+import { PseduoLegalMoveGenerator, attack_2d } from "./pseudo_move_generator.js";
 
 export class LegalMoveGenerator {
     private pseudo_gen: PseduoLegalMoveGenerator;

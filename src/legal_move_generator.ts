@@ -195,8 +195,13 @@ export class LegalMoveGenerator {
                         if (this.board.at(move.from_row, move.from_col) != friendly) return true;
 
                         // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(king.row, king.col, friendly.row, friendly.col);
-                        if (friendly.type != PieceType.KNIGHT && row_change == row_dir && col_change == col_dir) return true;
+                        const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
+                        if (friendly.type != PieceType.KNIGHT &&
+                            (
+                                row_change == row_dir && col_change == col_dir ||
+                                row_change == row_dir * -1 && col_change == col_dir * -1
+                            )
+                        ) return true;
 
                         return false;
                     });
@@ -216,8 +221,13 @@ export class LegalMoveGenerator {
                         if (this.board.at(move.from_row, move.from_col) != friendly) return true;
 
                         // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(king.row, king.col, friendly.row, friendly.col);
-                        if (friendly.type != PieceType.KNIGHT && row_change == row_dir && col_change == col_dir) return true;
+                        const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
+                        if (friendly.type != PieceType.KNIGHT &&
+                            (
+                                row_change == row_dir && col_change == col_dir ||
+                                row_change == row_dir * -1 && col_change == col_dir * -1
+                            )
+                        ) return true;
 
                         return false;
                     });
@@ -229,9 +239,14 @@ export class LegalMoveGenerator {
                     moves = moves.filter((move: Move) => {
                         if (this.board.at(move.from_row, move.from_col) != friendly) return true;
 
-                        // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(king.row, king.col, friendly.row, friendly.col);
-                        if (friendly.type != PieceType.KNIGHT && row_change == row_dir && col_change == col_dir) return true;
+                        // if in same path as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
+                        const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
+                        if (friendly.type != PieceType.KNIGHT &&
+                            (
+                                row_change == row_dir && col_change == col_dir ||
+                                row_change == row_dir * -1 && col_change == col_dir * -1
+                            )
+                        ) return true;
 
                         return false;
                     });

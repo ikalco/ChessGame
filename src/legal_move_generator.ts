@@ -233,15 +233,36 @@ export class LegalMoveGenerator {
         return moves;
     }
 
+    private remove_pinned_enpassant_moves(active: Move[]): Move[] {
+        const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
+
+        const moves = active.filter((move) => {
+            if (move.type != MoveType.EnPassant) return true;
+
+            this.board.move(move);
+            this.board.active_color = this.board.active_color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+            const attacked = this.gen_attacking();
+            this.board.active_color = this.board.active_color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+            this.board.unmove();
+
+            if (attacked[king.row][king.col]) return false;
+
+            return true;
+        });
+
+        return moves;
+    }
+
     gen_legal_moves(): Move[] {
         const active: Move[] = this.gen_moves_active();
         const attacked: attack_2d = this.gen_attacking();
 
         const moves_1 = this.remove_checked_moves(active, attacked);
-        const moves_2 = this.remove_pinned_moves(moves_1, attacked);
+        const moves_2 = this.remove_pinned_moves(moves_1);
+        const moves_3 = this.remove_pinned_enpassant_moves(moves_2);
 
-        if (this.in_check(attacked)) return this.moves_during_check(moves_2, attacked);
+        if (this.in_check(attacked)) return this.moves_during_check(moves_3, attacked);
 
-        return moves_2;
+        return moves_3;
     }
 }

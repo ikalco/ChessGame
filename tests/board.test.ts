@@ -200,7 +200,7 @@ describe("Testing functions of Board class.", () => {
         const move: Move = {
             from_row: 3,
             from_col: 1,
-            to_row: 2,
+            to_row: 3,
             to_col: 0,
             type: MoveType.EnPassant,
             taking: true
@@ -313,7 +313,7 @@ describe("Testing functions of Board class.", () => {
         const move: Move = {
             from_row: 3,
             from_col: 1,
-            to_row: 2,
+            to_row: 3,
             to_col: 0,
             type: MoveType.EnPassant,
             taking: true

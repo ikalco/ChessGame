@@ -199,7 +199,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
         expect(moves).toContainEqual({
             from_row: 3,
             from_col: 2,
-            to_row: 2,
+            to_row: 3,
             to_col: 3,
             type: MoveType.EnPassant,
             taking: true

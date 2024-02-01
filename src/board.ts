@@ -258,8 +258,10 @@ export class Board {
     }
 
     private _move_enpassant(move: Move) {
-        this._move(move.from_row, move.from_col, move.to_row, move.to_col);
-        this.delete(move.from_row, move.to_col);
+        const pawn = this.at(move.from_row, move.from_col);
+        const dir = pawn.color == PieceColor.WHITE ? -1 : 1;
+        this._move(move.from_row, move.from_col, move.to_row + dir, move.to_col);
+        this.delete(move.to_row, move.to_col);
     }
 
     private _move_pawndouble(move: Move) {
@@ -298,8 +300,10 @@ export class Board {
     }
 
     private _unmove_enpassant(move: Move) {
-        this._move(move.to_row, move.to_col, move.from_row, move.from_col);
-        this.undelete(move.from_row, move.to_col);
+        this.undelete(move.to_row, move.to_col);
+        const pawn = this.at(move.to_row, move.to_col);
+        const dir = pawn.color == PieceColor.WHITE ? -1 : 1;
+        this._move(move.to_row - dir, move.to_col, move.from_row, move.from_col);
     }
 
     private _unmove_pawndouble(move: Move) {

@@ -134,7 +134,7 @@ export class PseduoLegalMoveGenerator {
                 moves.push(this.check_first_move({
                     from_row: pawn.row,
                     from_col: pawn.col,
-                    to_row: pawn.row + dir,
+                    to_row: pawn.row,
                     to_col: pawn.col + 1,
                     type: MoveType.EnPassant,
                     taking: true
@@ -145,7 +145,7 @@ export class PseduoLegalMoveGenerator {
                 moves.push(this.check_first_move({
                     from_row: pawn.row,
                     from_col: pawn.col,
-                    to_row: pawn.row + dir,
+                    to_row: pawn.row,
                     to_col: pawn.col - 1,
                     type: MoveType.EnPassant,
                     taking: true

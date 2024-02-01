@@ -84,15 +84,15 @@ export class LegalMoveGenerator {
         // so that we don't add the same move in twice
         const allowed_moves: Set<Move> = new Set<Move>();
 
-        for (const checking_piece of checking_pieces) {
-            const [row_change, col_change] = this.direction_to_piece(king.row, king.col, checking_piece.row, checking_piece.col);
+        for (const move of active) {
+            // allow moves that MOVE king out of check
+            if (this.board.at(move.from_row, move.from_col).type == PieceType.KING) {
+                if (!attacked[move.to_row][move.to_col]) allowed_moves.add(move);
+                else continue;
+            }
 
-            for (const move of active) {
-                // allow moves that MOVE king out of check
-                if (this.board.at(move.from_row, move.from_col).type == PieceType.KING) {
-                    if (!attacked[move.to_row][move.to_col]) allowed_moves.add(move);
-                    else continue;
-                }
+            for (const checking_piece of checking_pieces) {
+                const [row_change, col_change] = this.direction_to_piece(king.row, king.col, checking_piece.row, checking_piece.col);
 
                 // allow moves that CAPTURE the piece that's delivering check, but only if there's only one checking piece
                 if (move.taking &&

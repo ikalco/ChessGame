@@ -153,7 +153,29 @@ export class PseduoLegalMoveGenerator {
             }
         }
 
-        return moves;
+        if (pawn.row != promotion_rank) return moves;
+
+        const promotions = [];
+        for (const move of moves) {
+            if (move.type != MoveType.Promotion) {
+                promotions.push(move);
+                continue;
+            };
+
+            move.promotion_type = PieceType.QUEEN;
+            promotions.push({ ...move });
+
+            move.promotion_type = PieceType.ROOK;
+            promotions.push({ ...move });
+
+            move.promotion_type = PieceType.BISHOP;
+            promotions.push({ ...move });
+
+            move.promotion_type = PieceType.KNIGHT;
+            promotions.push({ ...move });
+        }
+
+        return promotions;
     }
 
     private gen_rook_moves(rook: Piece, attacking: boolean): Move[] {

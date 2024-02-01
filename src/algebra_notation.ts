@@ -1,4 +1,5 @@
-import { Move } from "./move.js";
+import { Move, MoveType } from "./move.js";
+import { PieceType } from "./piece.js";
 
 export namespace AlgebraNotation {
     export function toRow(row: string): number {
@@ -58,6 +59,17 @@ export namespace AlgebraNotation {
     }
 
     export function fromMoveSimple(move: Move): string {
-        return AlgebraNotation.fromCol(move.from_col) + AlgebraNotation.fromRow(move.from_row) + AlgebraNotation.fromCol(move.to_col) + AlgebraNotation.fromRow(move.to_row);
+        let move_string = AlgebraNotation.fromCol(move.from_col) + AlgebraNotation.fromRow(move.from_row) + AlgebraNotation.fromCol(move.to_col) + AlgebraNotation.fromRow(move.to_row);
+
+        if (move.type == MoveType.Promotion) {
+            switch (move.promotion_type) {
+                case PieceType.QUEEN: move_string += 'q'; break;
+                case PieceType.ROOK: move_string += 'r'; break;
+                case PieceType.BISHOP: move_string += 'b'; break;
+                case PieceType.KNIGHT: move_string += 'n'; break;
+            }
+        }
+
+        return move_string;
     }
 }

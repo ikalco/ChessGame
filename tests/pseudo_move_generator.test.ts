@@ -3,7 +3,7 @@ import { describe, expect, test } from '@jest/globals';
 import { PseduoLegalMoveGenerator } from '../src/pseudo_move_generator';
 import { BoardFactory } from '../src/board_factory';
 import { Move, MoveType } from '../src/move';
-import { PieceColor } from '../src/piece';
+import { PieceColor, PieceType } from '../src/piece';
 
 describe("Testing pseudo legal move generation for piece groups.", () => {
     const board = BoardFactory.createFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -133,7 +133,7 @@ describe("Testing pseudo legal move generation for pawns", () => {
     test("Promotion.", () => {
         const moves: Move[] = generator.gen_moves([board.at(6, 7)]);
 
-        expect(moves.length).toBe(1);
+        expect(moves.length).toBe(4);
 
         expect(moves).toContainEqual({
             from_row: 6,
@@ -142,6 +142,37 @@ describe("Testing pseudo legal move generation for pawns", () => {
             to_col: 7,
             type: MoveType.Promotion,
             taking: false,
+            promotion_type: PieceType.QUEEN
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 6,
+            from_col: 7,
+            to_row: 7,
+            to_col: 7,
+            type: MoveType.Promotion,
+            taking: false,
+            promotion_type: PieceType.ROOK
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 6,
+            from_col: 7,
+            to_row: 7,
+            to_col: 7,
+            type: MoveType.Promotion,
+            taking: false,
+            promotion_type: PieceType.BISHOP
+        });
+
+        expect(moves).toContainEqual({
+            from_row: 6,
+            from_col: 7,
+            to_row: 7,
+            to_col: 7,
+            type: MoveType.Promotion,
+            taking: false,
+            promotion_type: PieceType.KNIGHT
         });
     });
 

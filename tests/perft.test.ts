@@ -110,11 +110,19 @@ function find_offender_divide(board: Board, depth: number, local: Perft.perft_di
 
     let max_diff_move = max_diff_move_divide(local, stockfish);
 
-    if (max_diff_move == undefined) throw Error("Local and Stockfish perft divides are the same!");
+    if (max_diff_move == undefined) {
+        print_moves(board);
+        expect(local).toStrictEqual(stockfish);
+        throw Error("Local and Stockfish perft divides are the same!");
+    }
 
     const offending_move = find_move(board, max_diff_move);
 
-    if (offending_move == undefined) throw Error(`Offending move isn't generated locally!\nmove: ${max_diff_move}`);
+    if (offending_move == undefined) {
+        print_moves(board);
+        expect(local).toStrictEqual(stockfish);
+        throw Error(`Offending move isn't generated locally!\nmove: ${max_diff_move}`);
+    }
 
     board.move(offending_move);
 

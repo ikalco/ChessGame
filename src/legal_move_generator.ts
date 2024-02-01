@@ -60,19 +60,18 @@ export class LegalMoveGenerator {
         return [rowOff, colOff];
     }
 
-    private get_checking_piece(king: Piece, inactive: Move[]): Piece {
-        let checking_piece: Piece = EMPTY_PIECE;
+    private get_checking_pieces(king: Piece, inactive: Move[]): Piece[] {
+        let checking_pieces: Piece[] = [];
 
         for (const move of inactive) {
             if (move.to_row == king.row && move.to_col == king.col) {
-                checking_piece = this.board.at(move.from_row, move.from_col);
-                break;
+                checking_pieces.push(this.board.at(move.from_row, move.from_col));
             }
         }
 
-        if (checking_piece == EMPTY_PIECE) throw Error("Checking piece doesn't exist even though we're in check.");
+        if (checking_pieces.length == 0) throw Error("Checking piece doesn't exist even though we're in check.");
 
-        return checking_piece;
+        return checking_pieces;
     }
 
     // ensure king isn't left or placed in check, after being check
@@ -80,45 +79,51 @@ export class LegalMoveGenerator {
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
 
         const inactive: Move[] = this.gen_moves_inactive();
-        const checking_piece: Piece = this.get_checking_piece(king, inactive);
+        const checking_pieces: Piece[] = this.get_checking_pieces(king, inactive);
 
         // so that we don't add the same move in twice
         const allowed_moves: Set<Move> = new Set<Move>();
 
-        const [row_change, col_change] = this.direction_to_piece(king.row, king.col, checking_piece.row, checking_piece.col);
+        for (const checking_piece of checking_pieces) {
+            const [row_change, col_change] = this.direction_to_piece(king.row, king.col, checking_piece.row, checking_piece.col);
 
-        for (const move of active) {
-            // allow moves that MOVE king out of check
-            if (this.board.at(move.from_row, move.from_col).type == PieceType.KING) {
-                if (!attacked[move.to_row][move.to_col]) allowed_moves.add(move);
-                else continue;
-            }
+            for (const move of active) {
+                // allow moves that MOVE king out of check
+                if (this.board.at(move.from_row, move.from_col).type == PieceType.KING) {
+                    if (!attacked[move.to_row][move.to_col]) allowed_moves.add(move);
+                    else continue;
+                }
 
-            // allow moves that CAPTURE the piece that's delivering check
-            if (move.taking &&
-                move.to_row == checking_piece.row &&
-                move.to_col == checking_piece.col
-            ) allowed_moves.add(move);
-
-            // allow moves that BLOCK the check (only if checking piece is rook, bishop, or queen)
-            if (checking_piece.type != PieceType.ROOK &&
-                checking_piece.type != PieceType.BISHOP &&
-                checking_piece.type != PieceType.QUEEN
-            ) continue;
-
-            for (let dist = 1; dist < 8; dist++) {
-                const to_row = king.row + row_change * dist;
-                const to_col = king.col + col_change * dist;
-
-                // if reached checking piece or edge then stop
-                // because you can't block it anymore
-                if (to_row == checking_piece.row && to_col == checking_piece.col) break;
-                if (!this.board.exists(to_row, to_col)) break;
-
-                if (move.from_row == king.row && move.from_col == king.col) break;
-
-                if (move.to_row == to_row && move.to_col == to_col)
+                // allow moves that CAPTURE the piece that's delivering check, but only if there's only one checking piece
+                if (move.taking &&
+                    move.to_row == checking_piece.row &&
+                    move.to_col == checking_piece.col &&
+                    checking_pieces.length == 1
+                ) {
                     allowed_moves.add(move);
+                }
+
+                // allow moves that BLOCK the check (only if checking piece is rook, bishop, or queen)
+                if (checking_piece.type != PieceType.ROOK &&
+                    checking_piece.type != PieceType.BISHOP &&
+                    checking_piece.type != PieceType.QUEEN ||
+                    checking_pieces.length != 1
+                ) continue;
+
+                for (let dist = 1; dist < 8; dist++) {
+                    const to_row = king.row + row_change * dist;
+                    const to_col = king.col + col_change * dist;
+
+                    // if reached checking piece or edge then stop
+                    // because you can't block it anymore
+                    if (to_row == checking_piece.row && to_col == checking_piece.col) break;
+                    if (!this.board.exists(to_row, to_col)) break;
+
+                    if (move.from_row == king.row && move.from_col == king.col) break;
+
+                    if (move.to_row == to_row && move.to_col == to_col)
+                        allowed_moves.add(move);
+                }
             }
         }
 
@@ -247,10 +252,10 @@ export class LegalMoveGenerator {
         const active: Move[] = this.gen_moves_active();
         const attacked: attack_2d = this.gen_attacking();
 
-        if (this.in_check(attacked)) return this.moves_during_check(active, attacked);
-
         const moves_1 = this.remove_checked_moves(active, attacked);
         const moves_2 = this.remove_pinned_moves(moves_1, attacked);
+
+        if (this.in_check(attacked)) return this.moves_during_check(moves_2, attacked);
 
         return moves_2;
     }

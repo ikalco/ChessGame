@@ -82,6 +82,8 @@ function find_move(board: Board, move: string): (Move | undefined) {
     const to_col = AlgebraNotation.toCol(move[2]);
     const to_row = AlgebraNotation.toRow(move[3]);
 
+    const promotion_type = move[4] != undefined ? AlgebraNotation.toPieceType(move[4]) : undefined;
+
     let offending_move;
     const moves = new LegalMoveGenerator(board).gen_legal_moves();
 
@@ -89,7 +91,8 @@ function find_move(board: Board, move: string): (Move | undefined) {
         if (move.from_col == from_col &&
             move.from_row == from_row &&
             move.to_row == to_row &&
-            move.to_col == to_col
+            move.to_col == to_col &&
+            move.promotion_type == promotion_type
         ) {
             offending_move = move;
             break;

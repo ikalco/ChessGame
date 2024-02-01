@@ -5,6 +5,7 @@ async function load_modules_dev_console() {
     const { Move, MoveType } = await import("./move.js");
     const { LegalMoveGenerator } = await import("./legal_move_generator.js");
     const { Perft } = await import("./perft.js");
+    const { FEN } = await import("./fen_notation.js");
 
     window.board = board;
     window.AlgebraNotation = AlgebraNotation;
@@ -16,6 +17,7 @@ async function load_modules_dev_console() {
     window.MoveType = MoveType;
     window.LegalMoveGenerator = LegalMoveGenerator;
     window.Perft = Perft;
+    window.FEN = FEN;
 
     console.log("Loaded modules to dev console tool.");
 };

@@ -32,13 +32,16 @@ function do_moves(move_string) {
         const to_col = AlgebraNotation.toCol(move[2]);
         const to_row = AlgebraNotation.toRow(move[3]);
 
+        const promotion_type = move[4] != undefined ? AlgebraNotation.toPieceType(move[4]) : undefined;
+
         const possible_moves = generator.gen_legal_moves();
 
         for (const possible_move of possible_moves) {
             if (possible_move.from_col == from_col &&
                 possible_move.from_row == from_row &&
                 possible_move.to_row == to_row &&
-                possible_move.to_col == to_col
+                possible_move.to_col == to_col &&
+                possible_move.promotion_type == promotion_type
             ) {
                 board.move(possible_move);
                 break;

@@ -72,4 +72,16 @@ export namespace AlgebraNotation {
 
         return move_string;
     }
+
+    export function toPieceType(type: string): PieceType {
+        switch (type) {
+            case 'p': return PieceType.PAWN;
+            case 'n': return PieceType.KNIGHT;
+            case 'b': return PieceType.BISHOP;
+            case 'r': return PieceType.ROOK;
+            case 'q': return PieceType.QUEEN;
+            case 'k': return PieceType.KING;
+            default: throw Error("Invalid piece type letter.");
+        }
+    }
 }

@@ -159,7 +159,9 @@ describe("Tests for move generation using perft.", () => {
         [6, 92683, "8/P1k5/K7/8/8/8/8/8 w - - 0 1"],
         [6, 2217, "K1k5/8/P7/8/8/8/8/8 w - - 0 1"],
         [7, 567584, "8/k1P5/8/1K6/8/8/8/8 w - - 0 1"],
-        [4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"]
+        [4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"],
+        [5, 89941194, "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"],
+        [5, 164075551, "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"]
     ];
 
     test("Stockfish binary exists.", () => {

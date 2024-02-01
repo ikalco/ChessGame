@@ -130,7 +130,8 @@ describe("Tests for move generation using perft.", () => {
         // [4, 197281, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
         // [5, 4865609, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
         // [6, 119060324, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
-        [5, 193690690, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"],
+        [1, 24, "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1"],
+        // [5, 193690690, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"],
         // [7, 178633661, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"],
         // [6, 706045033, "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"],
         // [5, 1063513, "1k6/1b6/8/8/7R/8/8/4K2R b K - 0 1"],
@@ -202,7 +203,7 @@ describe("Tests for move generation using perft.", () => {
             expect(local.num_positions).toBe(expected_result);
         } catch (error) {
             find_offender_divide(board, <number>depth, local, stockfish);
-            throw Error("find_offender_divide failed");
+            throw error;
         }
     });
 });

@@ -115,6 +115,8 @@ export class FEN {
         if (board.at(0, 7).type == PieceType.ROOK && board.at(0, 7).moved == false) castling_str += "k";
         if (board.at(0, 0).type == PieceType.ROOK && board.at(0, 0).moved == false) castling_str += "q";
 
+        if (castling_str == "") castling_str = "-";
+
         return castling_str;
     }
 

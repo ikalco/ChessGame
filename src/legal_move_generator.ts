@@ -61,17 +61,17 @@ export class LegalMoveGenerator {
     }
 
     private get_checking_pieces(king: Piece, inactive: Move[]): Piece[] {
-        let checking_pieces: Piece[] = [];
+        let checking_pieces: Set<Piece> = new Set<Piece>();
 
         for (const move of inactive) {
             if (move.to_row == king.row && move.to_col == king.col) {
-                checking_pieces.push(this.board.at(move.from_row, move.from_col));
+                checking_pieces.add(this.board.at(move.from_row, move.from_col));
             }
         }
 
-        if (checking_pieces.length == 0) throw Error("Checking piece doesn't exist even though we're in check.");
+        if (checking_pieces.size == 0) throw Error("Checking piece doesn't exist even though we're in check.");
 
-        return checking_pieces;
+        return Array.from(checking_pieces);
     }
 
     // ensure king isn't left or placed in check, after being check

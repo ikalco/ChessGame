@@ -148,8 +148,25 @@ export class LegalMoveGenerator {
         });
     }
 
+    private _remove_pinned_moves(moves: Move[], friendly: Piece, row_change: number, col_change: number): Move[] {
+        return moves.filter((move: Move) => {
+            if (this.board.at(move.from_row, move.from_col) != friendly) return true;
+
+            // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
+            const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
+            if (friendly.type != PieceType.KNIGHT &&
+                (
+                    row_change == row_dir && col_change == col_dir ||
+                    row_change == row_dir * -1 && col_change == col_dir * -1
+                )
+            ) return true;
+
+            return false;
+        });
+    }
+
     // only allow moves of pinned pieces that keep king safe
-    private remove_pinned_moves(active: Move[], attacked: attack_2d): Move[] {
+    private remove_pinned_moves(active: Move[]): Move[] {
         const king = this.board.active_color == PieceColor.WHITE ? this.board.white_king : this.board.black_king;
 
         let moves = active;
@@ -190,23 +207,7 @@ export class LegalMoveGenerator {
                         (row_change == 0 && col_change == 1) ||
                         (row_change == 0 && col_change == -1)
                     )
-                ) {
-                    moves = moves.filter((move: Move) => {
-                        if (this.board.at(move.from_row, move.from_col) != friendly) return true;
-
-                        // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
-                        if (friendly.type != PieceType.KNIGHT &&
-                            (
-                                row_change == row_dir && col_change == col_dir ||
-                                row_change == row_dir * -1 && col_change == col_dir * -1
-                            )
-                        ) return true;
-
-                        return false;
-                    });
-                    break;
-                }
+                ) moves = this._remove_pinned_moves(moves, friendly, row_change, col_change);
 
                 // same for bishop
                 if (piece.type == PieceType.BISHOP &&
@@ -216,42 +217,11 @@ export class LegalMoveGenerator {
                         (row_change == -1 && col_change == 1) ||
                         (row_change == -1 && col_change == -1)
                     )
-                ) {
-                    moves = moves.filter((move: Move) => {
-                        if (this.board.at(move.from_row, move.from_col) != friendly) return true;
-
-                        // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
-                        if (friendly.type != PieceType.KNIGHT &&
-                            (
-                                row_change == row_dir && col_change == col_dir ||
-                                row_change == row_dir * -1 && col_change == col_dir * -1
-                            )
-                        ) return true;
-
-                        return false;
-                    });
-                    break;
-                }
+                ) moves = this._remove_pinned_moves(moves, friendly, row_change, col_change);
 
                 // same for queen, except it can be all dirs so no need to check
-                if (piece.type == PieceType.QUEEN) {
-                    moves = moves.filter((move: Move) => {
-                        if (this.board.at(move.from_row, move.from_col) != friendly) return true;
-
-                        // if in same path as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(move.from_row, move.from_col, move.to_row, move.to_col);
-                        if (friendly.type != PieceType.KNIGHT &&
-                            (
-                                row_change == row_dir && col_change == col_dir ||
-                                row_change == row_dir * -1 && col_change == col_dir * -1
-                            )
-                        ) return true;
-
-                        return false;
-                    });
-                    break;
-                }
+                if (piece.type == PieceType.QUEEN)
+                    moves = this._remove_pinned_moves(moves, friendly, row_change, col_change);
 
                 // if it's not one of those pieces then pin isn't possible since there's now two pieces in the way
                 break;

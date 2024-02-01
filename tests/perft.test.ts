@@ -204,7 +204,14 @@ describe("Tests for move generation using perft.", () => {
     test.each(tests)("Depth: %i | Expected Result: %s", (depth, expected_result, fen_string) => {
         const board = BoardFactory.createFEN(<string>fen_string);
 
-        const local = Perft.divide(board, <number>depth);
+        let local;
+        try {
+            local = Perft.divide(board, <number>depth);
+        } catch (error) {
+            print_moves(board);
+            throw error;
+        }
+
         const stockfish = divideStockfish(board, <number>depth);
 
         expect(FEN.from(board).raw_string).toBe(<string>fen_string);

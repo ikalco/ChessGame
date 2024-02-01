@@ -195,7 +195,7 @@ export class LegalMoveGenerator {
                         if (this.board.at(move.from_row, move.from_col) != friendly) return true;
 
                         // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(friendly.row, friendly.col, move.to_row, move.to_col);
+                        const [row_dir, col_dir] = this.direction_to_piece(king.row, king.col, friendly.row, friendly.col);
                         if (friendly.type != PieceType.KNIGHT && row_change == row_dir && col_change == col_dir) return true;
 
                         return false;
@@ -216,7 +216,7 @@ export class LegalMoveGenerator {
                         if (this.board.at(move.from_row, move.from_col) != friendly) return true;
 
                         // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(friendly.row, friendly.col, move.to_row, move.to_col);
+                        const [row_dir, col_dir] = this.direction_to_piece(king.row, king.col, friendly.row, friendly.col);
                         if (friendly.type != PieceType.KNIGHT && row_change == row_dir && col_change == col_dir) return true;
 
                         return false;
@@ -230,7 +230,7 @@ export class LegalMoveGenerator {
                         if (this.board.at(move.from_row, move.from_col) != friendly) return true;
 
                         // if in same direction as pinning piece, then it's allowed as it maintains pin (and therefore king safety)
-                        const [row_dir, col_dir] = this.direction_to_piece(friendly.row, friendly.col, move.to_row, move.to_col);
+                        const [row_dir, col_dir] = this.direction_to_piece(king.row, king.col, friendly.row, friendly.col);
                         if (friendly.type != PieceType.KNIGHT && row_change == row_dir && col_change == col_dir) return true;
 
                         return false;

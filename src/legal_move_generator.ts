@@ -87,7 +87,7 @@ export class LegalMoveGenerator {
         for (const move of active) {
             // allow moves that MOVE king out of check
             if (this.board.at(move.from_row, move.from_col).type == PieceType.KING) {
-                if (!attacked[move.to_row][move.to_col]) allowed_moves.add(move);
+                if (!attacked[move.to_row][move.to_col] && move.type != MoveType.Castling) allowed_moves.add(move);
                 else continue;
             }
 

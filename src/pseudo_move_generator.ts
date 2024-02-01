@@ -338,12 +338,14 @@ export class PseduoLegalMoveGenerator {
 
         // queen side castle
         if (!attacking &&
-            this.board.at(king.row, 0).type == PieceType.ROOK &&
-            this.board.at(king.row, 0).moved == false &&
             king.moved == false &&
-            this.board.at(king.row, 1) == EMPTY_PIECE &&
-            this.board.at(king.row, 2) == EMPTY_PIECE &&
-            this.board.at(king.row, 3) == EMPTY_PIECE
+            this.board.exists(king.row, king.col - 4) &&
+            this.board.at(king.row, king.col - 4).type == PieceType.ROOK &&
+            this.board.at(king.row, king.col - 4).moved == false &&
+            this.board.at(king.row, king.col - 4).color == king.color &&
+            this.board.at(king.row, king.col - 1) == EMPTY_PIECE &&
+            this.board.at(king.row, king.col - 2) == EMPTY_PIECE &&
+            this.board.at(king.row, king.col - 3) == EMPTY_PIECE
         ) {
             moves.push(this.check_first_move({
                 from_row: king.row,
@@ -357,11 +359,13 @@ export class PseduoLegalMoveGenerator {
 
         // king side castle
         if (!attacking &&
-            this.board.at(king.row, 7).type == PieceType.ROOK &&
-            this.board.at(king.row, 7).moved == false &&
             king.moved == false &&
-            this.board.at(king.row, 5) == EMPTY_PIECE &&
-            this.board.at(king.row, 6) == EMPTY_PIECE
+            this.board.exists(king.row, king.col + 3) &&
+            this.board.at(king.row, king.col + 3).type == PieceType.ROOK &&
+            this.board.at(king.row, king.col + 3).moved == false &&
+            this.board.at(king.row, king.col + 3).color == king.color &&
+            this.board.at(king.row, king.col + 1) == EMPTY_PIECE &&
+            this.board.at(king.row, king.col + 2) == EMPTY_PIECE
         ) {
             moves.push(this.check_first_move({
                 from_row: king.row,

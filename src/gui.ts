@@ -1,10 +1,14 @@
 import p5 from "p5";
 import { Board } from "./board.js";
 import { EMPTY_PIECE, Piece, PieceColor, PieceType } from "./piece.js";
-import { MoveType } from "./move.js";
+import { Move, MoveType } from "./move.js";
+import { LegalMoveGenerator } from "./legal_move_generator.js";
 
 export class GUI {
     private board: Board;
+
+    private move_generator: LegalMoveGenerator;
+    private current_moves: Move[];
 
     private p5: (p5 | undefined);
 
@@ -20,6 +24,9 @@ export class GUI {
 
     constructor(board: Board) {
         this.board = board;
+
+        this.move_generator = new LegalMoveGenerator(this.board);
+        this.current_moves = this.move_generator.gen_legal_moves();
 
         this.initP5();
     }
@@ -62,6 +69,10 @@ export class GUI {
 
     private draw() {
         this.drawBackground();
+
+        if (this.mouse_pressed_row != undefined && this.mouse_pressed_col != undefined)
+            this.drawPossibleMoves();
+
         this.drawPieces();
     }
 
@@ -80,8 +91,6 @@ export class GUI {
 
         this.mouse_pressed_col = Math.floor(this.p5!.mouseX / this.cell_width_px);
         this.mouse_pressed_row = Math.floor(this.p5!.mouseY / this.cell_width_px);
-
-        this.drawPossibleMoves();
     }
 
     private handleMouseReleased() {
@@ -123,7 +132,32 @@ export class GUI {
     }
 
     private drawPossibleMoves() {
-        // TODO: implement a way to draw possible moves on a clicked piece
+        if (this.cell_width_px === undefined) throw Error("cell_width_px is undefined, can't draw moves");
+
+        if (this.mouse_pressed_row == undefined || this.mouse_pressed_col == undefined) return;
+        if (!this.board.exists(this.mouse_pressed_row, this.mouse_pressed_col)) return;
+        if (this.board.isEmpty(this.mouse_pressed_row, this.mouse_pressed_col)) return;
+
+        this.p5!.push();
+        this.p5!.noStroke();
+
+        // highlight square we're moving from
+        this.p5!.fill(205, 78, 0, 160);
+        this.p5!.rect(
+            this.mouse_pressed_col * this.cell_width_px,
+            this.mouse_pressed_row * this.cell_width_px,
+            this.cell_width_px,
+            this.cell_width_px
+        );
+
+        // highlight all the possible squares the piece can move to
+        this.p5!.fill(125, 0, 0, 160);
+        for (const move of this.current_moves) {
+            if (move.from_row != this.mouse_pressed_row || move.from_col != this.mouse_pressed_col) continue;
+            this.p5!.rect(move.to_col * this.cell_width_px, move.to_row * this.cell_width_px, this.cell_width_px);
+        }
+
+        this.p5!.pop();
     }
 
     private drawPieces() {

@@ -115,6 +115,18 @@ export class GUI {
         let found_move;
 
         for (const move of this.current_moves) {
+            if (move.type == MoveType.EnPassant) {
+                const dir = this.board.at(move.from_row, move.from_col).color == PieceColor.WHITE ? -1 : 1;
+                if (move.from_col == from_col &&
+                    move.from_row == from_row &&
+                    move.to_row == to_row - dir &&
+                    move.to_col == to_col
+                ) {
+                    found_move = move;
+                    break;
+                }
+            }
+
             if (move.from_col == from_col &&
                 move.from_row == from_row &&
                 move.to_row == to_row &&
@@ -164,7 +176,13 @@ export class GUI {
         this.p5!.fill(125, 0, 0, 160);
         for (const move of this.current_moves) {
             if (move.from_row != this.mouse_pressed_row || move.from_col != this.mouse_pressed_col) continue;
-            this.p5!.rect(move.to_col * this.cell_width_px, move.to_row * this.cell_width_px, this.cell_width_px);
+
+            if (move.type == MoveType.EnPassant) {
+                const dir = this.board.at(move.from_row, move.from_col).color == PieceColor.WHITE ? -1 : 1;
+                this.p5!.rect(move.to_col * this.cell_width_px, (move.to_row + dir) * this.cell_width_px, this.cell_width_px);
+            }
+            else
+                this.p5!.rect(move.to_col * this.cell_width_px, move.to_row * this.cell_width_px, this.cell_width_px);
         }
 
         this.p5!.pop();

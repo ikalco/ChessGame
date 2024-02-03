@@ -110,18 +110,28 @@ export class GUI {
     }
 
     private handleMove(from_row: number, from_col: number, to_row: number, to_col: number) {
-        // TODO: implement a way to only play allowed moves
-
         if (!this.board.exists(from_row, from_col) || !this.board.exists(to_row, to_col)) return;
 
-        this.board.move({
-            from_row: from_row,
-            from_col: from_col,
-            to_row: to_row,
-            to_col: to_col,
-            type: MoveType.Normal,
-            taking: true
-        });
+        let found_move;
+
+        for (const move of this.current_moves) {
+            if (move.from_col == from_col &&
+                move.from_row == from_row &&
+                move.to_row == to_row &&
+                move.to_col == to_col
+            ) {
+                found_move = move;
+                break;
+            }
+        }
+
+        if (found_move == undefined) return;
+
+        if (found_move.type == MoveType.Promotion) console.log("promotion thing");
+
+        this.board.move(found_move);
+
+        this.current_moves = this.move_generator.gen_legal_moves();
     }
 
     private drawBackground() {

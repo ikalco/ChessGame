@@ -1,0 +1,22 @@
+{
+    "include": [
+        "src/**/*",
+        "tests/fen_notation.test.ts",
+    ],
+    "exclude": [
+        "tests/**/*"
+    ],
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": "src",
+        "allowJs": true,
+        "checkJs": true,
+        "sourceMap": true,
+        "target": "ES6",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "strict": true,
+        "moduleResolution": "Node",
+        "esModuleInterop": true
+    },
+}

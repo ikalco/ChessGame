@@ -1,0 +1,15 @@
+# Cache files
+.eslintcache
+.npm
+*.tsbuildinfo
+package-lock.json
+# Directories
+dist
+node_modules
+# Env files
+.env.
+.env.test
+# Logs
+*.log
+logs
+npm-debug.log*
